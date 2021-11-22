@@ -6,14 +6,10 @@ public class TimedHostedService : IHostedService, IDisposable
     private Timer _timer = null!;
     private readonly int _intervalSeconds = 60;
     private readonly IConfiguration Configuration;
-    public TimedHostedService(IConfiguration configuration)
+    public TimedHostedService(IConfiguration configuration, ILogger<TimedHostedService> logger)
     {
         Configuration = configuration;
         _intervalSeconds = int.Parse(Configuration["TimerIntervalSeconds"]);
-    }
-
-    public TimedHostedService(ILogger<TimedHostedService> logger)
-    {
         _logger = logger;
     }
 
