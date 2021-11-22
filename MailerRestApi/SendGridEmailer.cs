@@ -9,7 +9,7 @@ public class SendGridEmailer
     {
         var client = new SendGridClient(sendGridApiKey);
         var from = new EmailAddress("some@email.com", "Information Mailer System");
-        var subject = "Test Email";
+        var subject = "My Group Schedule";
         var to = new EmailAddress(email, name);
         var plainTextContent = "and easy to do anywhere, even with C#";
         var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";

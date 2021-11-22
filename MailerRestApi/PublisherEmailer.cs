@@ -7,22 +7,17 @@ public class PublisherEmailer
 {
     public void Run(string[] args)
     {
-        Console.WriteLine("Reading and writing to a Google spreadsheet...");
-        //string secretsJsonPath = args[0];
-        //string documentId = args[1];
-        //string range = args[2];
-        //string targetDocumentId = args[3];
-        //string targetRange = args[4];
-        //string sendGridApiKey = args[5];
 
         Console.WriteLine("Reading and writing to a Google spreadsheet...");
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-        string secretsJson = Environment.GetEnvironmentVariable("ServiceSecretsJson", EnvironmentVariableTarget.Process);
-        string documentId = Environment.GetEnvironmentVariable("DocumentId", EnvironmentVariableTarget.Process);
-        string range = Environment.GetEnvironmentVariable("Range", EnvironmentVariableTarget.Process);
-        string targetDocumentId = Environment.GetEnvironmentVariable("TargetDocumentId", EnvironmentVariableTarget.Process);
-        string targetRange = Environment.GetEnvironmentVariable("TargetRange", EnvironmentVariableTarget.Process);
-        string sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
+        string secretsJson = Environment.GetEnvironmentVariable("ServiceSecretsJson", EnvironmentVariableTarget.Process)
+            ?? throw new ArgumentNullException(nameof(secretsJson));
+        string documentId = Environment.GetEnvironmentVariable("DocumentId", EnvironmentVariableTarget.Process)
+            ?? throw new ArgumentNullException(nameof(documentId));
+        string range = Environment.GetEnvironmentVariable("Range", EnvironmentVariableTarget.Process)
+            ?? throw new ArgumentNullException(nameof(range));
+        string sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process)
+            ?? throw new ArgumentNullException(nameof(sendGridApiKey));
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
         string json = File.ReadAllText(secretsJson);
@@ -30,13 +25,6 @@ public class PublisherEmailer
         var sheets = new Sheets(json, isServiceAccount: true);
 
         IList<IList<object>> rows = sheets.Read(documentId: documentId, range: range);
-
-        //var values = new[] { new[] { (object)DateTime.Now.ToLongTimeString(), (object)"Azure Function" } };
-
-        //sheets.Write(
-        //    documentId: targetDocumentId,
-        //    range: targetRange,
-        //    values: values);
 
         var publishers = new List<PublisherClass>();
         foreach (var r in rows)
@@ -46,20 +34,20 @@ public class PublisherEmailer
                 new PublisherClass
                 {
                     Name = $"{r[0]}",
-                    Email = $"{r[1]}",
+                    Email = $"{r[1]}", // Read this from somewhere else?
                     Sent = $"{sent}"
                 });
         }
 
-
         foreach (PublisherClass publisher in publishers)
         {
             Console.WriteLine($"Sending email to {publisher.Name}: {publisher.Email}: {publisher.Sent}...");
-            // Email // Response response = SendGridEmailer.SendEmail(name, email, sendGridApiKey).Result;
-            // Email // Console.WriteLine($"Status Code:{response.StatusCode}");
 
             if (string.IsNullOrWhiteSpace(publisher.Name))
-                break; // End of list
+            {
+                Console.WriteLine($"Reached end of list at index {publishers.IndexOf(publisher)}");
+                break;
+            }
 
             publisher.Sent = DateTime.Now.ToString();
 
@@ -69,7 +57,17 @@ public class PublisherEmailer
                 publisher.Sent = "Sending";
                 if (publisher.Email.ToUpper().EndsWith("@gmail.com"))
                 {
+                    Message message = new()
+                    {
+                         ToAddress = publisher.Email,
+                         ToName = publisher.Name,
+                         Subject = "My Group CLM Schedule",
+                         Text =  "This is a test"
+                    };
 
+                    Simple.Send(message);
+
+                    publisher.Result = "Sent via SMTP";
                 }
                 else
                 {
@@ -88,20 +86,7 @@ public class PublisherEmailer
             {
                 publisher.Result = $"FAIL: not a valid email address";
             }
-
-
-            //string cellToWrite = Sheets.NextCellDown(range, "D", publishers.IndexOf(publisher));
-
-            // This will use up the write reqeusts per minute per user too fast
-            //Console.WriteLine($"   Writing to: {cellToWrite}");
-            //sheets.WriteOneCell(
-            //    documentId: documentId,
-            //    range: cellToWrite,
-            //    value: "Done2");
-
-            //IList<IList<object>> newValues= sheets.Read(documentId: documentId, range: range);
         }
-
 
         Console.WriteLine("Writing new values back");
         foreach (PublisherClass publisher in publishers)
@@ -120,40 +105,12 @@ public class PublisherEmailer
 
 
     }
-
-
-//IList<IList<object>> linesToEdit = tester.Read(documentId: documentId, range: range);
-
-//for (int r = 4; r < 7; r++)
-//{
-//    linesToEdit[r][2] = "2/3/1111";
-//}
-
-//var oValues = new[] { new[] { (object)"4/4/4444" } };
-
-//tester.Write(
-//    documentId: documentId,
-//    range: range,
-//    values: oValues); 
-
-//IList<IList<object>> lines = tester.Read(documentId: documentId, range: range);
-
-//foreach(IList<object> line in lines)
-//{
-//    foreach(object value in line)
-//    {
-//        Console.Write($"{value}, ");
-//    }
-//    Console.WriteLine();
-//}
-
-
 }
 
 public class PublisherClass
 {
-    public string Name { get; set; }
-    public string Email { get; set; }
-    public string Sent { get; set; }
-    public string Result { get; set; }
+    public string? Name { get; set; }
+    public string? Email { get; set; }
+    public string? Sent { get; set; }
+    public string? Result { get; set; }
 }
