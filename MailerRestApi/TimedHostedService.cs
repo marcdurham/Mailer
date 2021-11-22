@@ -4,6 +4,13 @@ public class TimedHostedService : IHostedService, IDisposable
     private int executionCount = 0;
     private readonly ILogger<TimedHostedService> _logger;
     private Timer _timer = null!;
+    private readonly int _intervalSeconds = 60;
+    private readonly IConfiguration Configuration;
+    public TimedHostedService(IConfiguration configuration)
+    {
+        Configuration = configuration;
+        _intervalSeconds = int.Parse(Configuration["TimerIntervalSeconds"]);
+    }
 
     public TimedHostedService(ILogger<TimedHostedService> logger)
     {
@@ -26,6 +33,8 @@ public class TimedHostedService : IHostedService, IDisposable
 
         _logger.LogInformation(
             "Timed Hosted Service is working. Count: {Count}", count);
+
+        PublisherEmailer.Run();
     }
 
     public Task StopAsync(CancellationToken stoppingToken)

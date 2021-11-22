@@ -16,5 +16,9 @@ services:
       - "5025:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      #- ASPNETCORE_URLS=http://*:80
+      - TimerIntervalSeconds=60
+      - ServiceSecretsJson=$ServiceSecretsJson
+      - DocumentId=$DocumentId
+      - Range=$Range
+      - SENDGRID_API_KEY=$SENDGRID_API_KEY
 

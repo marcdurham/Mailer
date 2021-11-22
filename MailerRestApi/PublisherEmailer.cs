@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace Mailer.Sender;
 public class PublisherEmailer 
 {
-    public void Run(string[] args)
+    public static void Run()
     {
 
         Console.WriteLine("Reading and writing to a Google spreadsheet...");
