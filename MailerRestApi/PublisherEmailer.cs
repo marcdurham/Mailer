@@ -1,4 +1,3 @@
-using Adapters;
 using GoogleAdapter.Adapters;
 using SendGrid;
 using System.Text.RegularExpressions;
@@ -9,14 +8,24 @@ public class PublisherEmailer
     public void Run(string[] args)
     {
         Console.WriteLine("Reading and writing to a Google spreadsheet...");
-        string secretsJsonPath = args[0];
-        string documentId = args[1];
-        string range = args[2];
-        string targetDocumentId = args[3];
-        string targetRange = args[4];
-        string sendGridApiKey = args[5];
+        //string secretsJsonPath = args[0];
+        //string documentId = args[1];
+        //string range = args[2];
+        //string targetDocumentId = args[3];
+        //string targetRange = args[4];
+        //string sendGridApiKey = args[5];
 
-        string json = File.ReadAllText(secretsJsonPath);
+        Console.WriteLine("Reading and writing to a Google spreadsheet...");
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+        string secretsJson = Environment.GetEnvironmentVariable("ServiceSecretsJson", EnvironmentVariableTarget.Process);
+        string documentId = Environment.GetEnvironmentVariable("DocumentId", EnvironmentVariableTarget.Process);
+        string range = Environment.GetEnvironmentVariable("Range", EnvironmentVariableTarget.Process);
+        string targetDocumentId = Environment.GetEnvironmentVariable("TargetDocumentId", EnvironmentVariableTarget.Process);
+        string targetRange = Environment.GetEnvironmentVariable("TargetRange", EnvironmentVariableTarget.Process);
+        string sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+        string json = File.ReadAllText(secretsJson);
 
         var sheets = new Sheets(json, isServiceAccount: true);
 
