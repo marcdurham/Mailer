@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHostedService<TimedHostedService>();
 
 var app = builder.Build();
 
@@ -36,9 +37,9 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast");
 
 // Example: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
-app.MapPost("/sendmail", async () =>
+app.MapPost("/sendmail", async (Message message) =>
 {
-    Simple.Run();
+    Simple.Send(message);
 
     return Results.Ok("Mail Sent");
 })
