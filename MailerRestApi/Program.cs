@@ -1,3 +1,5 @@
+using Mailer.Sender;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -32,6 +34,16 @@ app.MapGet("/weatherforecast", () =>
     return forecast;
 })
 .WithName("GetWeatherForecast");
+
+// Example: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
+app.MapPost("/sendmail", async () =>
+{
+    Simple.Run();
+
+    return Results.Ok("Mail Sent");
+})
+.WithName("SendMail");
+
 
 app.Run();
 
