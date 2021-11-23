@@ -40,19 +40,18 @@ for (int i = 1; i < values.Count; i++)
     //Console.WriteLine();
 }
 
-StringBuilder builder = new (10_000);
-builder.AppendLine("<html><head></head><body>");
-
-
+string template = File.ReadAllText("./template1.html");
 
 string today = DateTime.Today.ToString("yyyy-MM-dd");
 Console.WriteLine("This Month");
-for (DateTime day = DateTime.Today; day <= DateTime.Today.AddDays(7 * 4); day = day.AddDays(7))
+for (int i = 0; i < 4; i++)
 {
+    DateTime day = DateTime.Today.AddDays(7 * i);
     string dayKey = day.ToString("yyyy-MM-dd");
-    builder.AppendLine($"<div><h2>{dayKey}</h2>");
-
     Console.WriteLine($"Day: {dayKey}");
+
+    template = template.Replace($"@{{Day{i}}}", dayKey);
+
     for (int j = 0; j < schedule[dayKey].Length; j++)
     {
         string name = schedule[dayKey][j].ToString();
@@ -61,10 +60,8 @@ for (DateTime day = DateTime.Today; day <= DateTime.Today.AddDays(7 * 4); day = 
             flag = "***";
 
         Console.WriteLine($"{dayKey}:{headers[j]}:{schedule[dayKey][j]}{flag}");
-        builder.AppendLine($"<div><h3>{headers[j]}</h3><span>{schedule[dayKey][j]}{flag}</span></div>");
+        template = template.Replace($"@{{{headers[j]}:{i}}}", schedule[dayKey][j]);
     }
-
-    builder.AppendLine($"</div>");
 }
 
 Console.WriteLine("");
@@ -81,6 +78,4 @@ foreach(var day in futurePresentDays)
     }
 }
 
-builder.AppendLine("</body></html>");
-
-File.WriteAllText(@"c:\Users\Marc\Desktop\template5.html", builder.ToString());
+File.WriteAllText(@"c:\Users\Marc\Desktop\template5.html", template);
