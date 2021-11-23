@@ -21,4 +21,6 @@ services:
       - DocumentId=$DocumentId
       - Range=$Range
       - SENDGRID_API_KEY=$SENDGRID_API_KEY
+      - ScheduleViewSheet=CLM EMailer
+      - ScheduleViewPublisherCell=A1
 

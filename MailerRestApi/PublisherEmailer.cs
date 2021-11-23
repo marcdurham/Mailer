@@ -2,14 +2,15 @@ using GoogleAdapter.Adapters;
 using SendGrid;
 using System.Text.RegularExpressions;
 
-namespace Mailer.Sender;
+namespace Mailer.Sender
+{
 public class PublisherEmailer 
 {
     public static void Run()
     {
 
         Console.WriteLine("Reading and writing to a Google spreadsheet...");
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+//#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
         // string json = Environment.GetEnvironmentVariable("ServiceSecretsJson", EnvironmentVariableTarget.Process)
         //     ?? throw new ArgumentNullException(nameof(json));
         string documentId = Environment.GetEnvironmentVariable("DocumentId", EnvironmentVariableTarget.Process)
@@ -18,7 +19,13 @@ public class PublisherEmailer
             ?? throw new ArgumentNullException(nameof(range));
         string sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process)
             ?? throw new ArgumentNullException(nameof(sendGridApiKey));
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+              
+        string scheduleViewSheet = Environment.GetEnvironmentVariable("ScheduleViewSheet", EnvironmentVariableTarget.Process)
+            ?? throw new ArgumentNullException(nameof(scheduleViewSheet));
+        string scheduleViewPublisherCell = Environment.GetEnvironmentVariable("ScheduleViewPublisherCell", EnvironmentVariableTarget.Process)
+            ?? throw new ArgumentNullException(nameof(scheduleViewPublisherCell));
+
+//#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
         string json = File.ReadAllText("/app/SendGrid.secrets.json");
 
@@ -63,7 +70,7 @@ public class PublisherEmailer
                          ToAddress = publisher.Email,
                          ToName = publisher.Name,
                          Subject = "My Group CLM Schedule",
-                         Text =  "This is a test"
+                         Text =  GenerateMessageText(publisher)
                     };
 
                     Simple.Send(message);
@@ -108,6 +115,11 @@ public class PublisherEmailer
 
 
     }
+
+    public string GenerateMessageText(PublisherClass publisher)
+    {
+        scheduleViewSheet
+    }
 }
 
 public class PublisherClass
@@ -116,4 +128,5 @@ public class PublisherClass
     public string? Email { get; set; }
     public string? Sent { get; set; }
     public string? Result { get; set; }
+}
 }
