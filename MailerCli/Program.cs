@@ -57,10 +57,13 @@ for (int i = 0; i < 4; i++)
         string name = schedule[dayKey][j].ToString();
         string flag = string.Empty;
         if (string.Equals(friendName, name, StringComparison.OrdinalIgnoreCase))
+        {
+            name = $"<span class='selected-friend'>{name}</span>";
             flag = "***";
+        }
 
-        Console.WriteLine($"{dayKey}:{headers[j]}:{schedule[dayKey][j]}{flag}");
-        template = template.Replace($"@{{{headers[j]}:{i}}}", schedule[dayKey][j]);
+        Console.WriteLine($"{dayKey}:{headers[j]}:{name}{flag}");
+        template = template.Replace($"@{{{headers[j]}:{i}}}", name);
     }
 }
 
