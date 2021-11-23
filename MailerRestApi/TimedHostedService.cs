@@ -18,7 +18,7 @@ public class TimedHostedService : IHostedService, IDisposable
         _logger.LogInformation("Timed Hosted Service running.");
 
         _timer = new Timer(DoWork, null, TimeSpan.Zero, 
-            TimeSpan.FromSeconds(15));
+            TimeSpan.FromSeconds(_intervalSeconds));
 
         return Task.CompletedTask;
     }
@@ -27,8 +27,7 @@ public class TimedHostedService : IHostedService, IDisposable
     {
         var count = Interlocked.Increment(ref executionCount);
 
-        _logger.LogInformation(
-            "Timed Hosted Service is working. Count: {Count}", count);
+        _logger.LogInformation($"Timed Hosted Service is working. Interval (sec): {_intervalSeconds} Count: {count}");
 
         PublisherEmailer.Run();
     }

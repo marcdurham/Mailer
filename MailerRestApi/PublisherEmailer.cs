@@ -10,8 +10,8 @@ public class PublisherEmailer
 
         Console.WriteLine("Reading and writing to a Google spreadsheet...");
 #pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-        string secretsJson = Environment.GetEnvironmentVariable("ServiceSecretsJson", EnvironmentVariableTarget.Process)
-            ?? throw new ArgumentNullException(nameof(secretsJson));
+        // string json = Environment.GetEnvironmentVariable("ServiceSecretsJson", EnvironmentVariableTarget.Process)
+        //     ?? throw new ArgumentNullException(nameof(json));
         string documentId = Environment.GetEnvironmentVariable("DocumentId", EnvironmentVariableTarget.Process)
             ?? throw new ArgumentNullException(nameof(documentId));
         string range = Environment.GetEnvironmentVariable("Range", EnvironmentVariableTarget.Process)
@@ -20,7 +20,7 @@ public class PublisherEmailer
             ?? throw new ArgumentNullException(nameof(sendGridApiKey));
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
-        string json = File.ReadAllText(secretsJson);
+        string json = File.ReadAllText("/app/SendGrid.secrets.json");
 
         var sheets = new Sheets(json, isServiceAccount: true);
 
@@ -54,9 +54,10 @@ public class PublisherEmailer
             string emailPattern = @"^\S+@\S+$";
             if (Regex.IsMatch(publisher.Email, emailPattern))
             {
-                publisher.Sent = "Sending";
-                if (publisher.Email.ToUpper().EndsWith("@gmail.com"))
+                publisher.Result = "Sending";
+                if (publisher.Email.ToUpper().EndsWith("@GMAIL.COM"))
                 {
+                    publisher.Result = "Preparing SMTP Email";
                     Message message = new()
                     {
                          ToAddress = publisher.Email,
@@ -73,12 +74,14 @@ public class PublisherEmailer
                 {
                     try
                     {
+                        publisher.Result = "Preparing SendMail Message";
                         Response response = SendGridEmailer.SendEmail(publisher.Name, publisher.Email, sendGridApiKey).Result;
-                        Console.WriteLine($"Sent Status Code:{response.StatusCode}");
+                        Console.WriteLine($"SenndMail Status Code:{response.StatusCode}");
+                        publisher.Result = $"SendMail Status Code:{response.StatusCode}";
                     }
                     catch (Exception ex)
                     {
-                        publisher.Result = ex.Message;
+                        publisher.Result = $"SendMail Error: {ex.Message}";
                     }
                 }
             }

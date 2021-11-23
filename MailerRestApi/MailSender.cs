@@ -32,10 +32,10 @@ public class Simple
     {
         // I copied this from here: https://docs.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient.sendasync?view=net-6.0#System_Net_Mail_SmtpClient_SendAsync_System_String_System_String_System_String_System_String_System_Object_
 
-        if(!msg.Text.Contains("This is a test."))
-        {
-            return;
-        }
+        // if(!msg.Text.Contains("This is a test."))
+        // {
+        //     return;
+        // }
 
         // Command-line argument must be the SMTP host.
         string smtpHost = "smtp"; // A Linked Docker Container
@@ -62,7 +62,8 @@ public class Simple
         // method to identify this send operation.
         // For this example, the userToken is a string constant.
         string userState = "test message1";
-        client.SendAsync(message, userState);
+        // //client.SendAsync(message, userState);
+        client.Send(message);
         Console.WriteLine("Sending message... press c to cancel mail. Press any other key to exit.");
         ////string answer = Console.ReadLine();
         // If the user canceled the send, and mail hasn't been sent yet,
