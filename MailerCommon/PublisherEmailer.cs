@@ -6,11 +6,17 @@ namespace Mailer.Sender
 {
 public class PublisherEmailer 
 {
-    public static void Run(
+        private const string ClmAssignmentListRange = "CLM Assignment List!B1:AY200";
+        private const string ClmSendEmailsRange = "CLM Send Emails!B2:E300";
+        private const string ClmTemplatePath = "./template1.html";
+        private const string IsoDateFormat = "yyyy-MM-dd";
+
+        public static void Run(
         string? clmSendEmailsDocumentId, 
         string clmAssignmentListDocumentId, 
         string? range, 
-        string? sendGridApiKey, string? googleApiSecretsJson)
+        string? sendGridApiKey, 
+        string? googleApiSecretsJson)
         {
         if(clmSendEmailsDocumentId == null)
             throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
@@ -24,15 +30,13 @@ public class PublisherEmailer
         if (googleApiSecretsJson == null)
                 throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
-        string clmSendEmailsRange = "CLM Send Emails!B2:E300";
-
-        string template = File.ReadAllText("./template1.html");
+        string template = File.ReadAllText(ClmTemplatePath);
 
         var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: true);
 
         IList<IList<object>> clmSendEmailsRows = sheets.Read(
             documentId: clmSendEmailsDocumentId, 
-            range: clmSendEmailsRange);
+            range: ClmSendEmailsRange);
 
         var publishers = new List<PublisherClass>();
         foreach (var r in clmSendEmailsRows)
@@ -62,7 +66,7 @@ public class PublisherEmailer
 
             publisher.Sent = DateTime.Now.ToString();
 
-            string nextMeetingDate = schedule.NextMeetingDate.ToString("yyyy-MM-dd");
+            string nextMeetingDate = schedule.NextMeetingDate.ToString(IsoDateFormat);
             string subject = $"Eastside Christian Life and Ministry Assignments for {nextMeetingDate}";
             string emailPattern = @"^\S+@\S+$";
             if (Regex.IsMatch(publisher.Email, emailPattern))
@@ -72,7 +76,7 @@ public class PublisherEmailer
                         sheets: sheets,
                         googleApiSecretsJson: googleApiSecretsJson,
                         documentId: clmAssignmentListDocumentId,
-                        range: "CLM Assignment List!B1:AY200",
+                        range: ClmAssignmentListRange,
                         friendName: publisher.Name,
                         template: template,
                         friendMap: friendMap,
@@ -132,10 +136,8 @@ public class PublisherEmailer
 
         sheets.Write(
             documentId: clmSendEmailsDocumentId,
-            range: clmSendEmailsRange,
+            range: ClmSendEmailsRange,
             values: clmSendEmailsRows);
-
-
     }
 }
 
