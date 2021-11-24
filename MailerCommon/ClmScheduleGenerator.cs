@@ -10,13 +10,14 @@ namespace MailerCommon
     public class ClmScheduleGenerator
     {
         public string Generate(
+            Sheets sheets,
             string googleApiSecretsJson, 
             string documentId, 
             string range, 
             string friendName,
             string template)
         {
-            var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: true);
+           
 
             IList<IList<object>> friendInfoRows = sheets.Read(documentId: documentId, range: "Friend Info!B1:AI500");
 
@@ -35,7 +36,7 @@ namespace MailerCommon
                 Console.WriteLine($"{friend}: {friendMap[friend]}");
             }
 
-            IList<IList<object>> values = sheets.Read(documentId: documentId, range: range);
+            IList<IList<object>> values = sheets.Read(documentId: documentId, range: "CLM Assignment List!B1:AI300");
 
             string[] headers = new string[values[0].Count];
             for (int i = 0; i < values[0].Count; i++)

@@ -24,13 +24,15 @@ public class PublisherEmailer
         if (googleApiSecretsJson == null)
                 throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
+        string clmSendEmailsRange = "CLM Send Emails!B2:E300";
+
         string template = File.ReadAllText("./template1.html");
 
         var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: true);
 
         IList<IList<object>> clmAssignmentRows = sheets.Read(
             documentId: clmSendEmailsDocumentId, 
-            range: "CLM Send Emails!B2:E:300");
+            range: clmSendEmailsRange);
 
         var publishers = new List<PublisherClass>();
         foreach (var r in clmAssignmentRows)
@@ -64,21 +66,23 @@ public class PublisherEmailer
                 if (publisher.Email.ToUpper().EndsWith("@GMAIL.COM"))
                 {
                     publisher.Result = "Preparing SMTP Email";
-                    Message message = new()
-                    {
+                        Message message = new()
+                        {
 
-                        ToAddress = publisher.Email,
-                        ToName = publisher.Name,
-                        Subject = "My Group CLM Schedule",
-                        Text = new MailerCommon.ClmScheduleGenerator().Generate(
-                             googleApiSecretsJson: googleApiSecretsJson,
-                             documentId: clmAssignmentListDocumentId,
-                             range: "CLM Assignment List!B1:AY200",
-                             friendName: publisher.Name,
-                             template: template)
+                            ToAddress = publisher.Email,
+                            ToName = publisher.Name,
+                            Subject = "My Group CLM Schedule",
+                            Text = new MailerCommon.ClmScheduleGenerator().Generate(
+                                 sheets: sheets,
+                                 googleApiSecretsJson: googleApiSecretsJson,
+                                 documentId: clmAssignmentListDocumentId,
+                                 range: "CLM Assignment List!B1:AY200",
+                                 friendName: publisher.Name,
+                                 template: template)
                     };
 
-                    Simple.Send(message);
+                        // TODO: uncomment this: Simple.Send(message);
+                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.html", message.Text);
 
                     publisher.Result = "Sent via SMTP";
                 }
@@ -115,7 +119,7 @@ public class PublisherEmailer
 
         sheets.Write(
             documentId: clmSendEmailsDocumentId,
-            range: range,
+            range: clmSendEmailsRange,
             values: clmAssignmentRows);
 
 

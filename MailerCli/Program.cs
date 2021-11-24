@@ -9,13 +9,15 @@ string secretsJsonPath = args[0];
 string clmSendEmailsDocumentId = args[1];
 string range = args[2];
 string googleApiSecretsJsonPath = args[3];
+string clmAssignmentListDocumentId = args[4];
 
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
 string googleApiSecretsJson = File.ReadAllText(googleApiSecretsJsonPath);
 
 PublisherEmailer.Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
-    clmAssignmentListDocumentId: "clmAssignmentListDocumentId", range: range,
+    clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
+    range: range,
     sendGridApiKey: sendGridApiKey,
     googleApiSecretsJson: googleApiSecretsJson);
         
