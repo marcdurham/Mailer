@@ -62,6 +62,8 @@ public class PublisherEmailer
 
             publisher.Sent = DateTime.Now.ToString();
 
+            string nextMeetingDate = schedule.NextMeetingDate.ToString("yyyy-MM-dd");
+            string subject = $"Eastside Christian Life and Ministry Assignments for {nextMeetingDate}";
             string emailPattern = @"^\S+@\S+$";
             if (Regex.IsMatch(publisher.Email, emailPattern))
             {
@@ -76,7 +78,7 @@ public class PublisherEmailer
                         friendMap: friendMap,
                         schedule: schedule);
 
-                if (publisher.Email.ToUpper().EndsWith("@GMAIL.COM"))
+                if (publisher.Email.ToUpper().EndsWith("@GMAIL.COM-XXXXXXXXXXXXXXXXXXXXXXX"))
                 {
                     publisher.Result = "Preparing SMTP Email";
                         Message message = new()
@@ -84,12 +86,13 @@ public class PublisherEmailer
 
                             ToAddress = publisher.Email,
                             ToName = publisher.Name,
-                            Subject = "My Group CLM Schedule",
+                            Subject = subject,
                             Text = htmlMessageText
                         };
 
-                        // TODO: uncomment this: Simple.Send(message);
-                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.html", htmlMessageText);
+                        // TODO: uncomment this:
+                        Simple.Send(message);
+                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.{subject.Replace(":","")}.html", htmlMessageText);
 
                     publisher.Result = "Sent via SMTP";
                 }
@@ -98,11 +101,12 @@ public class PublisherEmailer
                     try
                     {
                         publisher.Result = "Preparing SendMail Message";
-                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.html", htmlMessageText);
-                        // TODO: Uncomment: Response response = SendGridEmailer.SendEmail(publisher.Name, publisher.Email, sendGridApiKey).Result;
-                        // TODO: Uncomment:     Console.WriteLine($"SenndMail Status Code:{response.StatusCode}");
-                        // TODO: Uncomment: publisher.Result = $"SendMail Status Code:{response.StatusCode}";
-                        publisher.Result = $"SendMail Not really sent";
+                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.{subject.Replace(":", "")}.html", htmlMessageText);
+                        Response response = SendGridEmailer.SendEmail(publisher.Name, publisher.Email, sendGridApiKey, subject, htmlMessageText).Result;
+                        Console.WriteLine($"SenndMail Status Code:{response.StatusCode}");
+                        publisher.Result = $"SendMail Status Code:{response.StatusCode}";
+                        
+                        //publisher.Result = $"SendMail Not really sent";
                     }
                     catch (Exception ex)
                     {

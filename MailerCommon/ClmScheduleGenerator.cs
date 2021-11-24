@@ -21,21 +21,21 @@ namespace MailerCommon
         {
                 ////string template = File.ReadAllText("./template1.html");
 
-            DateTime todayDate = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
-            string today = todayDate.ToString("yyyy-MM-dd");
+            DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+            string today = thisMonday.ToString("yyyy-MM-dd");
             Console.WriteLine("This Month");
-            for (int i = 0; i < 4; i++)
+            for (int weekColumnIndex = 0; weekColumnIndex < 4; weekColumnIndex++)
             {
-                DateTime day = todayDate.AddDays(7 * i);
+                DateTime day = thisMonday.AddDays(7 * weekColumnIndex);
                 DateTime dayOfClm = day.AddDays(3);
                 string dayKey = day.ToString("yyyy-MM-dd");
                 Console.WriteLine($"Day: {dayKey}");
 
-                template = template.Replace($"@{{Day{i}}}", dayOfClm.ToString("yyyy-MM-dd"));
+                template = template.Replace($"@{{Day{weekColumnIndex}}}", dayOfClm.ToString("yyyy-MM-dd"));
 
-                for (int j = 0; j < schedule.Days[dayKey].Length; j++)
+                for (int assignmentColumnIndex = 0; assignmentColumnIndex < schedule.Days[dayKey].Length; assignmentColumnIndex++)
                 {
-                    string name = schedule.Days[dayKey][j].ToString();
+                    string name = schedule.Days[dayKey][assignmentColumnIndex].ToString();
                     string allNames = friendMap.ContainsKey(name.ToUpperInvariant()) ? friendMap[name.ToUpperInvariant()] : name;
                     string htmlName = allNames;
                     string flag = string.Empty;
@@ -45,24 +45,39 @@ namespace MailerCommon
                         flag = "***";
                     }
 
-                    Console.WriteLine($"{dayKey}:{schedule.Headers[j]}:{name}{flag}");
-                    template = template.Replace($"@{{{schedule.Headers[j]}:{i}}}", htmlName);
+                    Console.WriteLine($"{dayKey}:{schedule.Headers[assignmentColumnIndex]}:{name}{flag}");
+                    template = template.Replace($"@{{{schedule.Headers[assignmentColumnIndex]}:{weekColumnIndex}}}", htmlName);
                 }
             }
 
             Console.WriteLine("");
             Console.WriteLine($"Thing {friendName}");
-            var futurePresentDays = schedule.Days.Keys.Where(k => DateTime.Parse(k.ToString()) >= todayDate).ToList();
+            var futurePresentDays = schedule.Days.Keys.Where(k => DateTime.Parse(k.ToString()) >= thisMonday).ToList();
+            var lineBuilder = new StringBuilder(1000);
+
+            int count = 0;
             foreach (var day in futurePresentDays)
             {
+                var parsedDay = DateTime.Parse(day);
+                string longDay = parsedDay.AddDays(3).ToString("yyyy MMM-dd dddd"); // Thursday
                 for (int p = 0; p < schedule.Days[day].Length; p++)
                 {
                     if (string.Equals(schedule.Days[day][p], friendName, StringComparison.OrdinalIgnoreCase))
                     {
-                        Console.WriteLine($"{day}:{schedule.Headers[p]}");
+                        count++;
+                        lineBuilder.AppendLine($"<li>{longDay}: {schedule.Headers[p]}</li>");
+                        Console.WriteLine($"{longDay}:{schedule.Headers[p]}");
                     }
                 }
             }
+
+            var builder = new StringBuilder(1000);
+            builder.AppendLine($"<div><h3>Hello {friendName}, you have {count} upcoming CLM assignments</h3><ul>");
+            builder.Append(lineBuilder.ToString());
+            builder.AppendLine("</ul></div>");
+
+            //if(count > 0)
+            template = template.Replace("@{UpcomingAssignmentsList}", builder.ToString());
 
             //File.WriteAllText(@"c:\Users\Marc\Desktop\template5.html", template);
             return template;
@@ -70,6 +85,7 @@ namespace MailerCommon
 
         public static Schedule GetSchedule(Sheets sheets, string documentId)
         {
+            DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
             IList<IList<object>> values = sheets.Read(documentId: documentId, range: "CLM Assignment List!B1:AY9999");
 
             string[] headers = new string[values[0].Count];
@@ -99,6 +115,7 @@ namespace MailerCommon
 
             return new Schedule
             {
+                NextMeetingDate = thisMonday.AddDays(3),
                 Headers = headers,
                 Days = schedule,
             };

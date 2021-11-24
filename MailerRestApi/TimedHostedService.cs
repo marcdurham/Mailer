@@ -30,13 +30,15 @@ public class TimedHostedService : IHostedService, IDisposable
         _logger.LogInformation($"Timed Hosted Service is working. Interval (sec): {_intervalSeconds} Count: {count}");
 
         string? clmSendEmailsDocumentId = Environment.GetEnvironmentVariable("ClmSendEmailsDocumentId", EnvironmentVariableTarget.Process);
+        string? clmAssignmentListDocumentId = Environment.GetEnvironmentVariable("ClmAssignmentListDocumentId", EnvironmentVariableTarget.Process);
         string? range = Environment.GetEnvironmentVariable("Range", EnvironmentVariableTarget.Process);
         string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
         string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
 
         PublisherEmailer.Run(
             clmSendEmailsDocumentId: clmSendEmailsDocumentId,
-            clmAssignmentListDocumentId: "clmAssignmentListDocumentId", range: range,
+            clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
+            range: range,
             sendGridApiKey: sendGridApiKey,
             googleApiSecretsJson: googleApiSecretsJson);
     }

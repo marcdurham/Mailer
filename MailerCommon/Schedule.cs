@@ -10,5 +10,6 @@ namespace MailerCommon
     {
         public string[] Headers { get; set; }
         public Dictionary<string, string[]> Days { get; set; }
+        public DateTime NextMeetingDate { get; set; }
     }
 }
