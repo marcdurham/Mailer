@@ -42,11 +42,12 @@ for (int i = 1; i < values.Count; i++)
 
 string template = File.ReadAllText("./template1.html");
 
-string today = DateTime.Today.ToString("yyyy-MM-dd");
+DateTime todayDate = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+string today = todayDate.ToString("yyyy-MM-dd");
 Console.WriteLine("This Month");
 for (int i = 0; i < 4; i++)
 {
-    DateTime day = DateTime.Today.AddDays(7 * i);
+    DateTime day = todayDate.AddDays(7 * i);
     string dayKey = day.ToString("yyyy-MM-dd");
     Console.WriteLine($"Day: {dayKey}");
 
@@ -69,7 +70,7 @@ for (int i = 0; i < 4; i++)
 
 Console.WriteLine("");
 Console.WriteLine($"Thing {friendName}");
-var futurePresentDays = schedule.Keys.Where(k => DateTime.Parse(k.ToString()) >= DateTime.Today).ToList();
+var futurePresentDays = schedule.Keys.Where(k => DateTime.Parse(k.ToString()) >= todayDate).ToList();
 foreach(var day in futurePresentDays)
 {
     for(int p = 0; p < schedule[day].Length; p++)
