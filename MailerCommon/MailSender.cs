@@ -44,13 +44,14 @@ public class Simple
         // Create a mailing address that includes a UTF8 character
         // in the display name.
         MailAddress from = new MailAddress("some@email.com",
-            "My City My Group Services",
+            "My City My Group Information Board",
         System.Text.Encoding.UTF8);
         // Set destinations for the email message.
         MailAddress to = new MailAddress(msg.ToAddress);
         // Specify the message content.
         MailMessage message = new MailMessage(from, to);
         message.Body = msg.Text;
+        message.IsBodyHtml = true;
         // Include some non-ASCII characters in body and subject.
         message.BodyEncoding =  System.Text.Encoding.UTF8;
         message.Subject = msg.Subject;
