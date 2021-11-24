@@ -28,7 +28,7 @@ public class PublisherEmailer
 
         string template = File.ReadAllText("./template1.html");
 
-        var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: false);
+        var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: true);
 
         IList<IList<object>> clmSendEmailsRows = sheets.Read(
             documentId: clmSendEmailsDocumentId, 
