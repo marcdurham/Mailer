@@ -24,10 +24,27 @@ public class PublisherEmailer
 
         var sheets = new Sheets(json, isServiceAccount: true);
 
-        IList<IList<object>> rows = sheets.Read(documentId: documentId, range: range);
+        //IList<IList<object>> friendInfoRows = sheets.Read(documentId: documentId, range: "Friend Info!B1:AI500");
+
+        //var friendList = new List<string>();
+        //var friendMap = new Dictionary<string, string>();
+        //foreach (var r in friendInfoRows)
+        //{
+        //    friendList.Add(r[0].ToString());
+        //    friendMap[r[0].ToString()] = $"Name = {r[0]} Pinyin = {r[5]} CHS = {r[4]}";
+        //}
+
+        //Console.WriteLine();
+        //Console.WriteLine("Friends:");
+        //foreach(string friend in friendList)
+        //{
+        //    Console.WriteLine($"{friend}: {friendMap[friend]}");
+        //}
+
+        IList<IList<object>> clmAssignmentRows = sheets.Read(documentId: documentId, range: range);
 
         var publishers = new List<PublisherClass>();
-        foreach (var r in rows)
+        foreach (var r in clmAssignmentRows)
         {
             string? sent = r.Count > 2 ? $"{r[2]}" : null;
             publishers.Add(
@@ -94,7 +111,7 @@ public class PublisherEmailer
         Console.WriteLine("Writing new values back");
         foreach (PublisherClass publisher in publishers)
         {
-            rows[publishers.IndexOf(publisher)] = new object[4] { 
+            clmAssignmentRows[publishers.IndexOf(publisher)] = new object[4] { 
                 publisher.Name, 
                 publisher.Email, 
                 publisher.Sent, 
@@ -104,7 +121,7 @@ public class PublisherEmailer
         sheets.Write(
             documentId: documentId,
             range: range,
-            values: rows);
+            values: clmAssignmentRows);
 
 
     }
