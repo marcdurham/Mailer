@@ -21,6 +21,7 @@ public class PublisherEmailer
 #pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
 
         string json = File.ReadAllText("/app/SendGrid.secrets.json");
+        string template = File.ReadAllText("./template1.html");
 
         var sheets = new Sheets(json, isServiceAccount: true);
 
@@ -77,10 +78,15 @@ public class PublisherEmailer
                     publisher.Result = "Preparing SMTP Email";
                     Message message = new()
                     {
-                         ToAddress = publisher.Email,
-                         ToName = publisher.Name,
-                         Subject = "My Group CLM Schedule",
-                         Text =  "This is a test"
+                        ToAddress = publisher.Email,
+                        ToName = publisher.Name,
+                        Subject = "My Group CLM Schedule",
+                        Text = new MailerCommon.ClmScheduleGenerator().Generate(
+                             secretsJsonPath: "/app/SendGrid.secrets.json",
+                             documentId: documentId,
+                             range: "CLM Assignment List!B1:AY200",
+                             friendName: publisher.Name,
+                             template: template)
                     };
 
                     Simple.Send(message);
