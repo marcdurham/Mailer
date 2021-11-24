@@ -29,7 +29,16 @@ public class TimedHostedService : IHostedService, IDisposable
 
         _logger.LogInformation($"Timed Hosted Service is working. Interval (sec): {_intervalSeconds} Count: {count}");
 
-        PublisherEmailer.Run();
+        string? clmSendEmailsDocumentId = Environment.GetEnvironmentVariable("ClmSendEmailsDocumentId", EnvironmentVariableTarget.Process);
+        string? range = Environment.GetEnvironmentVariable("Range", EnvironmentVariableTarget.Process);
+        string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
+        string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
+
+        PublisherEmailer.Run(
+            clmSendEmailsDocumentId: clmSendEmailsDocumentId,
+            clmAssignmentListDocumentId: "clmAssignmentListDocumentId", range: range,
+            sendGridApiKey: sendGridApiKey,
+            googleApiSecretsJson: googleApiSecretsJson);
     }
 
     public Task StopAsync(CancellationToken stoppingToken)

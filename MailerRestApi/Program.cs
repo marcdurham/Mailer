@@ -39,9 +39,17 @@ app.MapGet("/weatherforecast", () =>
 // Example: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
 app.MapPost("/sendmail", async (Message message) =>
 {
-    Simple.Send(message);
+    // TODO: Temporary secret
+    if (message.Text.Contains("414A621D-BB97-4460-AD94-7C9B03C67A3D"))
+    {
+        Simple.Send(message);
+        return Results.Ok("Mail Sent");
+    }
+    else
+    {
+        return Results.BadRequest("Cannot send mail");
+    }
 
-    return Results.Ok("Mail Sent");
 })
 .WithName("SendMail");
 

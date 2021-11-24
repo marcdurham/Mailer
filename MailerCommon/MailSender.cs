@@ -1,9 +1,5 @@
-//using System;
-using System.Net;
-using System.Net.Mail;
-using System.Net.Mime;
-using System.Threading;
 using System.ComponentModel;
+using System.Net.Mail;
 
 namespace Mailer.Sender;
 public class Simple

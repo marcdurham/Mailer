@@ -6,50 +6,31 @@ namespace Mailer.Sender
 {
 public class PublisherEmailer 
 {
-    public static void Run()
-    {
+    public static void Run(
+        string? clmSendEmailsDocumentId, 
+        string clmAssignmentListDocumentId, 
+        string? range, 
+        string? sendGridApiKey, string? googleApiSecretsJson)
+        {
+        if(clmSendEmailsDocumentId == null)
+            throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
 
-        Console.WriteLine("Reading and writing to a Google spreadsheet...");
-//#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
-        // string json = Environment.GetEnvironmentVariable("ServiceSecretsJson", EnvironmentVariableTarget.Process)
-        //     ?? throw new ArgumentNullException(nameof(json));
-        string documentId = Environment.GetEnvironmentVariable("DocumentId", EnvironmentVariableTarget.Process)
-            ?? throw new ArgumentNullException(nameof(documentId));
-        string range = Environment.GetEnvironmentVariable("Range", EnvironmentVariableTarget.Process)
-            ?? throw new ArgumentNullException(nameof(range));
-        string sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process)
-            ?? throw new ArgumentNullException(nameof(sendGridApiKey));
-              
-        string scheduleViewSheet = Environment.GetEnvironmentVariable("ScheduleViewSheet", EnvironmentVariableTarget.Process)
-            ?? throw new ArgumentNullException(nameof(scheduleViewSheet));
-        string scheduleViewPublisherCell = Environment.GetEnvironmentVariable("ScheduleViewPublisherCell", EnvironmentVariableTarget.Process)
-            ?? throw new ArgumentNullException(nameof(scheduleViewPublisherCell));
+        if (range == null)
+            throw new ArgumentNullException(nameof(range));
+        
+        if (sendGridApiKey == null)
+            throw new ArgumentNullException(nameof(sendGridApiKey));
 
-//#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+        if (googleApiSecretsJson == null)
+                throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
-        string json = File.ReadAllText("/app/SendGrid.secrets.json");
         string template = File.ReadAllText("./template1.html");
 
-        var sheets = new Sheets(json, isServiceAccount: true);
+        var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: true);
 
-        //IList<IList<object>> friendInfoRows = sheets.Read(documentId: documentId, range: "Friend Info!B1:AI500");
-
-        //var friendList = new List<string>();
-        //var friendMap = new Dictionary<string, string>();
-        //foreach (var r in friendInfoRows)
-        //{
-        //    friendList.Add(r[0].ToString());
-        //    friendMap[r[0].ToString()] = $"Name = {r[0]} Pinyin = {r[5]} CHS = {r[4]}";
-        //}
-
-        //Console.WriteLine();
-        //Console.WriteLine("Friends:");
-        //foreach(string friend in friendList)
-        //{
-        //    Console.WriteLine($"{friend}: {friendMap[friend]}");
-        //}
-
-        IList<IList<object>> clmAssignmentRows = sheets.Read(documentId: documentId, range: range);
+        IList<IList<object>> clmAssignmentRows = sheets.Read(
+            documentId: clmSendEmailsDocumentId, 
+            range: "CLM Send Emails!B2:E:300");
 
         var publishers = new List<PublisherClass>();
         foreach (var r in clmAssignmentRows)
@@ -90,8 +71,8 @@ public class PublisherEmailer
                         ToName = publisher.Name,
                         Subject = "My Group CLM Schedule",
                         Text = new MailerCommon.ClmScheduleGenerator().Generate(
-                             secretsJsonPath: "/app/SendGrid.secrets.json",
-                             documentId: documentId,
+                             googleApiSecretsJson: googleApiSecretsJson,
+                             documentId: clmAssignmentListDocumentId,
                              range: "CLM Assignment List!B1:AY200",
                              friendName: publisher.Name,
                              template: template)
@@ -133,7 +114,7 @@ public class PublisherEmailer
         }
 
         sheets.Write(
-            documentId: documentId,
+            documentId: clmSendEmailsDocumentId,
             range: range,
             values: clmAssignmentRows);
 
