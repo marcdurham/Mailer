@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailerRestApi", "MailerRestApi\MailerRestApi.csproj", "{417AB079-511E-41A4-B0E8-99D13717BE37}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailerRestApi", "MailerRestApi\MailerRestApi.csproj", "{417AB079-511E-41A4-B0E8-99D13717BE37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailerCommon", "MailerCommon\MailerCommon.csproj", "{0BDCFBFC-3FBF-4E44-9DB1-A12699CCEDE8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailerCli", "MailerCli\MailerCli.csproj", "{932E6F14-5122-418F-8B13-610E02617036}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{417AB079-511E-41A4-B0E8-99D13717BE37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{417AB079-511E-41A4-B0E8-99D13717BE37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{417AB079-511E-41A4-B0E8-99D13717BE37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BDCFBFC-3FBF-4E44-9DB1-A12699CCEDE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BDCFBFC-3FBF-4E44-9DB1-A12699CCEDE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BDCFBFC-3FBF-4E44-9DB1-A12699CCEDE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BDCFBFC-3FBF-4E44-9DB1-A12699CCEDE8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{932E6F14-5122-418F-8B13-610E02617036}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{932E6F14-5122-418F-8B13-610E02617036}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{932E6F14-5122-418F-8B13-610E02617036}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{932E6F14-5122-418F-8B13-610E02617036}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
