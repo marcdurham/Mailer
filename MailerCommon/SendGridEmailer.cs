@@ -5,14 +5,14 @@ namespace  Mailer.Sender;
 
 public class SendGridEmailer
 {
-    public static async Task<Response> SendEmail(string name, string email, string sendGridApiKey)
+    public static async Task<Response> SendEmail(string name, string email, string sendGridApiKey, string subject, string htmlContent)
     {
         var client = new SendGridClient(sendGridApiKey);
         var from = new EmailAddress("some@email.com", "My City My Group Information Board");
-        var subject = "My Group Schedule";
+       
         var to = new EmailAddress(email, name);
-        var plainTextContent = "and easy to do anywhere, even with C#";
-        var htmlContent = "<strong>and easy to do anywhere, even with C#</strong>";
+        var plainTextContent = subject;
+        
         var msg = MailHelper.CreateSingleEmail(from, to, subject, plainTextContent, htmlContent);
         var response = await client.SendEmailAsync(msg).ConfigureAwait(false);
         return response;

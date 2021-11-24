@@ -28,14 +28,14 @@ public class PublisherEmailer
 
         string template = File.ReadAllText("./template1.html");
 
-        var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: true);
+        var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: false);
 
-        IList<IList<object>> clmAssignmentRows = sheets.Read(
+        IList<IList<object>> clmSendEmailsRows = sheets.Read(
             documentId: clmSendEmailsDocumentId, 
             range: clmSendEmailsRange);
 
         var publishers = new List<PublisherClass>();
-        foreach (var r in clmAssignmentRows)
+        foreach (var r in clmSendEmailsRows)
         {
             string? sent = r.Count > 2 ? $"{r[2]}" : null;
             publishers.Add(
@@ -46,6 +46,9 @@ public class PublisherEmailer
                     Sent = $"{sent}"
                 });
         }
+
+        var friendMap = MailerCommon.ClmScheduleGenerator.GetFriends(sheets, clmAssignmentListDocumentId);
+        var schedule = MailerCommon.ClmScheduleGenerator.GetSchedule(sheets, clmAssignmentListDocumentId);
 
         foreach (PublisherClass publisher in publishers)
         {
@@ -63,6 +66,16 @@ public class PublisherEmailer
             if (Regex.IsMatch(publisher.Email, emailPattern))
             {
                 publisher.Result = "Sending";
+                string htmlMessageText = new MailerCommon.ClmScheduleGenerator().Generate(
+                        sheets: sheets,
+                        googleApiSecretsJson: googleApiSecretsJson,
+                        documentId: clmAssignmentListDocumentId,
+                        range: "CLM Assignment List!B1:AY200",
+                        friendName: publisher.Name,
+                        template: template,
+                        friendMap: friendMap,
+                        schedule: schedule);
+
                 if (publisher.Email.ToUpper().EndsWith("@GMAIL.COM"))
                 {
                     publisher.Result = "Preparing SMTP Email";
@@ -72,17 +85,11 @@ public class PublisherEmailer
                             ToAddress = publisher.Email,
                             ToName = publisher.Name,
                             Subject = "My Group CLM Schedule",
-                            Text = new MailerCommon.ClmScheduleGenerator().Generate(
-                                 sheets: sheets,
-                                 googleApiSecretsJson: googleApiSecretsJson,
-                                 documentId: clmAssignmentListDocumentId,
-                                 range: "CLM Assignment List!B1:AY200",
-                                 friendName: publisher.Name,
-                                 template: template)
-                    };
+                            Text = htmlMessageText
+                        };
 
                         // TODO: uncomment this: Simple.Send(message);
-                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.html", message.Text);
+                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.html", htmlMessageText);
 
                     publisher.Result = "Sent via SMTP";
                 }
@@ -91,9 +98,11 @@ public class PublisherEmailer
                     try
                     {
                         publisher.Result = "Preparing SendMail Message";
-                        Response response = SendGridEmailer.SendEmail(publisher.Name, publisher.Email, sendGridApiKey).Result;
-                        Console.WriteLine($"SenndMail Status Code:{response.StatusCode}");
-                        publisher.Result = $"SendMail Status Code:{response.StatusCode}";
+                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.html", htmlMessageText);
+                        // TODO: Uncomment: Response response = SendGridEmailer.SendEmail(publisher.Name, publisher.Email, sendGridApiKey).Result;
+                        // TODO: Uncomment:     Console.WriteLine($"SenndMail Status Code:{response.StatusCode}");
+                        // TODO: Uncomment: publisher.Result = $"SendMail Status Code:{response.StatusCode}";
+                        publisher.Result = $"SendMail Not really sent";
                     }
                     catch (Exception ex)
                     {
@@ -110,7 +119,7 @@ public class PublisherEmailer
         Console.WriteLine("Writing new values back");
         foreach (PublisherClass publisher in publishers)
         {
-            clmAssignmentRows[publishers.IndexOf(publisher)] = new object[4] { 
+            clmSendEmailsRows[publishers.IndexOf(publisher)] = new object[4] { 
                 publisher.Name, 
                 publisher.Email, 
                 publisher.Sent, 
@@ -120,7 +129,7 @@ public class PublisherEmailer
         sheets.Write(
             documentId: clmSendEmailsDocumentId,
             range: clmSendEmailsRange,
-            values: clmAssignmentRows);
+            values: clmSendEmailsRows);
 
 
     }

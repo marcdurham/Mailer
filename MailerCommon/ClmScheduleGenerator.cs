@@ -15,28 +15,62 @@ namespace MailerCommon
             string documentId, 
             string range, 
             string friendName,
-            string template)
+            string template,
+            Dictionary<string, string> friendMap,
+            Schedule schedule)
         {
-           
+                ////string template = File.ReadAllText("./template1.html");
 
-            IList<IList<object>> friendInfoRows = sheets.Read(documentId: documentId, range: "Friend Info!B1:AI500");
-
-            var friendList = new List<string>();
-            var friendMap = new Dictionary<string, string>();
-            foreach (var r in friendInfoRows)
+            DateTime todayDate = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+            string today = todayDate.ToString("yyyy-MM-dd");
+            Console.WriteLine("This Month");
+            for (int i = 0; i < 4; i++)
             {
-                friendList.Add(r[0].ToString());
-                friendMap[r[0].ToString()] = $"{r[5]}<br/>{r[4]}<br/>{r[0]}";
+                DateTime day = todayDate.AddDays(7 * i);
+                DateTime dayOfClm = day.AddDays(3);
+                string dayKey = day.ToString("yyyy-MM-dd");
+                Console.WriteLine($"Day: {dayKey}");
+
+                template = template.Replace($"@{{Day{i}}}", dayOfClm.ToString("yyyy-MM-dd"));
+
+                for (int j = 0; j < schedule.Days[dayKey].Length; j++)
+                {
+                    string name = schedule.Days[dayKey][j].ToString();
+                    string allNames = friendMap.ContainsKey(name.ToUpperInvariant()) ? friendMap[name.ToUpperInvariant()] : name;
+                    string htmlName = allNames;
+                    string flag = string.Empty;
+                    if (string.Equals(friendName, name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        htmlName = $"<span class='selected-friend'>{allNames}</span>";
+                        flag = "***";
+                    }
+
+                    Console.WriteLine($"{dayKey}:{schedule.Headers[j]}:{name}{flag}");
+                    template = template.Replace($"@{{{schedule.Headers[j]}:{i}}}", htmlName);
+                }
             }
 
-            Console.WriteLine();
-            Console.WriteLine("Friends:");
-            foreach (string friend in friendList)
+            Console.WriteLine("");
+            Console.WriteLine($"Thing {friendName}");
+            var futurePresentDays = schedule.Days.Keys.Where(k => DateTime.Parse(k.ToString()) >= todayDate).ToList();
+            foreach (var day in futurePresentDays)
             {
-                Console.WriteLine($"{friend}: {friendMap[friend]}");
+                for (int p = 0; p < schedule.Days[day].Length; p++)
+                {
+                    if (string.Equals(schedule.Days[day][p], friendName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Console.WriteLine($"{day}:{schedule.Headers[p]}");
+                    }
+                }
             }
 
-            IList<IList<object>> values = sheets.Read(documentId: documentId, range: "CLM Assignment List!B1:AI300");
+            //File.WriteAllText(@"c:\Users\Marc\Desktop\template5.html", template);
+            return template;
+        }
+
+        public static Schedule GetSchedule(Sheets sheets, string documentId)
+        {
+            IList<IList<object>> values = sheets.Read(documentId: documentId, range: "CLM Assignment List!B1:AY9999");
 
             string[] headers = new string[values[0].Count];
             for (int i = 0; i < values[0].Count; i++)
@@ -63,53 +97,33 @@ namespace MailerCommon
                 //Console.WriteLine();
             }
 
-            ////string template = File.ReadAllText("./template1.html");
-
-            DateTime todayDate = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
-            string today = todayDate.ToString("yyyy-MM-dd");
-            Console.WriteLine("This Month");
-            for (int i = 0; i < 4; i++)
+            return new Schedule
             {
-                DateTime day = todayDate.AddDays(7 * i);
-                DateTime dayOfClm = day.AddDays(3);
-                string dayKey = day.ToString("yyyy-MM-dd");
-                Console.WriteLine($"Day: {dayKey}");
+                Headers = headers,
+                Days = schedule,
+            };
+        }
 
-                template = template.Replace($"@{{Day{i}}}", dayOfClm.ToString("yyyy-MM-dd"));
+        public static Dictionary<string, string> GetFriends(Sheets sheets, string documentId)
+        {
+            IList<IList<object>> friendInfoRows = sheets.Read(documentId: documentId, range: "Friend Info!B1:AI500");
 
-                for (int j = 0; j < schedule[dayKey].Length; j++)
-                {
-                    string name = schedule[dayKey][j].ToString();
-                    string allNames = friendMap.ContainsKey(name) ? friendMap[name] : name;
-                    string htmlName = allNames;
-                    string flag = string.Empty;
-                    if (string.Equals(friendName, name, StringComparison.OrdinalIgnoreCase))
-                    {
-                        htmlName = $"<span class='selected-friend'>{allNames}</span>";
-                        flag = "***";
-                    }
-
-                    Console.WriteLine($"{dayKey}:{headers[j]}:{name}{flag}");
-                    template = template.Replace($"@{{{headers[j]}:{i}}}", htmlName);
-                }
+            var friendList = new List<string>();
+            var friendMap = new Dictionary<string, string>();
+            foreach (var r in friendInfoRows)
+            {
+                friendList.Add(r[0].ToString());
+                friendMap[r[0].ToString().ToUpperInvariant()] = $"{r[5]}<br/>{r[4]}<br/>{r[0]}";
             }
 
-            Console.WriteLine("");
-            Console.WriteLine($"Thing {friendName}");
-            var futurePresentDays = schedule.Keys.Where(k => DateTime.Parse(k.ToString()) >= todayDate).ToList();
-            foreach (var day in futurePresentDays)
+            Console.WriteLine();
+            Console.WriteLine("Friends:");
+            foreach (string friend in friendList)
             {
-                for (int p = 0; p < schedule[day].Length; p++)
-                {
-                    if (string.Equals(schedule[day][p], friendName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        Console.WriteLine($"{day}:{headers[p]}");
-                    }
-                }
+                Console.WriteLine($"{friend}: {friendMap[friend.ToUpperInvariant()]}");
             }
 
-            //File.WriteAllText(@"c:\Users\Marc\Desktop\template5.html", template);
-            return template;
+            return friendMap;
         }
     }
 }
