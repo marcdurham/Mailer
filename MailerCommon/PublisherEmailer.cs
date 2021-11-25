@@ -80,9 +80,6 @@ public class PublisherEmailer
             schedule.Weeks.Add(week);
         }
 
-
-
-
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for CLM...");
         IList<IList<object>> values = sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
@@ -92,6 +89,17 @@ public class PublisherEmailer
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
             if(week != null)
                 week.Midweek = meeting;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Loading Assignment List for PW...");
+        IList<IList<object>> pwValues = sheets.Read(documentId: clmAssignmentListDocumentId, range: "PW Assignment List!B1:AM9999");
+        List<Meeting> pwMeetings = ScheduleLoader.GetSchedule(pwValues, friendMap, 3, "PW");
+        foreach (Meeting meeting in pwMeetings)
+        {
+            var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
+            if (week != null)
+                week.Weekend = meeting;
         }
 
         Console.WriteLine();

@@ -13,6 +13,7 @@ public class ClmScheduleGenerator
         string today = thisMonday.ToString("yyyy-MM-dd");
         Console.WriteLine("This Month (New)");
         var latest = schedule.Weeks.Where(w => w.Start >= thisMonday).OrderBy(w => w.Start).Take(4).ToList();
+        
         for (int wk = 0; wk < 4; wk++)
         {
             string weekKey = latest[wk].Start.ToString("yyyy-MM-dd");
@@ -35,7 +36,7 @@ public class ClmScheduleGenerator
         }
 
         Console.WriteLine("");
-        Console.WriteLine($"Thing {friendName}"); // different
+        Console.WriteLine($"Upcoming Assignments for {friendName}");
         var futurePresentDays = schedule.AllAssignments()
             .Where(a => a.Date >= thisMonday)
             .Where(a => a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase))
