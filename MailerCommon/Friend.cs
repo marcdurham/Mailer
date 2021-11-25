@@ -16,3 +16,11 @@ public class Nobody : Friend
         Name = "Nobody";
     }
 }
+
+public class MissingFriend : Friend
+{
+    public MissingFriend(string name)
+    {
+        Name = $"*{name}*";
+    }
+}

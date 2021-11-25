@@ -37,21 +37,21 @@ app.MapGet("/weatherforecast", () =>
 .WithName("GetWeatherForecast");
 
 // Example: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
-app.MapPost("/sendmail", async (Message message) =>
-{
-    // TODO: Temporary secret
-    if (message.Text.Contains("414A621D-BB97-4460-AD94-7C9B03C67A3D"))
-    {
-        SmtpEmailSender.Send(message);
-        return Results.Ok("Mail Sent");
-    }
-    else
-    {
-        return Results.BadRequest("Cannot send mail");
-    }
+//app.MapPost("/sendmail", async (Message message) =>
+//{
+//    // TODO: Temporary secret
+//    if (message.Text.Contains("414A621D-BB97-4460-AD94-7C9B03C67A3D"))
+//    {
+//        SmtpEmailSender.Send(message);
+//        return Results.Ok("Mail Sent");
+//    }
+//    else
+//    {
+//        return Results.BadRequest("Cannot send mail");
+//    }
 
-})
-.WithName("SendMail");
+//})
+//.WithName("SendMail");
 
 
 app.Run();

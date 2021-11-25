@@ -57,7 +57,8 @@ public class PublisherEmailer
             Console.WriteLine($"{friend}: {friendMap[friend.ToUpperInvariant()]}");
         }
 
-        var schedule = ClmScheduleGenerator.GetSchedule(sheets, clmAssignmentListDocumentId);
+        IList<IList<object>> values = sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
+        Schedule schedule = ClmScheduleGenerator.GetSchedule(values, friendMap);
 
         foreach (EmailRecipient recipient in recipients)
         {
