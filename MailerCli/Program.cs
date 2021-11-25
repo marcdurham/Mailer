@@ -1,23 +1,19 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using GoogleAdapter.Adapters;
 using Mailer.Sender;
-using MailerCommon;
 
 Console.WriteLine("Mailer");
 
-string secretsJsonPath = args[0];
+string googleApiServiceAccountSecretsJsonPath = args[0];
 string clmSendEmailsDocumentId = args[1];
-string range = args[2];
-string googleApiSecretsJsonPath = args[3];
+string googleApiOAuthSecretsJsonPath  = args[3];
 string clmAssignmentListDocumentId = args[4];
 
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
-string googleApiSecretsJson = File.ReadAllText(googleApiSecretsJsonPath);
+string googleApiSecretsJson = File.ReadAllText(googleApiServiceAccountSecretsJsonPath);
 
 PublisherEmailer.Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
-    range: range,
     sendGridApiKey: sendGridApiKey,
     googleApiSecretsJson: googleApiSecretsJson);
         
