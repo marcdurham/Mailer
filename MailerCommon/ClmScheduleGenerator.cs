@@ -7,17 +7,18 @@ public class ClmScheduleGenerator
         string friendName,
         string template,
         Dictionary<string, Friend> friendMap,
+        List<Meeting> meetings,
         Schedule schedule)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
         Console.WriteLine("This Month (New)");
-        var latest = schedule.Weeks.Where(w => w.Start >= thisMonday).OrderBy(w => w.Start).Take(4).ToList();
+        var latest = meetings.Where(m => m.Date >= thisMonday).OrderBy(m => m.Date).Take(4).ToList();
         
         for (int wk = 0; wk < 4; wk++)
         {
-            string weekKey = latest[wk].Start.ToString("yyyy-MM-dd");
-            var meeting = latest[wk].Midweek; // different
+            string weekKey = latest[wk].Date.ToString("yyyy-MM-dd");
+            var meeting = latest[wk]; 
 
             template = template.Replace($"@{{Day{wk}}}", meeting.Date.ToString("yyyy-MM-dd"));
             foreach(Assignment assignment in meeting.Assignments.Select(a => a.Value).ToList())

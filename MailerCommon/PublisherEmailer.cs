@@ -35,7 +35,7 @@ public class PublisherEmailer
                 new SendGridEmailSender(sendGridApiKey) { SendByDefault = true }
             });
 
-        string template = File.ReadAllText(ClmTemplatePath);
+        string clmTemplate = File.ReadAllText(ClmTemplatePath);
 
         bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
 
@@ -94,7 +94,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for PW...");
         IList<IList<object>> pwValues = sheets.Read(documentId: clmAssignmentListDocumentId, range: "PW Assignment List!B1:AM9999");
-        List<Meeting> pwMeetings = ScheduleLoader.GetSchedule(pwValues, friendMap, 3, "PW");
+        List<Meeting> pwMeetings = ScheduleLoader.GetSchedule(pwValues, friendMap, 5, "PW");
         foreach (Meeting meeting in pwMeetings)
         {
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
@@ -103,10 +103,27 @@ public class PublisherEmailer
         }
 
         Console.WriteLine();
-        Console.WriteLine("Sending Emails...");
+        Console.WriteLine("Sending CLM Emails...");
         foreach (EmailRecipient recipient in recipients)
         {
-            SendEmailFor(emailSender, template, friendMap, schedule, recipient);
+            List<Meeting> meetings = schedule.AllMeetings()
+                .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Thursday)
+                .OrderBy(m => m.Date)
+                .ToList();
+
+            SendEmailFor(emailSender, clmTemplate, friendMap, meetings, schedule, recipient);
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Sending PW Emails...");
+        foreach (EmailRecipient recipient in recipients)
+        {
+            List<Meeting> meetings = schedule.AllMeetings()
+                .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Saturday)
+                .OrderBy(m => m.Date)
+                .ToList();
+
+            SendEmailFor(emailSender, clmTemplate, friendMap, meetings, schedule, recipient);
         }
 
         Console.WriteLine();
@@ -130,20 +147,21 @@ public class PublisherEmailer
         Console.WriteLine("Done");
     }
 
-    private static void SendEmailFor(IEmailSender emailSender, string template, Dictionary<string, Friend> friendMap, Schedule schedule, EmailRecipient recipient)
+    private static void SendEmailFor(IEmailSender emailSender, string template, Dictionary<string, Friend> friendMap, List<Meeting> meetings, Schedule schedule, EmailRecipient recipient)
     {
         Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
 
         recipient.Sent = DateTime.Now.ToString();
-
-        string nextMeetingDate = schedule.NextMeetingDate.ToString(IsoDateFormat);
-        string subject = $"Eastside Christian Life and Ministry Assignments for {nextMeetingDate}";
+        
+        string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
+        string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
 
         recipient.Result = "Sending";
         string htmlMessageText = ClmScheduleGenerator.Generate(
                 friendName: recipient.Name,
                 template: template,
                 friendMap: friendMap,
+                meetings: meetings,
                 schedule: schedule);
 
         EmailMessage message = new()
