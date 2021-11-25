@@ -1,5 +1,4 @@
-﻿using GoogleAdapter.Adapters;
-using System.Text;
+﻿using System.Text;
 
 namespace MailerCommon;
 public class ClmScheduleGenerator
@@ -17,7 +16,7 @@ public class ClmScheduleGenerator
         for (int wk = 0; wk < 4; wk++)
         {
             string weekKey = latest[wk].Start.ToString("yyyy-MM-dd");
-            var meeting = latest[wk].Midweek;
+            var meeting = latest[wk].Midweek; // different
 
             template = template.Replace($"@{{Day{wk}}}", meeting.Date.ToString("yyyy-MM-dd"));
             foreach(Assignment assignment in meeting.Assignments.Select(a => a.Value).ToList())
@@ -36,7 +35,7 @@ public class ClmScheduleGenerator
         }
 
         Console.WriteLine("");
-        Console.WriteLine($"Thing {friendName}");
+        Console.WriteLine($"Thing {friendName}"); // different
         var futurePresentDays = schedule.AllAssignments()
             .Where(a => a.Date >= thisMonday)
             .Where(a => a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase))
@@ -61,72 +60,4 @@ public class ClmScheduleGenerator
         return template;
     }
 
-    public static Schedule GetSchedule(IList<IList<object>> values, Dictionary<string, Friend> friendMap)
-    {
-        const int WeekKeyColumnIndex = 0;
-        const int HeaderRowIndex = 0;
-        DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
-
-        string[] headers = new string[values[HeaderRowIndex].Count];
-        var assignmentNames = new Dictionary<string, string>();
-        for (int col = 0; col < values[HeaderRowIndex].Count; col++)
-        {
-            string assignmentName = values[HeaderRowIndex][col]?.ToString() ?? string.Empty;
-            headers[col] = assignmentName;
-            assignmentNames[assignmentName.ToUpper()] = assignmentName;
-        }
-
-        var schedule = new Schedule()
-        {
-            NextMeetingDate = thisMonday.AddDays(3),
-        };
-
-        string[] rows = new string[values.Count];
-        for (int wk = 1; wk < values.Count; wk++)
-        {
-            rows[wk] = values[wk][WeekKeyColumnIndex]?.ToString() ?? string.Empty;
-            var monday = DateTime.Parse(values[wk][WeekKeyColumnIndex].ToString() ?? string.Empty);
-            var clmMeeting = new Meeting 
-            { 
-                Name = "CLM", 
-                Date = monday.AddDays(3) 
-            };
-
-            var week = new ScheduleWeek
-            {
-                Start = monday,
-                Midweek = clmMeeting
-            };
-
-            for(int a = 2; a < values[wk].Count; a++)
-            {
-                string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
-                Friend assignee;
-                if (friendMap.ContainsKey(assigneeName.ToUpperInvariant()))
-                {
-                    assignee = friendMap[assigneeName.ToUpperInvariant()];
-                }
-                else
-                {
-                    assignee = new MissingFriend(assigneeName);
-                }
-
-                string assignementKey = headers[a];
-                var assignment = new Assignment
-                {
-                    Key = assignementKey,
-                    Name = assignmentNames[assignementKey.ToUpper()],
-                    Date = clmMeeting.Date,
-                    School = 0,
-                    Friend = assignee,
-                };
-
-                week.Midweek.Assignments[assignment.Key] = assignment;
-            }
-
-            schedule.Weeks.Add(week);
-        }
-
-        return schedule;
-    }
 }
