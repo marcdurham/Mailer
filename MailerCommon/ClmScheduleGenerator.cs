@@ -53,7 +53,7 @@ public class ClmScheduleGenerator
         }
 
         var builder = new StringBuilder(1000);
-        builder.AppendLine($"<div><h3>Hello {friendName}, you have {futurePresentDays.Count} upcoming CLM assignments</h3><ul>");
+        builder.AppendLine($"<div><h3>Hello {friendName}, you have {futurePresentDays.Count} upcoming assignments</h3><ul>");
         builder.Append(lineBuilder.ToString());
         builder.AppendLine("</ul></div>");
 
