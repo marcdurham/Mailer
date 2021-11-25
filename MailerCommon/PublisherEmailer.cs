@@ -41,15 +41,15 @@ public class PublisherEmailer
 
         var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
 
-        IList<IList<object>> clmSendEmailsRows = sheets.Read(
-            documentId: clmSendEmailsDocumentId,
-            range: ClmSendEmailsRange);
-
-        List<EmailRecipient> recipients = ConvertToEmailRecipients(clmSendEmailsRows);
+        Console.WriteLine();
+        Console.WriteLine("Loading Email Recipients...");
+        IList<IList<object>> clmSendEmailsRows = sheets.Read(clmSendEmailsDocumentId, ClmSendEmailsRange);
+        List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(clmSendEmailsRows);
 
         Console.WriteLine();
-        Console.WriteLine("Friends:");
-        var friendMap = ClmScheduleGenerator.GetFriends(sheets, clmAssignmentListDocumentId);
+        Console.WriteLine("Loading Friends...");
+        IList<IList<object>> friendInfoRows = sheets.Read(documentId: clmAssignmentListDocumentId, range: "Friend Info!B1:AI500");
+        var friendMap = FriendLoader.GetFriends(friendInfoRows);
         foreach (string friend in friendMap.Keys)
         {
             Console.WriteLine($"{friend}: {friendMap[friend.ToUpperInvariant()]}");
@@ -57,42 +57,25 @@ public class PublisherEmailer
 
         foreach(EmailRecipient recipient in recipients)
         {
-            recipient.EmailAddressFromFriend = friendMap.ContainsKey(recipient.Name.ToUpperInvariant()) ? friendMap[recipient.Name.ToUpperInvariant()].EmailAddress : "Friend Not Found";
+            recipient.EmailAddressFromFriend = friendMap.ContainsKey(recipient.Name.ToUpperInvariant()) 
+                ? friendMap[recipient.Name.ToUpperInvariant()].EmailAddress 
+                : "Friend Not Found";
         }
 
+        Console.WriteLine();
+        Console.WriteLine("Loading Assignment List for CLM...");
         IList<IList<object>> values = sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
         Schedule schedule = ClmScheduleGenerator.GetSchedule(values, friendMap);
 
+        Console.WriteLine();
+        Console.WriteLine("Sending Emails...");
         foreach (EmailRecipient recipient in recipients)
         {
-            Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
-
-            recipient.Sent = DateTime.Now.ToString();
-
-            string nextMeetingDate = schedule.NextMeetingDate.ToString(IsoDateFormat);
-            string subject = $"Eastside Christian Life and Ministry Assignments for {nextMeetingDate}";
-           
-            recipient.Result = "Sending";
-            string htmlMessageText = ClmScheduleGenerator.Generate(
-                    friendName: recipient.Name,
-                    template: template,
-                    friendMap: friendMap,
-                    schedule: schedule);
-
-            EmailMessage message = new()
-            {
-                FromAddress = "some@email.com",
-                FromName = "My City My Group Information Board",
-                ToAddress = recipient.EmailAddress!,
-                ToName = recipient.Name,
-                Subject = subject,
-                Text = htmlMessageText
-            };
-
-            emailSender.Send(message);
+            SendEmailFor(emailSender, template, friendMap, schedule, recipient);
         }
 
-        Console.WriteLine("Writing new values back");
+        Console.WriteLine();
+        Console.WriteLine("Writing status of emails to recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
             clmSendEmailsRows[recipients.IndexOf(publisher)] = new object[5] {
@@ -107,28 +90,38 @@ public class PublisherEmailer
             documentId: clmSendEmailsDocumentId,
             range: ClmSendEmailsRange,
             values: clmSendEmailsRows);
+
+        Console.WriteLine();
+        Console.WriteLine("Done");
     }
 
-    static List<EmailRecipient> ConvertToEmailRecipients(IList<IList<object>> rows)
+    private static void SendEmailFor(IEmailSender emailSender, string template, Dictionary<string, Friend> friendMap, Schedule schedule, EmailRecipient recipient)
     {
-        var tasks = new List<EmailRecipient>();
-        foreach (IList<object> row in rows)
+        Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
+
+        recipient.Sent = DateTime.Now.ToString();
+
+        string nextMeetingDate = schedule.NextMeetingDate.ToString(IsoDateFormat);
+        string subject = $"Eastside Christian Life and Ministry Assignments for {nextMeetingDate}";
+
+        recipient.Result = "Sending";
+        string htmlMessageText = ClmScheduleGenerator.Generate(
+                friendName: recipient.Name,
+                template: template,
+                friendMap: friendMap,
+                schedule: schedule);
+
+        EmailMessage message = new()
         {
-            if (row.Count == 0 || string.IsNullOrWhiteSpace(row[0].ToString()))
-                break; // End of list
+            FromAddress = "some@email.com",
+            FromName = "My City My Group Information Board",
+            ToAddress = recipient.EmailAddress!,
+            ToName = recipient.Name,
+            Subject = subject,
+            Text = htmlMessageText
+        };
 
-            string? email = row.Count > 1 ? $"{row[1]}" : null;
-            string? sent = row.Count > 2 ? $"{row[2]}" : null;
-            tasks.Add(
-                new EmailRecipient
-                {
-                    Name = $"{row[0]}",
-                    EmailAddress = email, // TODO: Get email address from somewhere else?
-                    Sent = $"{sent}"
-                });
-        }
-
-        return tasks;
+        emailSender.Send(message);
     }
 
     static bool IsJsonForAServiceAccount(string? json)

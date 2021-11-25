@@ -129,26 +129,4 @@ public class ClmScheduleGenerator
 
         return schedule;
     }
-
-    public static Dictionary<string, Friend> GetFriends(Sheets sheets, string documentId)
-    {
-        IList<IList<object>> friendInfoRows = sheets.Read(documentId: documentId, range: "Friend Info!B1:AI500");
-
-        var friendMap = new Dictionary<string, Friend>();
-        foreach (var r in friendInfoRows)
-        {
-            var friend = new Friend
-            {
-                Key = r[0].ToString().ToUpperInvariant(),
-                Name = r[0].ToString(),
-                PinYinName = r[5].ToString(),
-                SimplifiedChineseName = r[4].ToString(),
-                EmailAddress = r.Count > 6 ? r[6].ToString() : "none",
-            };
-
-            friendMap[friend.Key] = friend;
-        }
-
-        return friendMap;
-    }
 }
