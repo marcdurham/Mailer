@@ -143,6 +143,7 @@ public class ClmScheduleGenerator
                 Name = r[0].ToString(),
                 PinYinName = r[5].ToString(),
                 SimplifiedChineseName = r[4].ToString(),
+                EmailAddress = r.Count > 6 ? r[6].ToString() : "none",
             };
 
             friendMap[friend.Key] = friend;

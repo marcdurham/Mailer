@@ -1,15 +1,13 @@
 using GoogleAdapter.Adapters;
 using MailerCommon;
-using SendGrid;
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 namespace Mailer.Sender;
 
 public class PublisherEmailer 
 {
     private const string ClmAssignmentListRange = "CLM Assignment List!B1:AY200";
-    private const string ClmSendEmailsRange = "CLM Send Emails!B2:E300";
+    private const string ClmSendEmailsRange = "CLM Send Emails!B2:F300";
     private const string ClmTemplatePath = "./template1.html";
     private const string IsoDateFormat = "yyyy-MM-dd";
 
@@ -57,6 +55,11 @@ public class PublisherEmailer
             Console.WriteLine($"{friend}: {friendMap[friend.ToUpperInvariant()]}");
         }
 
+        foreach(EmailRecipient recipient in recipients)
+        {
+            recipient.EmailAddressFromFriend = friendMap.ContainsKey(recipient.Name.ToUpperInvariant()) ? friendMap[recipient.Name.ToUpperInvariant()].EmailAddress : "Friend Not Found";
+        }
+
         IList<IList<object>> values = sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
         Schedule schedule = ClmScheduleGenerator.GetSchedule(values, friendMap);
 
@@ -92,9 +95,10 @@ public class PublisherEmailer
         Console.WriteLine("Writing new values back");
         foreach (EmailRecipient publisher in recipients)
         {
-            clmSendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
+            clmSendEmailsRows[recipients.IndexOf(publisher)] = new object[5] {
                 publisher.Name,
                 publisher.EmailAddress,
+                publisher.EmailAddressFromFriend,
                 publisher.Sent,
                 publisher.Result };
         }
@@ -105,10 +109,10 @@ public class PublisherEmailer
             values: clmSendEmailsRows);
     }
 
-    private static List<EmailRecipient> ConvertToEmailRecipients(IList<IList<object>> clmSendEmailsRows)
+    static List<EmailRecipient> ConvertToEmailRecipients(IList<IList<object>> rows)
     {
         var tasks = new List<EmailRecipient>();
-        foreach (IList<object> row in clmSendEmailsRows)
+        foreach (IList<object> row in rows)
         {
             if (row.Count == 0 || string.IsNullOrWhiteSpace(row[0].ToString()))
                 break; // End of list
@@ -127,32 +131,34 @@ public class PublisherEmailer
         return tasks;
     }
 
-    static bool IsJsonForAServiceAccount(string? googleApiSecretsJson)
+    static bool IsJsonForAServiceAccount(string? json)
+    {
+        var options = new JsonDocumentOptions
         {
-            var options = new JsonDocumentOptions
-            {
-                AllowTrailingCommas = true,
-                MaxDepth = 3
-            };
+            AllowTrailingCommas = true,
+            MaxDepth = 3
+        };
 
-            JsonDocument document = JsonDocument.Parse(googleApiSecretsJson, options);
+        JsonDocument document = JsonDocument.Parse(json, options);
 
-            bool isServiceAccount;
-            if (document.RootElement.TryGetProperty("type", out JsonElement element) && element.GetString() == "service_account")
-            {
-                isServiceAccount = true;
-            }
-            // This file looks like an OAuth 2.0 JSON file
-            else if (document.RootElement.TryGetProperty("installed", out JsonElement installedElement)
-                    && installedElement.TryGetProperty("redirect_uris", out _))
-            {
-                isServiceAccount = false;
-            }
-            else
-            {
-                throw new Exception("Unknown secrets json file type");
-            }
-
-            return isServiceAccount;
+        bool isServiceAccount;
+        if (document.RootElement.TryGetProperty("type", out JsonElement element) 
+            && element.GetString() == "service_account")
+        {
+            isServiceAccount = true;
         }
+
+        // This file looks like an OAuth 2.0 JSON file
+        else if (document.RootElement.TryGetProperty("installed", out JsonElement installedElement)
+                && installedElement.TryGetProperty("redirect_uris", out _))
+        {
+            isServiceAccount = false;
+        }
+        else
+        {
+            throw new Exception("Unknown secrets json file type");
+        }
+
+        return isServiceAccount;
     }
+}

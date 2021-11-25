@@ -7,6 +7,7 @@ public class Friend
     public string Name { get; set; } = string.Empty;
     public string PinYinName { get; set; } = string.Empty;
     public string SimplifiedChineseName { get; set; } = string.Empty;
+    public string EmailAddress { get; set; } = string.Empty;
 }
 
 public class Nobody : Friend
