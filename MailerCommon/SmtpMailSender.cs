@@ -11,6 +11,8 @@ public class SmtpEmailSender : IEmailSender
         _isSender = isSender;
     }
 
+    public bool SendByDefault { get; set; } = false;
+
     private static void SendCompletedCallback(object sender, AsyncCompletedEventArgs e)
     {
         // Get the unique identifier for this asynchronous operation.

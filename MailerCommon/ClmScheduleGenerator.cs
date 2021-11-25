@@ -5,13 +5,13 @@ namespace MailerCommon;
 public class ClmScheduleGenerator
 {
     public static string Generate(
-        Sheets sheets,
-        string googleApiSecretsJson, 
-        string documentId, 
-        string range, 
+        //Sheets sheets,
+        //string googleApiSecretsJson, 
+        //string documentId, 
+        //string range, 
         string friendName,
         string template,
-        Dictionary<string, string> friendMap,
+        Dictionary<string, Friend> friendMap,
         Schedule schedule)
     {
             ////string template = File.ReadAllText("./template1.html");
@@ -21,26 +21,29 @@ public class ClmScheduleGenerator
         Console.WriteLine("This Month");
         for (int weekColumnIndex = 0; weekColumnIndex < 4; weekColumnIndex++)
         {
-            DateTime day = thisMonday.AddDays(7 * weekColumnIndex);
-            DateTime dayOfClm = day.AddDays(3);
-            string dayKey = day.ToString("yyyy-MM-dd");
-            Console.WriteLine($"Day: {dayKey}");
+            DateTime day = thisMonday.AddDays(7 * weekColumnIndex); // Monday
+            DateTime dayOfClm = day.AddDays(3); // Thursday
+            string weekKey = day.ToString("yyyy-MM-dd");
+            Console.WriteLine($"Day: {weekKey}");
 
             template = template.Replace($"@{{Day{weekColumnIndex}}}", dayOfClm.ToString("yyyy-MM-dd"));
 
-            for (int assignmentColumnIndex = 0; assignmentColumnIndex < schedule.Days[dayKey].Length; assignmentColumnIndex++)
+            for (int assignmentColumnIndex = 0; assignmentColumnIndex < schedule.Days[weekKey].Length; assignmentColumnIndex++)
             {
-                string name = schedule.Days[dayKey][assignmentColumnIndex].ToString();
-                string allNames = friendMap.ContainsKey(name.ToUpperInvariant()) ? friendMap[name.ToUpperInvariant()] : name;
-                string htmlName = allNames;
-                string flag = string.Empty;
-                if (string.Equals(friendName, name, StringComparison.OrdinalIgnoreCase))
+                string name = schedule.Days[weekKey][assignmentColumnIndex].ToString();
+                string htmlName = name;
+                if (friendMap.ContainsKey(name.ToUpperInvariant()))
                 {
-                    htmlName = $"<span class='selected-friend'>{allNames}</span>";
-                    flag = "***";
+                    Friend f = friendMap[name.ToUpperInvariant()];
+                    htmlName = $"{f.PinYinName}<br/>{f.SimplifiedChineseName}<br/>{f.Name}";
                 }
 
-                Console.WriteLine($"{dayKey}:{schedule.Headers[assignmentColumnIndex]}:{name}{flag}");
+                if (string.Equals(friendName, name, StringComparison.OrdinalIgnoreCase))
+                {
+                    htmlName = $"<span class='selected-friend'>{htmlName}</span>";
+                }
+
+                Console.WriteLine($"{weekKey}:{schedule.Headers[assignmentColumnIndex]}:{name}");
                 template = template.Replace($"@{{{schedule.Headers[assignmentColumnIndex]}:{weekColumnIndex}}}", htmlName);
             }
         }
@@ -116,23 +119,22 @@ public class ClmScheduleGenerator
         };
     }
 
-    public static Dictionary<string, string> GetFriends(Sheets sheets, string documentId)
+    public static Dictionary<string, Friend> GetFriends(Sheets sheets, string documentId)
     {
         IList<IList<object>> friendInfoRows = sheets.Read(documentId: documentId, range: "Friend Info!B1:AI500");
 
-        var friendList = new List<string>();
-        var friendMap = new Dictionary<string, string>();
+        var friendMap = new Dictionary<string, Friend>();
         foreach (var r in friendInfoRows)
         {
-            friendList.Add(r[0].ToString());
-            friendMap[r[0].ToString().ToUpperInvariant()] = $"{r[5]}<br/>{r[4]}<br/>{r[0]}";
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("Friends:");
-        foreach (string friend in friendList)
-        {
-            Console.WriteLine($"{friend}: {friendMap[friend.ToUpperInvariant()]}");
+            var friend = new Friend
+            {
+                Key = r[0].ToString().ToUpperInvariant(),
+                Name = r[0].ToString(),
+                PinYinName = r[5].ToString(),
+                SimplifiedChineseName = r[4].ToString(),
+            };
+            friendMap[friend.Key] = friend;
+            //friendMap[r[0].ToString().ToUpperInvariant()] = $"{r[5]}<br/>{r[4]}<br/>{r[0]}";
         }
 
         return friendMap;

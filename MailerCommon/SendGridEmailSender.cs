@@ -12,6 +12,8 @@ namespace MailerCommon
             this.sendGridApiKey = sendGridApiKey;
         }
 
+        public bool SendByDefault { get; set; } = true;
+
         public EmailSenderResult Send(EmailMessage message)
         {
             string status = "Preparing SendMail Message";

@@ -17,142 +17,116 @@ public class PublisherEmailer
         string? clmSendEmailsDocumentId, 
         string? clmAssignmentListDocumentId, 
         string? sendGridApiKey, 
-        string? googleApiSecretsJson)
-        {
-            if (clmSendEmailsDocumentId == null)
-                throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
-            if (clmAssignmentListDocumentId == null)
-                throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
-            if (sendGridApiKey == null)
-                throw new ArgumentNullException(nameof(sendGridApiKey));
-            if (googleApiSecretsJson == null)
-                throw new ArgumentNullException(nameof(googleApiSecretsJson));
+        string? googleApiSecretsJson,
+        bool dryRunMode = false)
+    {
+        if (clmSendEmailsDocumentId == null)
+            throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
+        if (clmAssignmentListDocumentId == null)
+            throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
+        if (sendGridApiKey == null)
+            throw new ArgumentNullException(nameof(sendGridApiKey));
+        if (googleApiSecretsJson == null)
+            throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
-            IEmailSender emailSender = new EmailSenderProxy(
+        IEmailSender emailSender = new EmailSenderProxy(
             new List<IEmailSender>
             {
-                new FakeFileEmailSender()
-                //new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
-                //new SendGridEmailSender(sendGridApiKey),
-                // never gets here
+                new SaveEmailToFileEmailSender() { SendByDefault = dryRunMode },
+                new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
+                new SendGridEmailSender(sendGridApiKey) { SendByDefault = true }
             });
 
         string template = File.ReadAllText(ClmTemplatePath);
 
-            bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
+        bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
 
-            var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
+        var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
 
-            IList<IList<object>> clmSendEmailsRows = sheets.Read(
-                documentId: clmSendEmailsDocumentId,
-                range: ClmSendEmailsRange);
+        IList<IList<object>> clmSendEmailsRows = sheets.Read(
+            documentId: clmSendEmailsDocumentId,
+            range: ClmSendEmailsRange);
 
-            var publishers = new List<PublisherClass>();
-            foreach (var r in clmSendEmailsRows)
-            {
-                string? sent = r.Count > 2 ? $"{r[2]}" : null;
-                publishers.Add(
-                    new PublisherClass
-                    {
-                        Name = $"{r[0]}",
-                        Email = $"{r[1]}", // Read this from somewhere else?
-                    Sent = $"{sent}"
-                    });
-            }
+        List<EmailRecipient> recipients = ConvertToEmailRecipients(clmSendEmailsRows);
 
-            var friendMap = ClmScheduleGenerator.GetFriends(sheets, clmAssignmentListDocumentId);
-            var schedule = ClmScheduleGenerator.GetSchedule(sheets, clmAssignmentListDocumentId);
-
-            foreach (PublisherClass publisher in publishers)
-            {
-                Console.WriteLine($"Sending email to {publisher.Name}: {publisher.Email}: {publisher.Sent}...");
-
-                if (string.IsNullOrWhiteSpace(publisher.Name))
-                {
-                    Console.WriteLine($"Reached end of list at index {publishers.IndexOf(publisher)}");
-                    break;
-                }
-
-                publisher.Sent = DateTime.Now.ToString();
-
-                string nextMeetingDate = schedule.NextMeetingDate.ToString(IsoDateFormat);
-                string subject = $"Eastside Christian Life and Ministry Assignments for {nextMeetingDate}";
-                string emailPattern = @"^\S+@\S+$";
-                if (Regex.IsMatch(publisher.Email, emailPattern))
-                {
-                    publisher.Result = "Sending";
-                    string htmlMessageText = MailerCommon.ClmScheduleGenerator.Generate(
-                            sheets: sheets,
-                            googleApiSecretsJson: googleApiSecretsJson,
-                            documentId: clmAssignmentListDocumentId,
-                            range: ClmAssignmentListRange,
-                            friendName: publisher.Name,
-                            template: template,
-                            friendMap: friendMap,
-                            schedule: schedule);
-
-
-                    EmailMessage message = new()
-                    {
-                        FromAddress = "some@email.com",
-                        FromName = "My City My Group Information Board",
-                        ToAddress = publisher.Email,
-                        ToName = publisher.Name,
-                        Subject = subject,
-                        Text = htmlMessageText
-                    };
-
-                    if (publisher.Email.ToUpper().EndsWith("@GMAIL.COM"))
-                    {
-                        publisher.Result = "Preparing SMTP Email";
-
-                        // TODO: uncomment this:
-                        SmtpEmailSender.Send(message);
-                        File.WriteAllText($"{publisher.Name}.{publisher.Email}.{subject.Replace(":", "")}.html", htmlMessageText);
-
-                        publisher.Result = "Sent via SMTP";
-                    }
-                    else
-                    {
-                        try
-                        {
-                            publisher.Result = "Preparing SendMail Message";
-                            File.WriteAllText($"{publisher.Name}.{publisher.Email}.{subject.Replace(":", "")}.html", htmlMessageText);
-                            Response response = SendGridEmailer.SendEmail(publisher.Name, publisher.Email, sendGridApiKey, subject, htmlMessageText).Result;
-                            Console.WriteLine($"SenndMail Status Code:{response.StatusCode}");
-                            publisher.Result = $"SendMail Status Code:{response.StatusCode}";
-
-                            //publisher.Result = $"SendMail Not really sent";
-                        }
-                        catch (Exception ex)
-                        {
-                            publisher.Result = $"SendMail Error: {ex.Message}";
-                        }
-                    }
-                }
-                else
-                {
-                    publisher.Result = $"FAIL: not a valid email address";
-                }
-            }
-
-            Console.WriteLine("Writing new values back");
-            foreach (PublisherClass publisher in publishers)
-            {
-                clmSendEmailsRows[publishers.IndexOf(publisher)] = new object[4] {
-                publisher.Name,
-                publisher.Email,
-                publisher.Sent,
-                publisher.Result };
-            }
-
-            sheets.Write(
-                documentId: clmSendEmailsDocumentId,
-                range: ClmSendEmailsRange,
-                values: clmSendEmailsRows);
+        Console.WriteLine();
+        Console.WriteLine("Friends:");
+        var friendMap = ClmScheduleGenerator.GetFriends(sheets, clmAssignmentListDocumentId);
+        foreach (string friend in friendMap.Keys)
+        {
+            Console.WriteLine($"{friend}: {friendMap[friend.ToUpperInvariant()]}");
         }
 
-        static bool IsJsonForAServiceAccount(string? googleApiSecretsJson)
+        var schedule = ClmScheduleGenerator.GetSchedule(sheets, clmAssignmentListDocumentId);
+
+        foreach (EmailRecipient recipient in recipients)
+        {
+            Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
+
+            recipient.Sent = DateTime.Now.ToString();
+
+            string nextMeetingDate = schedule.NextMeetingDate.ToString(IsoDateFormat);
+            string subject = $"Eastside Christian Life and Ministry Assignments for {nextMeetingDate}";
+           
+            recipient.Result = "Sending";
+            string htmlMessageText = ClmScheduleGenerator.Generate(
+                    friendName: recipient.Name,
+                    template: template,
+                    friendMap: friendMap,
+                    schedule: schedule);
+
+            EmailMessage message = new()
+            {
+                FromAddress = "some@email.com",
+                FromName = "My City My Group Information Board",
+                ToAddress = recipient.EmailAddress!,
+                ToName = recipient.Name,
+                Subject = subject,
+                Text = htmlMessageText
+            };
+
+            emailSender.Send(message);
+        }
+
+        Console.WriteLine("Writing new values back");
+        foreach (EmailRecipient publisher in recipients)
+        {
+            clmSendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
+                publisher.Name,
+                publisher.EmailAddress,
+                publisher.Sent,
+                publisher.Result };
+        }
+
+        sheets.Write(
+            documentId: clmSendEmailsDocumentId,
+            range: ClmSendEmailsRange,
+            values: clmSendEmailsRows);
+    }
+
+    private static List<EmailRecipient> ConvertToEmailRecipients(IList<IList<object>> clmSendEmailsRows)
+    {
+        var tasks = new List<EmailRecipient>();
+        foreach (IList<object> row in clmSendEmailsRows)
+        {
+            if (row.Count == 0 || string.IsNullOrWhiteSpace(row[0].ToString()))
+                break; // End of list
+
+            string? email = row.Count > 1 ? $"{row[1]}" : null;
+            string? sent = row.Count > 2 ? $"{row[2]}" : null;
+            tasks.Add(
+                new EmailRecipient
+                {
+                    Name = $"{row[0]}",
+                    EmailAddress = email, // TODO: Get email address from somewhere else?
+                    Sent = $"{sent}"
+                });
+        }
+
+        return tasks;
+    }
+
+    static bool IsJsonForAServiceAccount(string? googleApiSecretsJson)
         {
             var options = new JsonDocumentOptions
             {
@@ -181,11 +155,3 @@ public class PublisherEmailer
             return isServiceAccount;
         }
     }
-
-public class PublisherClass
-{
-    public string? Name { get; set; }
-    public string? Email { get; set; }
-    public string? Sent { get; set; }
-    public string? Result { get; set; }
-}

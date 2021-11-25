@@ -1,4 +1,6 @@
-﻿namespace MailerCommon;
+﻿using System.Text.RegularExpressions;
+
+namespace MailerCommon;
 
 public class EmailSenderProxy : IEmailSender
 {
@@ -9,9 +11,17 @@ public class EmailSenderProxy : IEmailSender
         _senders = senders;
     }
 
+    public bool SendByDefault { get; set; } = true;
+
     public EmailSenderResult Send(EmailMessage message)
     {
-        foreach(IEmailSender sender in _senders)
+        string emailPattern = @"^\S+@\S+$";
+        if(!Regex.IsMatch(message.ToAddress, emailPattern))
+        {
+            return new EmailSenderResult { Status = "Invalid Email Address" };
+        }
+        
+        foreach (IEmailSender sender in _senders)
         {
             if(sender.IsSender(message))
             {
@@ -19,6 +29,6 @@ public class EmailSenderProxy : IEmailSender
             }
         }
 
-        return new EmailSenderResult { Status = "Not Sent" };
+        return new EmailSenderResult { Status = "No Sender Selected" };
     }
 }
