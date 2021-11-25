@@ -62,10 +62,37 @@ public class PublisherEmailer
                 : "Friend Not Found";
         }
 
+        DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+        var schedule = new Schedule()
+        {
+            NextMeetingDate = thisMonday,   // different
+        };
+
+        for(int w = 0; w < 4; w++)
+        {
+            DateTime monday = thisMonday.AddDays(w * 7);
+            var week = new ScheduleWeek
+            {
+                Start = monday,
+                //Midweek = meeting // different
+            };
+
+            schedule.Weeks.Add(week);
+        }
+
+
+
+
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for CLM...");
         IList<IList<object>> values = sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
-        Schedule schedule = ClmScheduleGenerator.GetSchedule(values, friendMap);
+        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM");
+        foreach(Meeting meeting in clmMeetings)
+        {
+            var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
+            if(week != null)
+                week.Midweek = meeting;
+        }
 
         Console.WriteLine();
         Console.WriteLine("Sending Emails...");

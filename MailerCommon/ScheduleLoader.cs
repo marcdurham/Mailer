@@ -2,11 +2,11 @@
 {
     public class ScheduleLoader
     {
-        public static Schedule GetSchedule(IList<IList<object>> values, Dictionary<string, Friend> friendMap)
+        public static List<Meeting> GetSchedule(IList<IList<object>> values, Dictionary<string, Friend> friendMap, int dayOfWeek, string title)
         {
             const int WeekKeyColumnIndex = 0;
             const int HeaderRowIndex = 0;
-            DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+            //DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
 
             string[] headers = new string[values[HeaderRowIndex].Count];
             var assignmentNames = new Dictionary<string, string>();
@@ -17,10 +17,11 @@
                 assignmentNames[assignmentName.ToUpper()] = assignmentName;
             }
 
-            var schedule = new Schedule()
-            {
-                NextMeetingDate = thisMonday.AddDays(3),   // different
-            };
+            //var schedule = new Schedule()
+            //{
+            //    NextMeetingDate = thisMonday.AddDays(3),   // different
+            //};
+            var meetings = new List<Meeting>();
 
             string[] rows = new string[values.Count];
             for (int wk = 1; wk < values.Count; wk++)
@@ -29,15 +30,15 @@
                 var monday = DateTime.Parse(values[wk][WeekKeyColumnIndex].ToString() ?? string.Empty);
                 var meeting = new Meeting
                 {
-                    Name = "CLM",              // different
-                    Date = monday.AddDays(3)   // different
+                    Name = title,              // different
+                    Date = monday.AddDays(dayOfWeek)   // different
                 };
 
-                var week = new ScheduleWeek
-                {
-                    Start = monday,
-                    Midweek = meeting // different
-                };
+                //var week = new ScheduleWeek
+                //{
+                //    Start = monday,
+                //    Midweek = meeting // different
+                //};
 
                 for (int a = 2; a < values[wk].Count; a++)
                 {
@@ -65,10 +66,12 @@
                     meeting.Assignments[assignment.Key] = assignment;
                 }
 
-                schedule.Weeks.Add(week);
+                meetings.Add(meeting);
+                //schedule.Weeks.Add(week);
             }
 
-            return schedule;
+            //return schedule;
+            return meetings;
         }
     }
 }
