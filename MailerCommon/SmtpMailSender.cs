@@ -5,6 +5,12 @@ using System.Net.Mail;
 namespace Mailer.Sender;
 public class SmtpEmailSender : IEmailSender
 {
+    readonly Func<EmailMessage, bool> _isSender;
+    public SmtpEmailSender(Func<EmailMessage, bool> isSender)
+    {
+        _isSender = isSender;
+    }
+
     private static void SendCompletedCallback(object sender, AsyncCompletedEventArgs e)
     {
         // Get the unique identifier for this asynchronous operation.
@@ -21,6 +27,11 @@ public class SmtpEmailSender : IEmailSender
         {
             Console.WriteLine("Message sent.");
         }
+    }
+
+    public bool IsSender(EmailMessage message)
+    {
+        return _isSender(message);
     }
 
     public EmailSenderResult Send(EmailMessage msg)

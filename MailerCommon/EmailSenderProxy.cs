@@ -2,35 +2,23 @@
 
 public class EmailSenderProxy : IEmailSender
 {
-    private readonly List<EmailSenderFunction> _senders;
+    private readonly List<IEmailSender> _senders;
 
-    public EmailSenderProxy(List<EmailSenderFunction> senders)
+    public EmailSenderProxy(List<IEmailSender> senders)
     {
         _senders = senders;
     }
 
     public EmailSenderResult Send(EmailMessage message)
     {
-        foreach(EmailSenderFunction sender in _senders)
+        foreach(IEmailSender sender in _senders)
         {
-            if (sender.Function(message))
+            if(sender.IsSender(message))
             {
-                return sender.Sender.Send(message);
+                return sender.Send(message);
             }
         }
 
         return new EmailSenderResult { Status = "Not Sent" };
     }
-}
-
-public class EmailSenderFunction
-{
-    public EmailSenderFunction(IEmailSender sender, Func<EmailMessage, bool> function)
-    {
-        Sender = sender;
-        Function = function;
-    }
-
-    public IEmailSender Sender { get; set; }
-    public Func<EmailMessage, bool> Function { get; set; }
 }

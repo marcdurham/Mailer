@@ -29,14 +29,15 @@ public class PublisherEmailer
                 throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
             IEmailSender emailSender = new EmailSenderProxy(
-                new List<EmailSenderFunction>
-                {
-                    new (new SmtpEmailSender(), m => m.ToAddress?.ToUpper().EndsWith("@GMAIL.COM") ?? false),
-                    new (new SendGridEmailSender(sendGridApiKey), (m) => true),
-                    new (new FakeFileEmailSender(), m => true) // never gets here
-                });
+            new List<IEmailSender>
+            {
+                new FakeFileEmailSender()
+                //new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
+                //new SendGridEmailSender(sendGridApiKey),
+                // never gets here
+            });
 
-            string template = File.ReadAllText(ClmTemplatePath);
+        string template = File.ReadAllText(ClmTemplatePath);
 
             bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
 
