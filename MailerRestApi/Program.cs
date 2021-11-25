@@ -42,7 +42,7 @@ app.MapPost("/sendmail", async (Message message) =>
     // TODO: Temporary secret
     if (message.Text.Contains("414A621D-BB97-4460-AD94-7C9B03C67A3D"))
     {
-        Simple.Send(message);
+        SmtpEmailSender.Send(message);
         return Results.Ok("Mail Sent");
     }
     else

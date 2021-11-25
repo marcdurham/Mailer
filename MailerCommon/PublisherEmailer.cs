@@ -1,16 +1,17 @@
 using GoogleAdapter.Adapters;
+using MailerCommon;
 using SendGrid;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
-namespace Mailer.Sender
-{
+namespace Mailer.Sender;
+
 public class PublisherEmailer 
 {
-        private const string ClmAssignmentListRange = "CLM Assignment List!B1:AY200";
-        private const string ClmSendEmailsRange = "CLM Send Emails!B2:E300";
-        private const string ClmTemplatePath = "./template1.html";
-        private const string IsoDateFormat = "yyyy-MM-dd";
+    private const string ClmAssignmentListRange = "CLM Assignment List!B1:AY200";
+    private const string ClmSendEmailsRange = "CLM Send Emails!B2:E300";
+    private const string ClmTemplatePath = "./template1.html";
+    private const string IsoDateFormat = "yyyy-MM-dd";
 
     public static void Run(
         string? clmSendEmailsDocumentId, 
@@ -26,6 +27,14 @@ public class PublisherEmailer
                 throw new ArgumentNullException(nameof(sendGridApiKey));
             if (googleApiSecretsJson == null)
                 throw new ArgumentNullException(nameof(googleApiSecretsJson));
+
+            IEmailSender emailSender = new EmailSenderProxy(
+                new List<EmailSenderFunction>
+                {
+                    new (new SmtpEmailSender(), m => m.ToAddress?.ToUpper().EndsWith("@GMAIL.COM") ?? false),
+                    new (new SendGridEmailSender(sendGridApiKey), (m) => true),
+                    new (new FakeFileEmailSender(), m => true) // never gets here
+                });
 
             string template = File.ReadAllText(ClmTemplatePath);
 
@@ -50,8 +59,8 @@ public class PublisherEmailer
                     });
             }
 
-            var friendMap = MailerCommon.ClmScheduleGenerator.GetFriends(sheets, clmAssignmentListDocumentId);
-            var schedule = MailerCommon.ClmScheduleGenerator.GetSchedule(sheets, clmAssignmentListDocumentId);
+            var friendMap = ClmScheduleGenerator.GetFriends(sheets, clmAssignmentListDocumentId);
+            var schedule = ClmScheduleGenerator.GetSchedule(sheets, clmAssignmentListDocumentId);
 
             foreach (PublisherClass publisher in publishers)
             {
@@ -71,7 +80,7 @@ public class PublisherEmailer
                 if (Regex.IsMatch(publisher.Email, emailPattern))
                 {
                     publisher.Result = "Sending";
-                    string htmlMessageText = new MailerCommon.ClmScheduleGenerator().Generate(
+                    string htmlMessageText = MailerCommon.ClmScheduleGenerator.Generate(
                             sheets: sheets,
                             googleApiSecretsJson: googleApiSecretsJson,
                             documentId: clmAssignmentListDocumentId,
@@ -81,20 +90,23 @@ public class PublisherEmailer
                             friendMap: friendMap,
                             schedule: schedule);
 
+
+                    EmailMessage message = new()
+                    {
+                        FromAddress = "some@email.com",
+                        FromName = "My City My Group Information Board",
+                        ToAddress = publisher.Email,
+                        ToName = publisher.Name,
+                        Subject = subject,
+                        Text = htmlMessageText
+                    };
+
                     if (publisher.Email.ToUpper().EndsWith("@GMAIL.COM"))
                     {
                         publisher.Result = "Preparing SMTP Email";
-                        Message message = new()
-                        {
-
-                            ToAddress = publisher.Email,
-                            ToName = publisher.Name,
-                            Subject = subject,
-                            Text = htmlMessageText
-                        };
 
                         // TODO: uncomment this:
-                        Simple.Send(message);
+                        SmtpEmailSender.Send(message);
                         File.WriteAllText($"{publisher.Name}.{publisher.Email}.{subject.Replace(":", "")}.html", htmlMessageText);
 
                         publisher.Result = "Sent via SMTP";
@@ -175,5 +187,4 @@ public class PublisherClass
     public string? Email { get; set; }
     public string? Sent { get; set; }
     public string? Result { get; set; }
-}
 }
