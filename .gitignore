@@ -365,4 +365,3 @@ FodyWeavers.xsd
 *.secrets.json
 .env
 /MailerCli/Properties/launchSettings.json
-/MailerCli/MailerCli.csproj
