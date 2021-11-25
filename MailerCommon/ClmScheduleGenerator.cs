@@ -5,17 +5,11 @@ namespace MailerCommon;
 public class ClmScheduleGenerator
 {
     public static string Generate(
-        //Sheets sheets,
-        //string googleApiSecretsJson, 
-        //string documentId, 
-        //string range, 
         string friendName,
         string template,
         Dictionary<string, Friend> friendMap,
         Schedule schedule)
     {
-            ////string template = File.ReadAllText("./template1.html");
-
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
         Console.WriteLine("This Month");
@@ -74,10 +68,8 @@ public class ClmScheduleGenerator
         builder.Append(lineBuilder.ToString());
         builder.AppendLine("</ul></div>");
 
-        //if(count > 0)
         template = template.Replace("@{UpcomingAssignmentsList}", builder.ToString());
 
-        //File.WriteAllText(@"c:\Users\Marc\Desktop\template5.html", template);
         return template;
     }
 
@@ -105,10 +97,8 @@ public class ClmScheduleGenerator
             for (int j = 0; j < values[i].Count; j++)
             {
                 week[j] = values[i][j].ToString();
-                //Console.WriteLine($"{rows[i]}:{headers[j]}:{values[i][j]}");
             }
             schedule[week[0]] = week;
-            //Console.WriteLine();
         }
 
         return new Schedule
