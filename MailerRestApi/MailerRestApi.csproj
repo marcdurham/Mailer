@@ -11,6 +11,9 @@
     <Content Include="..\MailerCli\template1.html" Link="template1.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\MailerCli\template3.html" Link="template3.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

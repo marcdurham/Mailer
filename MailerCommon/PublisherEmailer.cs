@@ -9,6 +9,7 @@ public class PublisherEmailer
     private const string ClmAssignmentListRange = "CLM Assignment List!B1:AY200";
     private const string ClmSendEmailsRange = "CLM Send Emails!B2:F300";
     private const string ClmTemplatePath = "./template1.html";
+    private const string PwTemplatePath = "./template3.html";
     private const string IsoDateFormat = "yyyy-MM-dd";
 
     public static void Run(
@@ -36,6 +37,7 @@ public class PublisherEmailer
             });
 
         string clmTemplate = File.ReadAllText(ClmTemplatePath);
+        string pwTemplate = File.ReadAllText(PwTemplatePath);
 
         bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
 
@@ -123,7 +125,7 @@ public class PublisherEmailer
                 .OrderBy(m => m.Date)
                 .ToList();
 
-            SendEmailFor(emailSender, clmTemplate, friendMap, meetings, schedule, recipient);
+            SendEmailFor(emailSender, pwTemplate, friendMap, meetings, schedule, recipient);
         }
 
         Console.WriteLine();
