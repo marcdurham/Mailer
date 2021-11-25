@@ -35,39 +35,8 @@ public class ClmScheduleGenerator
             }
         }
 
-        //Console.WriteLine("This Month (Old)");
-        //for (int weekColumnIndex = 0; weekColumnIndex < 4; weekColumnIndex++)
-        //{
-        //    DateTime day = thisMonday.AddDays(7 * weekColumnIndex); // Monday
-        //    DateTime dayOfClm = day.AddDays(3); // Thursday
-        //    string weekKey = day.ToString("yyyy-MM-dd");
-        //    Console.WriteLine($"Day: {weekKey}");
-
-        //    template = template.Replace($"@{{Day{weekColumnIndex}}}", dayOfClm.ToString("yyyy-MM-dd"));
-            
-        //    for (int assignmentColumnIndex = 0; assignmentColumnIndex < schedule.Days[weekKey].Length; assignmentColumnIndex++)
-        //    {
-        //        string name = schedule.Days[weekKey][assignmentColumnIndex].ToString();
-        //        string htmlName = name;
-        //        if (friendMap.ContainsKey(name.ToUpperInvariant()))
-        //        {
-        //            Friend f = friendMap[name.ToUpperInvariant()];
-        //            htmlName = $"{f.PinYinName}<br/>{f.SimplifiedChineseName}<br/>{f.Name}";
-        //        }
-
-        //        if (string.Equals(friendName, name, StringComparison.OrdinalIgnoreCase))
-        //        {
-        //            htmlName = $"<span class='selected-friend'>{htmlName}</span>";
-        //        }
-
-        //        Console.WriteLine($"{weekKey}:{schedule.Headers[assignmentColumnIndex]}:{name}");
-        //        template = template.Replace($"@{{{schedule.Headers[assignmentColumnIndex]}:{weekColumnIndex}}}", htmlName);
-        //    }
-        //}
-
         Console.WriteLine("");
         Console.WriteLine($"Thing {friendName}");
-        //var futurePresentDays = schedule.Weeks.Select(w => w.Midweek).Select(m => m.Assignments) .Days.Keys.Where(k => DateTime.Parse(k.ToString()) >= thisMonday).ToList();
         var futurePresentDays = schedule.AllAssignments()
             .Where(a => a.Date >= thisMonday)
             .Where(a => a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase))
@@ -80,17 +49,6 @@ public class ClmScheduleGenerator
         foreach (Assignment assignment in futurePresentDays)
         {
             lineBuilder.AppendLine($"<li>{assignment.Date.ToString("yyyy MMM-dd dddd")}: {assignment.Name}</li>");
-            //var parsedDay = DateTime.Parse(day);
-            //string longDay = parsedDay.AddDays(3).ToString("yyyy MMM-dd dddd"); // Thursday
-            //for (int p = 0; p < schedule.Days[day].Length; p++)
-            //{
-            //    if (string.Equals(schedule.Days[day][p], friendName, StringComparison.OrdinalIgnoreCase))
-            //    {
-            //        count++;
-            //        lineBuilder.AppendLine($"<li>{longDay}: {schedule.Headers[p]}</li>");
-            //        Console.WriteLine($"{longDay}:{schedule.Headers[p]}");
-            //    }
-            //}
         }
 
         var builder = new StringBuilder(1000);
@@ -121,7 +79,6 @@ public class ClmScheduleGenerator
         var schedule = new Schedule()
         {
             NextMeetingDate = thisMonday.AddDays(3),
-            //Headers = headers, // TODO: Find out if this is needed
         };
 
         string[] rows = new string[values.Count];
@@ -170,17 +127,6 @@ public class ClmScheduleGenerator
             schedule.Weeks.Add(week);
         }
 
-        //Dictionary<string, string[]> days = new();
-        //for (int i = 1; i < values.Count; i++)
-        //{
-        //    string[] week = new string[values[i].Count];
-        //    for (int j = 0; j < values[i].Count; j++)
-        //    {
-        //        week[j] = values[i][j]?.ToString() ?? string.Empty;
-        //    }
-        //    days[week[0]] = week;
-        //}
-
         return schedule;
     }
 
@@ -198,8 +144,8 @@ public class ClmScheduleGenerator
                 PinYinName = r[5].ToString(),
                 SimplifiedChineseName = r[4].ToString(),
             };
+
             friendMap[friend.Key] = friend;
-            //friendMap[r[0].ToString().ToUpperInvariant()] = $"{r[5]}<br/>{r[4]}<br/>{r[0]}";
         }
 
         return friendMap;

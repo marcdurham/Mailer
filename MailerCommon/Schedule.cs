@@ -1,8 +1,6 @@
 ﻿namespace MailerCommon;
 public class Schedule
 {
-    public string[] Headers { get; set; }
-    public Dictionary<string, string[]> Days { get; set; } = new Dictionary<string, string[]>();
     public DateTime NextMeetingDate { get; set; }
     public List<ScheduleWeek> Weeks { get; set; } = new List<ScheduleWeek>();
     public List<Meeting> AllMeetings()
