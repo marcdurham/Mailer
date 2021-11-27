@@ -46,7 +46,6 @@ public class ClmScheduleGenerator
 
         var lineBuilder = new StringBuilder(5000);
 
-        int count = 0;
         foreach (Assignment assignment in futurePresentDays)
         {
             lineBuilder.AppendLine($"<li>{assignment.Date.ToString("yyyy MMM-dd dddd")}: {assignment.Name}</li>");
