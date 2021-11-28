@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace GoogleAdapter.Adapters;
 
-public class Sheets
+public class GoogleSheets
 {
     // Some APIs, like Storage, accept a credential in their Create()
     // method.
@@ -18,7 +18,7 @@ public class Sheets
 
     readonly SheetsService _service;
 
-    public Sheets(string json, bool isServiceAccount = false)
+    public GoogleSheets(string json, bool isServiceAccount = false)
     {
         if (isServiceAccount)
         {

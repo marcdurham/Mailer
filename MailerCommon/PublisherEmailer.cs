@@ -44,7 +44,7 @@ public class PublisherEmailer
 
         bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
 
-        var sheets = new Sheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
+        var sheets = new GoogleSheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
 
         Console.WriteLine();
         Console.WriteLine("Loading Email Recipients...");
