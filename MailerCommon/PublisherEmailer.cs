@@ -11,30 +11,33 @@ public class PublisherEmailer
     private const string ClmTemplatePath = "./template1.html";
     private const string PwTemplatePath = "./template3.html";
     private const string IsoDateFormat = "yyyy-MM-dd";
+    readonly IEmailSender _emailSender;
 
-    public static void Run(
-        string? clmSendEmailsDocumentId, 
-        string? clmAssignmentListDocumentId, 
-        string? sendGridApiKey, 
-        string? googleApiSecretsJson,
-        bool dryRunMode = false)
+    public PublisherEmailer(string? sendGridApiKey, bool dryRunMode =  false)
     {
-        if (clmSendEmailsDocumentId == null)
-            throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
-        if (clmAssignmentListDocumentId == null)
-            throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
         if (sendGridApiKey == null)
             throw new ArgumentNullException(nameof(sendGridApiKey));
-        if (googleApiSecretsJson == null)
-            throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
-        IEmailSender emailSender = new EmailSenderProxy(
+        _emailSender = new EmailSenderProxy(
             new List<IEmailSender>
             {
                 new SaveEmailToFileEmailSender() { SendByDefault = dryRunMode },
                 new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
                 new SendGridEmailSender(sendGridApiKey) { SendByDefault = true }
             });
+    }
+
+    public void Run(
+        string? clmSendEmailsDocumentId, 
+        string? clmAssignmentListDocumentId, 
+        string? googleApiSecretsJson)
+    {
+        if (clmSendEmailsDocumentId == null)
+            throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
+        if (clmAssignmentListDocumentId == null)
+            throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
+        if (googleApiSecretsJson == null)
+            throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
         string clmTemplate = File.ReadAllText(ClmTemplatePath);
         string pwTemplate = File.ReadAllText(PwTemplatePath);
@@ -107,52 +110,12 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Generating HTML CLM schedules and sending CLM emails...");
         foreach (EmailRecipient recipient in recipients)
-        {
-            List<Meeting> meetings = schedule.AllMeetings()
-                .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Thursday)
-                .OrderBy(m => m.Date)
-                .ToList();
-
-            string htmlMessageText = HtmlScheduleGenerator.Generate(
-                friendName: recipient.Name,
-                template: clmTemplate,
-                meetings: meetings);
-
-            htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
-                friendName: recipient.Name,
-                template: htmlMessageText,
-                schedule: schedule);
-
-            string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
-            string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
-
-            SendEmailFor(emailSender, subject, htmlMessageText, recipient);
-        }
+            GenerateAndSendEmailFor(clmTemplate, thisMonday, DayOfWeek.Thursday, schedule, recipient);
 
         Console.WriteLine();
         Console.WriteLine("Generating HTML PW schedules and sending emails...");
         foreach (EmailRecipient recipient in recipients)
-        {
-            List<Meeting> meetings = schedule.AllMeetings()
-                .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Saturday)
-                .OrderBy(m => m.Date)
-                .ToList();
-
-            string htmlMessageText = HtmlScheduleGenerator.Generate(
-                friendName: recipient.Name,
-                template: pwTemplate,
-                meetings: meetings);
-
-            htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
-                friendName: recipient.Name,
-                template: htmlMessageText,
-                schedule: schedule);
-
-            string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
-            string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
-
-            SendEmailFor(emailSender, subject, htmlMessageText, recipient);
-        }
+            GenerateAndSendEmailFor(pwTemplate, thisMonday, DayOfWeek.Saturday, schedule, recipient);
 
         Console.WriteLine();
         Console.WriteLine("Writing status of emails to recipients...");
@@ -175,7 +138,30 @@ public class PublisherEmailer
         Console.WriteLine("Done");
     }
 
-    private static void SendEmailFor(IEmailSender emailSender, string subject, string htmlMessageText, EmailRecipient recipient)
+    void GenerateAndSendEmailFor(string htmlTemplate, DateTime thisMonday, DayOfWeek dayOfWeek, Schedule schedule, EmailRecipient recipient)
+    {
+        List<Meeting> meetings = schedule.AllMeetings()
+            .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == dayOfWeek)
+            .OrderBy(m => m.Date)
+            .ToList();
+
+        string htmlMessageText = HtmlScheduleGenerator.Generate(
+            friendName: recipient.Name,
+            template: htmlTemplate,
+            meetings: meetings);
+
+        htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
+            friendName: recipient.Name,
+            template: htmlMessageText,
+            schedule: schedule);
+
+        string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
+        string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
+
+        SendEmailFor(subject, htmlMessageText, recipient);
+    }
+
+    void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient)
     {
         Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
 
@@ -192,7 +178,7 @@ public class PublisherEmailer
             Text = htmlMessageText
         };
 
-        emailSender.Send(message);
+        _emailSender.Send(message);
     }
 
     static bool IsJsonForAServiceAccount(string? json)

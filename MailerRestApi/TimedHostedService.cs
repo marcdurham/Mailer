@@ -34,10 +34,9 @@ public class TimedHostedService : IHostedService, IDisposable
         string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
         string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
 
-        PublisherEmailer.Run(
+        new PublisherEmailer(sendGridApiKey).Run(
             clmSendEmailsDocumentId: clmSendEmailsDocumentId,
             clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
-            sendGridApiKey: sendGridApiKey,
             googleApiSecretsJson: googleApiSecretsJson);
     }
 

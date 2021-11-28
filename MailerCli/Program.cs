@@ -11,12 +11,10 @@ string clmAssignmentListDocumentId = args[4];
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
-PublisherEmailer.Run(
+new PublisherEmailer(sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
-    clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
-    sendGridApiKey: sendGridApiKey,
-    googleApiSecretsJson: googleApiSecretsJson,
-    dryRunMode: true);
+    clmAssignmentListDocumentId: clmAssignmentListDocumentId,
+    googleApiSecretsJson: googleApiSecretsJson);
         
 //string template = File.ReadAllText("./template1.html");
 //string output = new ClmScheduleGenerator()
