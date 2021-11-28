@@ -6,14 +6,16 @@ public class HtmlScheduleGenerator
     public static string Generate(
         string friendName,
         string template,
-        Dictionary<string, Friend> friendMap,
-        List<Meeting> meetings,
-        Schedule schedule)
+        List<Meeting> meetings)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
         Console.WriteLine("This Month (New)");
-        var latest = meetings.Where(m => m.Date >= thisMonday).OrderBy(m => m.Date).Take(4).ToList();
+        var latest = meetings
+            .Where(m => m.Date >= thisMonday)
+            .OrderBy(m => m.Date)
+            .Take(4)
+            .ToList();
         
         for (int wk = 0; wk < 4; wk++)
         {
@@ -35,6 +37,17 @@ public class HtmlScheduleGenerator
                 template = template.Replace($"@{{{assignment.Name}:{wk}}}", htmlName);
             }
         }
+
+        return template;
+    }
+
+    public static string InjectUpcomingAssignments(
+        string friendName,
+        string template,
+        Schedule schedule)
+    {
+        DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+        string today = thisMonday.ToString("yyyy-MM-dd");
 
         Console.WriteLine("");
         Console.WriteLine($"Upcoming Assignments for {friendName}");

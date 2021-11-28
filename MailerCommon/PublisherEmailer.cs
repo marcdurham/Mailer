@@ -105,7 +105,7 @@ public class PublisherEmailer
         }
 
         Console.WriteLine();
-        Console.WriteLine("Sending CLM Emails...");
+        Console.WriteLine("Generating HTML CLM schedules and sending CLM emails...");
         foreach (EmailRecipient recipient in recipients)
         {
             List<Meeting> meetings = schedule.AllMeetings()
@@ -113,11 +113,24 @@ public class PublisherEmailer
                 .OrderBy(m => m.Date)
                 .ToList();
 
-            SendEmailFor(emailSender, clmTemplate, friendMap, meetings, schedule, recipient);
+            string htmlMessageText = HtmlScheduleGenerator.Generate(
+                friendName: recipient.Name,
+                template: clmTemplate,
+                meetings: meetings);
+
+            htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
+                friendName: recipient.Name,
+                template: htmlMessageText,
+                schedule: schedule);
+
+            string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
+            string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
+
+            SendEmailFor(emailSender, subject, htmlMessageText, recipient);
         }
 
         Console.WriteLine();
-        Console.WriteLine("Sending PW Emails...");
+        Console.WriteLine("Generating HTML PW schedules and sending emails...");
         foreach (EmailRecipient recipient in recipients)
         {
             List<Meeting> meetings = schedule.AllMeetings()
@@ -125,7 +138,20 @@ public class PublisherEmailer
                 .OrderBy(m => m.Date)
                 .ToList();
 
-            SendEmailFor(emailSender, pwTemplate, friendMap, meetings, schedule, recipient);
+            string htmlMessageText = HtmlScheduleGenerator.Generate(
+                friendName: recipient.Name,
+                template: pwTemplate,
+                meetings: meetings);
+
+            htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
+                friendName: recipient.Name,
+                template: htmlMessageText,
+                schedule: schedule);
+
+            string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
+            string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
+
+            SendEmailFor(emailSender, subject, htmlMessageText, recipient);
         }
 
         Console.WriteLine();
@@ -149,22 +175,12 @@ public class PublisherEmailer
         Console.WriteLine("Done");
     }
 
-    private static void SendEmailFor(IEmailSender emailSender, string template, Dictionary<string, Friend> friendMap, List<Meeting> meetings, Schedule schedule, EmailRecipient recipient)
+    private static void SendEmailFor(IEmailSender emailSender, string subject, string htmlMessageText, EmailRecipient recipient)
     {
         Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
 
         recipient.Sent = DateTime.Now.ToString();
-        
-        string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
-        string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
-
         recipient.Result = "Sending";
-        string htmlMessageText = HtmlScheduleGenerator.Generate(
-                friendName: recipient.Name,
-                template: template,
-                friendMap: friendMap,
-                meetings: meetings,
-                schedule: schedule);
 
         EmailMessage message = new()
         {
