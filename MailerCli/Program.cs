@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Mailer.Sender;
+using System.Text.RegularExpressions;
 
 Console.WriteLine("Mailer");
 
