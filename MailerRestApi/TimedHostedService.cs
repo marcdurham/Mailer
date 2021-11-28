@@ -1,3 +1,5 @@
+using GoogleAdapter.Adapters;
+
 namespace Mailer.Sender;
 public class TimedHostedService : IHostedService, IDisposable
 {
@@ -33,8 +35,9 @@ public class TimedHostedService : IHostedService, IDisposable
         string? clmAssignmentListDocumentId = Environment.GetEnvironmentVariable("ClmAssignmentListDocumentId", EnvironmentVariableTarget.Process);
         string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
         string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
+        ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
-        new PublisherEmailer(sendGridApiKey).Run(
+        new PublisherEmailer(sheets, sendGridApiKey).Run(
             clmSendEmailsDocumentId: clmSendEmailsDocumentId,
             clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
             googleApiSecretsJson: googleApiSecretsJson);

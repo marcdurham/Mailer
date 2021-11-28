@@ -4,11 +4,17 @@ using Google.Apis.Sheets.v4;
 using Google.Apis.Sheets.v4.Data;
 using Google.Apis.Util.Store;
 using System.Text;
-using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace GoogleAdapter.Adapters;
 
-public class GoogleSheets
+public interface ISheets
+{
+    void Write(string documentId, string range, IList<IList<object>> values);
+    IList<IList<object>> Read(string documentId, string range);
+}
+
+public class GoogleSheets : ISheets
 {
     // Some APIs, like Storage, accept a credential in their Create()
     // method.
@@ -18,21 +24,16 @@ public class GoogleSheets
 
     readonly SheetsService _service;
 
-    public GoogleSheets(string json, bool isServiceAccount = false)
+    public GoogleSheets(string json)
     {
-        if (isServiceAccount)
+        if (IsJsonForAServiceAccount(json))
         {
-            _service = GetSheetService(ServiceCredentials(json));
+            _service = GetSheetUserService(ServiceCredentials(json));
         }
         else
         {
-            _service = GetSheetService(UserCredentials(json));
+            _service = GetSheetUserService(UserCredentials(json));
         }
-    }
-
-    public void WriteOneCell(string documentId, string range, object value)
-    {
-        Write(documentId, range, new[] { new[] { value } });
     }
 
     public void Write(string documentId, string range, IList<IList<object>> values)
@@ -57,30 +58,38 @@ public class GoogleSheets
         return response.Values;
     }
 
-    public static string NextCellDown(string range, string column = null, int rowIndex = 0)
+    public static bool IsJsonForAServiceAccount(string? json)
     {
-        string pattern = @"([^!]*!)?([a-zA-Z]+)(\d+):([a-zA-Z]+)(\d+)";
-        Match match = Regex.Match(range, pattern);
-        if(match.Success)
+        var options = new JsonDocumentOptions
         {
-            if (!int.TryParse(match.Groups[3].Value, out int startRow))
-                throw new Exception("Cannot parse starting row");
+            AllowTrailingCommas = true,
+            MaxDepth = 3
+        };
 
-            if(column == null)
-                column = match.Groups[2].Value;
+        JsonDocument document = JsonDocument.Parse(json, options);
 
-            //string sheetNamePrefix = match.Groups[1].Value == null
-            //    ? string.Empty
-            //    : $"{match.Groups[1].Value}!";
-
-            int nextRow = startRow + rowIndex;
-            return $"{match.Groups[1].Value}{column}{nextRow}:{column}{nextRow}";
+        bool isServiceAccount;
+        if (document.RootElement.TryGetProperty("type", out JsonElement element)
+            && element.GetString() == "service_account")
+        {
+            isServiceAccount = true;
         }
 
-        throw new Exception("Cannot get next cell down");
+        // This file looks like an OAuth 2.0 JSON file
+        else if (document.RootElement.TryGetProperty("installed", out JsonElement installedElement)
+                && installedElement.TryGetProperty("redirect_uris", out _))
+        {
+            isServiceAccount = false;
+        }
+        else
+        {
+            throw new Exception("Unknown secrets json file type");
+        }
+
+        return isServiceAccount;
     }
 
-    static SheetsService GetSheetService(ICredential credential)
+    static SheetsService GetSheetUserService(ICredential credential)
     {
         //UserCredential credential = Credentials(jsonPath);
 
@@ -107,6 +116,7 @@ public class GoogleSheets
 
         return service;
     }
+
     static UserCredential UserCredentials(string json)
     {
         UserCredential credential;

@@ -12,9 +12,12 @@ public class PublisherEmailer
     private const string PwTemplatePath = "./template3.html";
     private const string IsoDateFormat = "yyyy-MM-dd";
     readonly IEmailSender _emailSender;
+    private readonly ISheets _sheets;
 
-    public PublisherEmailer(string? sendGridApiKey, bool dryRunMode =  false)
+    public PublisherEmailer(ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false)
     {
+        _sheets = sheets;
+
         if (sendGridApiKey == null)
             throw new ArgumentNullException(nameof(sendGridApiKey));
 
@@ -44,16 +47,16 @@ public class PublisherEmailer
 
         bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
 
-        var sheets = new GoogleSheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
+        //var sheets = new GoogleSheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
 
         Console.WriteLine();
         Console.WriteLine("Loading Email Recipients...");
-        IList<IList<object>> clmSendEmailsRows = sheets.Read(clmSendEmailsDocumentId, ClmSendEmailsRange);
+        IList<IList<object>> clmSendEmailsRows = _sheets.Read(clmSendEmailsDocumentId, ClmSendEmailsRange);
         List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(clmSendEmailsRows);
 
         Console.WriteLine();
         Console.WriteLine("Loading Friends...");
-        IList<IList<object>> friendInfoRows = sheets.Read(documentId: clmAssignmentListDocumentId, range: "Friend Info!B1:AI500");
+        IList<IList<object>> friendInfoRows = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "Friend Info!B1:AI500");
         var friendMap = FriendLoader.GetFriends(friendInfoRows);
         foreach (string friend in friendMap.Keys)
         {
@@ -87,7 +90,7 @@ public class PublisherEmailer
 
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for CLM...");
-        IList<IList<object>> values = sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
+        IList<IList<object>> values = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
         List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM");
         foreach(Meeting meeting in clmMeetings)
         {
@@ -98,7 +101,7 @@ public class PublisherEmailer
 
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for PW...");
-        IList<IList<object>> pwValues = sheets.Read(documentId: clmAssignmentListDocumentId, range: "PW Assignment List!B1:AM9999");
+        IList<IList<object>> pwValues = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "PW Assignment List!B1:AM9999");
         List<Meeting> pwMeetings = ScheduleLoader.GetSchedule(pwValues, friendMap, 5, "PW");
         foreach (Meeting meeting in pwMeetings)
         {
@@ -129,7 +132,7 @@ public class PublisherEmailer
                 publisher.Result };
         }
 
-        sheets.Write(
+        _sheets.Write(
             documentId: clmSendEmailsDocumentId,
             range: ClmSendEmailsRange,
             values: clmSendEmailsRows);
@@ -181,7 +184,7 @@ public class PublisherEmailer
         _emailSender.Send(message);
     }
 
-    static bool IsJsonForAServiceAccount(string? json)
+    public static bool IsJsonForAServiceAccount(string? json)
     {
         var options = new JsonDocumentOptions
         {

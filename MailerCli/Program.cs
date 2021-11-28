@@ -1,4 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
+using GoogleAdapter.Adapters;
 using Mailer.Sender;
 using System.Text.RegularExpressions;
 
@@ -12,7 +13,9 @@ string clmAssignmentListDocumentId = args[4];
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
-new PublisherEmailer(sendGridApiKey, dryRunMode: true).Run(
+ISheets sheets = new GoogleSheets(googleApiSecretsJson);
+
+new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId,
     googleApiSecretsJson: googleApiSecretsJson);
