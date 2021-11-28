@@ -159,7 +159,7 @@ public class PublisherEmailer
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
 
         recipient.Result = "Sending";
-        string htmlMessageText = ClmScheduleGenerator.Generate(
+        string htmlMessageText = HtmlScheduleGenerator.Generate(
                 friendName: recipient.Name,
                 template: template,
                 friendMap: friendMap,

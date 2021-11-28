@@ -1,7 +1,7 @@
 ﻿using System.Text;
 
 namespace MailerCommon;
-public class ClmScheduleGenerator
+public class HtmlScheduleGenerator
 {
     public static string Generate(
         string friendName,
