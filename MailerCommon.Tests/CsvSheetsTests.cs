@@ -31,7 +31,7 @@ public class CsvSheetsTests
     {
         var sheets = new CsvSheets();
 
-        Action action = () => sheets.Read(@".\TestFiles\TestFile1.csv", "A1:Z99");
+        Action action = () => sheets.Read(@".\TestFiles\TestFile1.csv", "A1:E99");
 
         action.Should().Throw<ArgumentException>();
     }
@@ -42,7 +42,7 @@ public class CsvSheetsTests
         var sheets = new CsvSheets();
 
         IList<IList<object>> actual = sheets
-            .Read(@".\TestFiles\TestFile1.csv", "Some Sheet!A1:Z99");
+            .Read(@".\TestFiles\TestFile1.csv", "Some Sheet!A1:C99");
 
         actual.Should().NotBeNull();
         actual.Should().HaveCount(2);
@@ -57,7 +57,7 @@ public class CsvSheetsTests
         var sheets = new CsvSheets();
 
         IList<IList<object>> actual = sheets
-            .Read(@".\TestFiles\TestFile2-TwoExtraColumns.csv", "Some Sheet!C1:Z99");
+            .Read(@".\TestFiles\TestFile2-TwoExtraColumns.csv", "Some Sheet!C1:E99");
 
         actual.Should().NotBeNull();
         actual[0].Should().HaveCount(3);
@@ -72,7 +72,7 @@ public class CsvSheetsTests
         var sheets = new CsvSheets();
 
         IList<IList<object>> actual = sheets
-            .Read(@".\TestFiles\TestFile2-TwoExtraColumns.csv", "Some Sheet!C3:Z99");
+            .Read(@".\TestFiles\TestFile2-TwoExtraColumns.csv", "Some Sheet!C3:E99");
 
         actual.Should().NotBeNull();
         actual.Should().HaveCount(2); // rows
@@ -80,5 +80,19 @@ public class CsvSheetsTests
         actual[0][0].Should().Be("3");
         actual[0][1].Should().Be("Bruce");
         actual[0][2].Should().Be("Wayne");
+    }
+
+    [Fact]
+    public void GivenColumnsCtoD_ShouldReturnTwoColumns()
+    {
+        var sheets = new CsvSheets();
+
+        IList<IList<object>> actual = sheets
+            .Read(@".\TestFiles\TestFile2-TwoExtraColumns.csv", "Some Sheet!C1:D99");
+
+        actual.Should().NotBeNull();
+        actual[0].Should().HaveCount(2);
+        actual[0][0].Should().Be("1");
+        actual[0][1].Should().Be("Peter");
     }
 }
