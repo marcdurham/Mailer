@@ -18,16 +18,14 @@ string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 //    clmSendEmailsDocumentId: clmSendEmailsDocumentId,
 //    clmAssignmentListDocumentId: clmAssignmentListDocumentId,
 //    pwAssignmentListDocumentId: clmAssignmentListDocumentId,
-//    friendInfoDocumentId: clmAssignmentListDocumentId,
-//    googleApiSecretsJson: googleApiSecretsJson);
+//    friendInfoDocumentId: clmAssignmentListDocumentId);
 
 ISheets sheets = new CsvSheets();
 new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Send Emails.csv",
     clmAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Assignment List - Copy.csv",
     pwAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - PW Assignment List.csv",
-    friendInfoDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Friend Info.csv",
-    googleApiSecretsJson: googleApiSecretsJson);
+    friendInfoDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Friend Info.csv");
 
 //string template = File.ReadAllText("./template1.html");
 //string output = new ClmScheduleGenerator()

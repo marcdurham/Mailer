@@ -6,7 +6,6 @@ namespace Mailer.Sender;
 
 public class PublisherEmailer 
 {
-    private const string ClmAssignmentListRange = "CLM Assignment List!B1:AY200";
     private const string ClmSendEmailsRange = "CLM Send Emails!B2:F300";
     private const string ClmTemplatePath = "./template1.html";
     private const string PwTemplatePath = "./template3.html";
@@ -34,8 +33,7 @@ public class PublisherEmailer
         string? clmSendEmailsDocumentId, 
         string? clmAssignmentListDocumentId,
         string? pwAssignmentListDocumentId,
-        string? friendInfoDocumentId,
-        string? googleApiSecretsJson)
+        string? friendInfoDocumentId)
     {
         if (clmSendEmailsDocumentId == null)
             throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
@@ -45,15 +43,9 @@ public class PublisherEmailer
             throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
-        if (googleApiSecretsJson == null)
-            throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
         string clmTemplate = File.ReadAllText(ClmTemplatePath);
         string pwTemplate = File.ReadAllText(PwTemplatePath);
-
-        bool isServiceAccount = IsJsonForAServiceAccount(googleApiSecretsJson);
-
-        //var sheets = new GoogleSheets(googleApiSecretsJson, isServiceAccount: isServiceAccount);
 
         Console.WriteLine();
         Console.WriteLine("Loading Email Recipients...");
@@ -79,7 +71,7 @@ public class PublisherEmailer
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         var schedule = new Schedule()
         {
-            NextMeetingDate = thisMonday,   // different
+            NextMeetingDate = thisMonday,
         };
 
         for(int w = 0; w < 4; w++)
@@ -88,7 +80,6 @@ public class PublisherEmailer
             var week = new ScheduleWeek
             {
                 Start = monday,
-                //Midweek = meeting // different
             };
 
             schedule.Weeks.Add(week);
@@ -100,7 +91,6 @@ public class PublisherEmailer
         List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM");
         foreach(Meeting meeting in clmMeetings.Where(m => m.Date >= thisMonday))
         {
-            //var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
             if (week != null)
                 week.Midweek = meeting;
@@ -113,7 +103,6 @@ public class PublisherEmailer
         foreach (Meeting meeting in pwMeetings.Where(m => m.Date >= thisMonday))
         {
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
-            //var week = schedule.Weeks.SingleOrDefault(w => w.Start == meeting.Date);
             if (week != null)
                 week.Weekend = meeting;
         }

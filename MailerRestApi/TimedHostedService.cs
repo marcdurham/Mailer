@@ -41,8 +41,7 @@ public class TimedHostedService : IHostedService, IDisposable
             clmSendEmailsDocumentId: clmSendEmailsDocumentId,
             clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
             pwAssignmentListDocumentId: clmAssignmentListDocumentId,
-            friendInfoDocumentId: clmAssignmentListDocumentId,
-            googleApiSecretsJson: googleApiSecretsJson);
+            friendInfoDocumentId: clmAssignmentListDocumentId);
     }
 
     public Task StopAsync(CancellationToken stoppingToken)
