@@ -17,6 +17,16 @@ public class CsvSheetsTests
     }
 
     [Fact]
+    public void InvalidMultiCharacterColumnRange()
+    {
+        var sheets = new CsvSheets();
+
+        Action action = () => sheets.Read(@".\TestFiles\TestFile1.csv", "Some Sheet!AA33:ZZ44");
+
+        action.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public void MissingSheetName()
     {
         var sheets = new CsvSheets();
@@ -32,7 +42,7 @@ public class CsvSheetsTests
         var sheets = new CsvSheets();
 
         IList<IList<object>> actual = sheets
-            .Read(@".\TestFiles\TestFile1.csv", "Some Sheet!C3:Z99");
+            .Read(@".\TestFiles\TestFile1.csv", "Some Sheet!A1:Z99");
 
         actual.Should().NotBeNull();
         actual.Should().HaveCount(2);
@@ -42,17 +52,33 @@ public class CsvSheetsTests
     }
 
     [Fact]
-    public void GivenExtraColumn_ShouldSkipIt()
+    public void GivenStartingColumnC_ShouldSkipTwoColumns()
     {
         var sheets = new CsvSheets();
 
         IList<IList<object>> actual = sheets
-            .Read(@".\TestFiles\TestFile2-ExtraColumns.csv", "Some Sheet!C1:Z99");
+            .Read(@".\TestFiles\TestFile2-TwoExtraColumns.csv", "Some Sheet!C1:Z99");
 
         actual.Should().NotBeNull();
-        actual.Should().HaveCount(2);
+        actual[0].Should().HaveCount(3);
         actual[0][0].Should().Be("1");
         actual[0][1].Should().Be("Peter");
         actual[0][2].Should().Be("Parker");
+    }
+
+    [Fact]
+    public void GivenStartingRow3_ShouldSkipTwoRows()
+    {
+        var sheets = new CsvSheets();
+
+        IList<IList<object>> actual = sheets
+            .Read(@".\TestFiles\TestFile2-TwoExtraColumns.csv", "Some Sheet!C3:Z99");
+
+        actual.Should().NotBeNull();
+        actual.Should().HaveCount(2); // rows
+        actual[0].Should().HaveCount(3); // columns
+        actual[0][0].Should().Be("3");
+        actual[0][1].Should().Be("Bruce");
+        actual[0][2].Should().Be("Wayne");
     }
 }

@@ -16,9 +16,21 @@ namespace MailerCommon
             if (!match.Success || match.Groups.Count < 8)
                 throw new ArgumentException("Invalid range");
 
-            var configuration = new CsvConfiguration(CultureInfo.InvariantCulture);
-            configuration.PrepareHeaderForMatch = (h) =>
+            string startColumnString = match.Groups[4].Value.ToUpper();
+            int startRow = int.Parse(match.Groups[5].Value) - 1;
+
+            if (startColumnString.Length != 1)
+                throw new ArgumentException($"Starting column {startColumnString} can only be one character wide, A thru Z. AA and higher is not permitted.");
+
+            int startColumn = startColumnString[0] - 'A';
+
+            var configuration = new CsvConfiguration(CultureInfo.InvariantCulture)
             {
+              ShouldSkipRecord = row => false,
+              
+            };
+            configuration.PrepareHeaderForMatch = (h) =>
+            { 
                 if(string.IsNullOrWhiteSpace(h.Header))
                 {
                     // Column headers must be unique, use a Guid to make it unique
@@ -29,34 +41,44 @@ namespace MailerCommon
                 return h.Header;
             };
 
-            string startingColumn = match.Groups[4].Value;
             using (var reader = new StreamReader(documentId))
-            using (var csv = new CsvReader(reader, configuration))
             {
-                var records = csv.GetRecords<dynamic>().ToList<dynamic>();
-                
-                var output = new List<IList<object>>();
-                foreach(IDictionary<string, object> record in records)
+                //for (int r = 0; r < startRow; r++)
+                //{
+                //    reader.ReadLine();
+                //}
+                using (var csv = new CsvReader(reader, configuration))
                 {
-                    var row = new List<object>();
-                    var keys = record.Keys.ToArray();
-                    for(int i = 0; i < record.Keys.Count; i++) //string key in record.Keys)
+                    // //var records = csv.GetRecords<dynamic>().ToList<dynamic>();
+                    var output = new List<IList<object>>();
+                    for (int r = 0; r < startRow; r++)
+                        csv.Read();
+
+                    csv.Read();
+                    csv.ReadHeader();
+                    while (csv.Read())
                     {
-                        //string key = record.Keys[i];
-                        string key = keys[i];
-                        //KeyValuePair<string, object> item = record[key];
-                        //object item = record[key];
-                        if (key.StartsWith("MISSING-"))
-                            continue;
+                        //foreach(IDictionary<string, object> record in records)
+                        ///for (int r = startRow; r < records.Count; r++)
+                        ///{
+                            ///IDictionary<string, object> record = records[r];
+                            var row = new List<object>();
+                            ///var keys = record.Keys.ToArray();
+                            ///for (int col = startColumn; col < record.Keys.Count; col++)
+                            for(int col = startColumn; col < csv.HeaderRecord.Count(); col++)
+                            {
+                            ///string key = keys[col];
 
-                        //row.Add(item.Value);
-                        row.Add(record[key]);
+                            ///row.Add(record[key]);
+                            object val = csv[col];
+                                row.Add(csv[col]);
+                            }
+
+                            output.Add(row);
+                        ///}
                     }
-
-                    output.Add(row);
+                    return output;
                 }
-
-                return output;
             }
         }
 
