@@ -18,6 +18,7 @@ namespace MailerCommon
 
             string startColumnString = match.Groups[4].Value.ToUpper();
             int startRow = int.Parse(match.Groups[5].Value) - 1;
+            int endRow = int.Parse(match.Groups[7].Value) - 1;
 
             if (startColumnString.Length != 1)
                 throw new ArgumentException($"Starting column {startColumnString} can only be one character wide, A thru Z. AA and higher is not permitted.");
@@ -55,12 +56,16 @@ namespace MailerCommon
                 for (int r = 0; r < startRow; r++)
                     csv.Read();
 
+                int rowNumber = startRow;
                 csv.Read();
                 csv.ReadHeader();
-                //lastColumn
-                // csv.HeaderRecord.Count()
+                rowNumber++;
+
                 while (csv.Read())
                 {
+                    if (rowNumber > endRow)
+                        break;
+
                     var row = new List<object>();
                     for(int col = startColumn; col <= lastColumn; col++)
                     {
@@ -69,6 +74,7 @@ namespace MailerCommon
                     }
 
                     output.Add(row);
+                    rowNumber++;
                 }
 
                 return output;

@@ -45,10 +45,13 @@ public class CsvSheetsTests
             .Read(@".\TestFiles\TestFile1.csv", "Some Sheet!A1:C99");
 
         actual.Should().NotBeNull();
-        actual.Should().HaveCount(2);
+        actual.Should().HaveCount(3);
         actual[0][0].Should().Be("1");
         actual[0][1].Should().Be("Peter");
         actual[0][2].Should().Be("Parker");
+        actual[1][0].Should().Be("2");
+        actual[1][1].Should().Be("Clark");
+        actual[1][2].Should().Be("Kent");
     }
 
     [Fact]
@@ -94,5 +97,23 @@ public class CsvSheetsTests
         actual[0].Should().HaveCount(2);
         actual[0][0].Should().Be("1");
         actual[0][1].Should().Be("Peter");
+    }
+
+    [Fact]
+    public void GivenEndRow3_ShouldReturnTwoRecordsFromThree()
+    {
+        var sheets = new CsvSheets();
+
+        IList<IList<object>> actual = sheets
+            .Read(@".\TestFiles\TestFile1.csv", "Some Sheet!A1:C3");
+
+        actual.Should().NotBeNull();
+        actual.Should().HaveCount(2);
+        actual[0][0].Should().Be("1");
+        actual[0][1].Should().Be("Peter");
+        actual[0][2].Should().Be("Parker");
+        actual[1][0].Should().Be("2");
+        actual[1][1].Should().Be("Clark");
+        actual[1][2].Should().Be("Kent");
     }
 }
