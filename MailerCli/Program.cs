@@ -14,13 +14,14 @@ string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", 
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
 //ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-ISheets sheets = new CsvSheets();
-
 //new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
 //    clmSendEmailsDocumentId: clmSendEmailsDocumentId,
 //    clmAssignmentListDocumentId: clmAssignmentListDocumentId,
+//    pwAssignmentListDocumentId: clmAssignmentListDocumentId,
+//    friendInfoDocumentId: clmAssignmentListDocumentId,
 //    googleApiSecretsJson: googleApiSecretsJson);
 
+ISheets sheets = new CsvSheets();
 new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Send Emails.csv",
     clmAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Assignment List - Copy.csv",

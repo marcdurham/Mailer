@@ -109,7 +109,13 @@ namespace MailerCommon
 
         public void Write(string documentId, string range, IList<IList<object>> values)
         {
-            throw new NotImplementedException();
+            var lines = new List<string>();
+            foreach(IList<object> row in values)
+            {
+                lines.Add(string.Join(",", row));
+            }
+
+            File.WriteAllLines(documentId, lines.ToArray());
         }
     }
 }
