@@ -91,7 +91,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for CLM...");
         IList<IList<object>> values = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
-        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM");
+        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM", 1);
         foreach(Meeting meeting in clmMeetings)
         {
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);

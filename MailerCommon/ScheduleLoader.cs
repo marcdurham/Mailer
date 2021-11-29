@@ -2,9 +2,8 @@
 {
     public class ScheduleLoader
     {
-        public static List<Meeting> GetSchedule(IList<IList<object>> values, Dictionary<string, Friend> friendMap, int dayOfWeek, string title)
+        public static List<Meeting> GetSchedule(IList<IList<object>> values, Dictionary<string, Friend> friendMap, int dayOfWeek, string title, int weekKeyColumnIndex = 0)
         {
-            const int WeekKeyColumnIndex = 0;
             const int HeaderRowIndex = 0;
             //DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
 
@@ -26,8 +25,8 @@
             string[] rows = new string[values.Count];
             for (int wk = 1; wk < values.Count; wk++)
             {
-                rows[wk] = values[wk][WeekKeyColumnIndex]?.ToString() ?? string.Empty;
-                var monday = DateTime.Parse(values[wk][WeekKeyColumnIndex].ToString() ?? string.Empty);
+                rows[wk] = values[wk][weekKeyColumnIndex]?.ToString() ?? string.Empty;
+                var monday = DateTime.Parse(values[wk][weekKeyColumnIndex].ToString() ?? string.Empty);
                 var meeting = new Meeting
                 {
                     Name = title,              // different

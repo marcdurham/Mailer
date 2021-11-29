@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using GoogleAdapter.Adapters;
 using Mailer.Sender;
-using System.Text.RegularExpressions;
+using MailerCommon;
 
 Console.WriteLine("Mailer");
 
@@ -13,13 +13,19 @@ string clmAssignmentListDocumentId = args[4];
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
-ISheets sheets = new GoogleSheets(googleApiSecretsJson);
+//ISheets sheets = new GoogleSheets(googleApiSecretsJson);
+ISheets sheets = new CsvSheets();
+
+//new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
+//    clmSendEmailsDocumentId: clmSendEmailsDocumentId,
+//    clmAssignmentListDocumentId: clmAssignmentListDocumentId,
+//    googleApiSecretsJson: googleApiSecretsJson);
 
 new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
-    clmSendEmailsDocumentId: clmSendEmailsDocumentId,
-    clmAssignmentListDocumentId: clmAssignmentListDocumentId,
+    clmSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Send Emails.csv",
+    clmAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Assignment List - Copy.csv",
     googleApiSecretsJson: googleApiSecretsJson);
-        
+
 //string template = File.ReadAllText("./template1.html");
 //string output = new ClmScheduleGenerator()
 //    .Generate(secretsJsonPath, documentId, range, friendName, template);

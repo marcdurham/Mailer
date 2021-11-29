@@ -5,9 +5,11 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailerRestApi", "MailerRestApi\MailerRestApi.csproj", "{417AB079-511E-41A4-B0E8-99D13717BE37}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailerCommon", "MailerCommon\MailerCommon.csproj", "{0BDCFBFC-3FBF-4E44-9DB1-A12699CCEDE8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailerCommon", "MailerCommon\MailerCommon.csproj", "{0BDCFBFC-3FBF-4E44-9DB1-A12699CCEDE8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailerCli", "MailerCli\MailerCli.csproj", "{932E6F14-5122-418F-8B13-610E02617036}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailerCli", "MailerCli\MailerCli.csproj", "{932E6F14-5122-418F-8B13-610E02617036}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailerCommon.Tests", "MailerCommon.Tests\MailerCommon.Tests.csproj", "{BB8C4811-2330-4545-88DF-88224F726D6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{932E6F14-5122-418F-8B13-610E02617036}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{932E6F14-5122-418F-8B13-610E02617036}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{932E6F14-5122-418F-8B13-610E02617036}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB8C4811-2330-4545-88DF-88224F726D6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB8C4811-2330-4545-88DF-88224F726D6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB8C4811-2330-4545-88DF-88224F726D6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB8C4811-2330-4545-88DF-88224F726D6A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
