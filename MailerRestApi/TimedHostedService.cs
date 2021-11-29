@@ -40,6 +40,8 @@ public class TimedHostedService : IHostedService, IDisposable
         new PublisherEmailer(sheets, sendGridApiKey).Run(
             clmSendEmailsDocumentId: clmSendEmailsDocumentId,
             clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
+            pwAssignmentListDocumentId: clmAssignmentListDocumentId,
+            friendInfoDocumentId: clmAssignmentListDocumentId,
             googleApiSecretsJson: googleApiSecretsJson);
     }
 

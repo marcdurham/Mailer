@@ -32,13 +32,19 @@ public class PublisherEmailer
 
     public void Run(
         string? clmSendEmailsDocumentId, 
-        string? clmAssignmentListDocumentId, 
+        string? clmAssignmentListDocumentId,
+        string? pwAssignmentListDocumentId,
+        string? friendInfoDocumentId,
         string? googleApiSecretsJson)
     {
         if (clmSendEmailsDocumentId == null)
             throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
+        if (pwAssignmentListDocumentId == null)
+            throw new ArgumentNullException(nameof(pwAssignmentListDocumentId));
         if (clmAssignmentListDocumentId == null)
             throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
+        if (friendInfoDocumentId == null)
+            throw new ArgumentNullException(nameof(friendInfoDocumentId));
         if (googleApiSecretsJson == null)
             throw new ArgumentNullException(nameof(googleApiSecretsJson));
 
@@ -56,7 +62,7 @@ public class PublisherEmailer
 
         Console.WriteLine();
         Console.WriteLine("Loading Friends...");
-        IList<IList<object>> friendInfoRows = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "Friend Info!B1:AI500");
+        IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500"); //"Friend Info!B1:AI500");
         var friendMap = FriendLoader.GetFriends(friendInfoRows);
         foreach (string friend in friendMap.Keys)
         {
@@ -91,21 +97,23 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for CLM...");
         IList<IList<object>> values = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
-        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM", 1);
-        foreach(Meeting meeting in clmMeetings)
+        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM");
+        foreach(Meeting meeting in clmMeetings.Where(m => m.Date >= thisMonday))
         {
+            //var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
-            if(week != null)
+            if (week != null)
                 week.Midweek = meeting;
         }
 
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for PW...");
-        IList<IList<object>> pwValues = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "PW Assignment List!B1:AM9999");
+        IList<IList<object>> pwValues = _sheets.Read(documentId: pwAssignmentListDocumentId, range: "PW Assignment List!B1:AM9999");
         List<Meeting> pwMeetings = ScheduleLoader.GetSchedule(pwValues, friendMap, 5, "PW");
-        foreach (Meeting meeting in pwMeetings)
+        foreach (Meeting meeting in pwMeetings.Where(m => m.Date >= thisMonday))
         {
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
+            //var week = schedule.Weeks.SingleOrDefault(w => w.Start == meeting.Date);
             if (week != null)
                 week.Weekend = meeting;
         }
