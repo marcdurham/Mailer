@@ -42,43 +42,27 @@ namespace MailerCommon
             };
 
             using (var reader = new StreamReader(documentId))
+            using (var csv = new CsvReader(reader, configuration))
             {
-                //for (int r = 0; r < startRow; r++)
-                //{
-                //    reader.ReadLine();
-                //}
-                using (var csv = new CsvReader(reader, configuration))
-                {
-                    // //var records = csv.GetRecords<dynamic>().ToList<dynamic>();
-                    var output = new List<IList<object>>();
-                    for (int r = 0; r < startRow; r++)
-                        csv.Read();
-
+                var output = new List<IList<object>>();
+                for (int r = 0; r < startRow; r++)
                     csv.Read();
-                    csv.ReadHeader();
-                    while (csv.Read())
+
+                csv.Read();
+                csv.ReadHeader();
+                while (csv.Read())
+                {
+                    var row = new List<object>();
+                    for(int col = startColumn; col < csv.HeaderRecord.Count(); col++)
                     {
-                        //foreach(IDictionary<string, object> record in records)
-                        ///for (int r = startRow; r < records.Count; r++)
-                        ///{
-                            ///IDictionary<string, object> record = records[r];
-                            var row = new List<object>();
-                            ///var keys = record.Keys.ToArray();
-                            ///for (int col = startColumn; col < record.Keys.Count; col++)
-                            for(int col = startColumn; col < csv.HeaderRecord.Count(); col++)
-                            {
-                            ///string key = keys[col];
-
-                            ///row.Add(record[key]);
-                            object val = csv[col];
-                                row.Add(csv[col]);
-                            }
-
-                            output.Add(row);
-                        ///}
+                        object val = csv[col];
+                        row.Add(csv[col]);
                     }
-                    return output;
+
+                    output.Add(row);
                 }
+
+                return output;
             }
         }
 
