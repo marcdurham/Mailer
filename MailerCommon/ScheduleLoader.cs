@@ -2,10 +2,14 @@
 {
     public class ScheduleLoader
     {
-        public static List<Meeting> GetSchedule(IList<IList<object>> values, Dictionary<string, Friend> friendMap, int dayOfWeek, string title, int weekKeyColumnIndex = 0)
+        public static List<Meeting> GetSchedule(
+            IList<IList<object>> values, 
+            Dictionary<string, Friend> friendMap, 
+            int dayOfWeek, 
+            string title, 
+            int weekKeyColumnIndex = 0)
         {
             const int HeaderRowIndex = 0;
-            //DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
 
             string[] headers = new string[values[HeaderRowIndex].Count];
             var assignmentNames = new Dictionary<string, string>();
@@ -16,10 +20,6 @@
                 assignmentNames[assignmentName.ToUpper()] = assignmentName;
             }
 
-            //var schedule = new Schedule()
-            //{
-            //    NextMeetingDate = thisMonday.AddDays(3),   // different
-            //};
             var meetings = new List<Meeting>();
 
             string[] rows = new string[values.Count];
@@ -29,15 +29,9 @@
                 var monday = DateTime.Parse(values[wk][weekKeyColumnIndex].ToString() ?? string.Empty);
                 var meeting = new Meeting
                 {
-                    Name = title,              // different
-                    Date = monday.AddDays(dayOfWeek)   // different
+                    Name = title,
+                    Date = monday.AddDays(dayOfWeek)
                 };
-
-                //var week = new ScheduleWeek
-                //{
-                //    Start = monday,
-                //    Midweek = meeting // different
-                //};
 
                 for (int a = 2; a < values[wk].Count; a++)
                 {
@@ -66,10 +60,8 @@
                 }
 
                 meetings.Add(meeting);
-                //schedule.Weeks.Add(week);
             }
 
-            //return schedule;
             return meetings;
         }
     }

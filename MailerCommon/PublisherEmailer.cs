@@ -33,6 +33,7 @@ public class PublisherEmailer
         string? clmSendEmailsDocumentId, 
         string? clmAssignmentListDocumentId,
         string? pwAssignmentListDocumentId,
+        string? mfsAssignmentListDocumentId,
         string? friendInfoDocumentId)
     {
         if (clmSendEmailsDocumentId == null)
@@ -41,6 +42,8 @@ public class PublisherEmailer
             throw new ArgumentNullException(nameof(pwAssignmentListDocumentId));
         if (clmAssignmentListDocumentId == null)
             throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
+        if (mfsAssignmentListDocumentId == null)
+            throw new ArgumentNullException(nameof(mfsAssignmentListDocumentId));
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
 
@@ -131,6 +134,17 @@ public class PublisherEmailer
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
             if (week != null)
                 week.Weekend = meeting;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Loading Assignment List for Meetings for Service Schedule...");
+        IList<IList<object>> mfsValues = _sheets.Read(documentId: mfsAssignmentListDocumentId, range: "Service Schedule!B1:L9999");
+        List<Meeting> mfsMeetings = ScheduleLoader.GetSchedule(mfsValues, friendMap, 5, "MFS");
+        foreach (Meeting meeting in mfsMeetings.Where(m => m.Date >= thisMonday))
+        {
+            var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
+            if (week != null)
+                week.MeetingsForService.Add(meeting.Date, meeting);
         }
 
         Console.WriteLine();
