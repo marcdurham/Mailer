@@ -128,10 +128,7 @@ public class HtmlScheduleGenerator
         return template;
     }
 
-    public static string InjectUpcomingAssignments(
-        string friendName,
-        string template,
-        Schedule schedule)
+    public static string InjectUpcomingAssignments(string friendName, string template, Schedule schedule)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
@@ -151,14 +148,13 @@ public class HtmlScheduleGenerator
             lineBuilder.AppendLine($"<li>{assignment.Date.ToString("yyyy MMM-dd dddd")}: {assignment.Name}</li>");
         }
 
-        var builder = new StringBuilder(1000);
-        builder.AppendLine($"<div><h3>Hello {friendName}, you have {futurePresentDays.Count} upcoming assignments</h3><ul>");
-        builder.Append(lineBuilder.ToString());
-        builder.AppendLine("</ul></div>");
+        var upcomingAssignments = new StringBuilder(1000);
+        upcomingAssignments.AppendLine($"<div><h3>Hello {friendName}, you have {futurePresentDays.Count} upcoming assignments</h3><ul>");
+        upcomingAssignments.Append(lineBuilder.ToString());
+        upcomingAssignments.AppendLine("</ul></div>");
 
-        template = template.Replace("@{UpcomingAssignmentsList}", builder.ToString());
+        template = Regex.Replace(template, @"<\s*inject-upcoming-assignments-here\s*/\s*>", upcomingAssignments.ToString(), RegexOptions.IgnoreCase);
 
         return template;
     }
-
 }
