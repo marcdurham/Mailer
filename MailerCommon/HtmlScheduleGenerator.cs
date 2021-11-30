@@ -9,22 +9,24 @@ public class HtmlScheduleGenerator
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
         Console.WriteLine("This Month (New)");
-        var latestMeetings = meetings
-            .Where(m => m.Date >= thisMonday)
-            .OrderBy(m => m.Date)
-            .Take(4)
-            .ToList();
-        
-        template = InjectAssignmentsReverse(template, latestMeetings);
+        //var latestMeetings = meetings
+        //    .Where(m => m.Date >= thisMonday)
+        //    .OrderBy(m => m.Date)
+        //    .Take(4)
+        //    .ToList();
+
+        template = InjectAssignmentsReverse(template, meetings); // latestMeetings);
 
         return template;
     }
 
     static string InjectAssignmentsReverse(string html, List<Meeting> meetings)
     {
-        for (int wk = 0; wk < 4; wk++)
+        foreach (Meeting m in meetings)
         {
+            int wk = meetings.IndexOf(m);
             html = html.Replace($"@{{Day{wk}}}", meetings[wk].Date.ToString("yyyy-MM-dd"));
+            html = html.Replace($"@{{DayOfWeek{wk}}}", meetings[wk].Date.ToString("dddd"));
         }
 
         Regex regex = new Regex(@"@{.+}");
@@ -62,6 +64,15 @@ public class HtmlScheduleGenerator
                         Console.WriteLine($"CHS: {meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}");
                         html = html.Replace(value, meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName);
                     }
+                    else if (string.Equals(property, "NoService"))
+                    {
+                        string id = meetings[indexValue].Assignments[key].Friend.Name;
+                        if(id.Contains("/"))
+                            id = meetings[indexValue].Assignments[key].Friend.Name.Split("/").Last();
+
+                        Console.WriteLine($"NoService: {id}");
+                        html = html.Replace(value, id);
+                    }
                     else
                     {
                         Console.WriteLine($"A: {meetings[indexValue].Assignments[key].Friend.AllNames()}");
@@ -84,12 +95,13 @@ public class HtmlScheduleGenerator
         return html;
     }
 
-    static string InjectAssignments(string friendName, string template, List<Meeting> latest)
+    static string InjectAssignments(string friendName, string template, List<Meeting> meetings)
     {
-        for (int wk = 0; wk < 4; wk++)
+        foreach(Meeting m in meetings)
         {
-            string weekKey = latest[wk].Date.ToString("yyyy-MM-dd");
-            var meeting = latest[wk];
+            int wk = meetings.IndexOf(m);
+            string weekKey = meetings[wk].Date.ToString("yyyy-MM-dd");
+            var meeting = meetings[wk];
 
             template = InjectWeekAssignments(friendName, template, wk, weekKey, meeting);
         }

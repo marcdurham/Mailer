@@ -9,6 +9,7 @@ public class PublisherEmailer
     private const string ClmSendEmailsRange = "CLM Send Emails!B2:F300";
     private const string ClmTemplatePath = "./template1.html";
     private const string PwTemplatePath = "./template3.html";
+    private const string MfsTemplatePath = "./template4.html";
     private const string IsoDateFormat = "yyyy-MM-dd";
     readonly IEmailSender _emailSender;
     private readonly ISheets _sheets;
@@ -49,6 +50,7 @@ public class PublisherEmailer
 
         string clmTemplate = File.ReadAllText(ClmTemplatePath);
         string pwTemplate = File.ReadAllText(PwTemplatePath);
+        string mfsTemplate = File.ReadAllText(MfsTemplatePath);
 
         Console.WriteLine();
         Console.WriteLine("Loading Email Recipients...");
@@ -117,7 +119,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for CLM...");
         IList<IList<object>> values = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
-        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, 3, "CLM");
+        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { 3 }, "CLM");
         foreach(Meeting meeting in clmMeetings.Where(m => m.Date >= thisMonday))
         {
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
@@ -128,7 +130,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for PW...");
         IList<IList<object>> pwValues = _sheets.Read(documentId: pwAssignmentListDocumentId, range: "PW Assignment List!B1:AM9999");
-        List<Meeting> pwMeetings = ScheduleLoader.GetSchedule(pwValues, friendMap, 5, "PW");
+        List<Meeting> pwMeetings = ScheduleLoader.GetSchedule(pwValues, friendMap, new int[] { 5 }, "PW");
         foreach (Meeting meeting in pwMeetings.Where(m => m.Date >= thisMonday))
         {
             var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
@@ -139,10 +141,11 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for Meetings for Service Schedule...");
         IList<IList<object>> mfsValues = _sheets.Read(documentId: mfsAssignmentListDocumentId, range: "Service Schedule!B1:L9999");
-        List<Meeting> mfsMeetings = ScheduleLoader.GetSchedule(mfsValues, friendMap, 5, "MFS");
+        List<Meeting> mfsMeetings = ScheduleLoader.GetSchedule(mfsValues, friendMap, new int[]{0}, "MFS");
         foreach (Meeting meeting in mfsMeetings.Where(m => m.Date >= thisMonday))
         {
-            var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(5) == meeting.Date);
+            var week = schedule.Weeks.SingleOrDefault(w => meeting.Date >= w.Start
+                && meeting.Date <= w.Start.AddDays(6));
             if (week != null)
                 week.MeetingsForService.Add(meeting.Date, meeting);
         }
@@ -152,6 +155,7 @@ public class PublisherEmailer
         List<Meeting> thursdayMeetings = schedule.AllMeetings()
             .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Thursday)
             .OrderBy(m => m.Date)
+            .Take(4)
             .ToList();
 
         string thursdayHtml = HtmlScheduleGenerator.Generate(
@@ -168,6 +172,7 @@ public class PublisherEmailer
         List<Meeting> saturdayMeetings = schedule.AllMeetings()
             .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Saturday)
             .OrderBy(m => m.Date)
+            .Take(4)
             .ToList();
         
         string saturdayHtml = HtmlScheduleGenerator.Generate(
@@ -178,6 +183,24 @@ public class PublisherEmailer
         Console.WriteLine("Sending PW schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
             GenerateAndSendEmailFor(saturdayHtml, schedule, saturdayMeetings, recipient);
+
+
+        Console.WriteLine();
+        Console.WriteLine("Generating HTML MFS schedules and sending emails...");
+        List<Meeting> allMfsMeetings = schedule.AllMeetings()
+            .Where(m => m.Date >= thisMonday && m.Name == "MFS")
+            .OrderBy(m => m.Date)
+            .Take(7 * 2)
+            .ToList();
+
+        string mfsHtml = HtmlScheduleGenerator.Generate(
+            template: mfsTemplate,
+            meetings: allMfsMeetings);
+
+        Console.WriteLine();
+        Console.WriteLine("Sending MFS schedules and setting status...");
+        foreach (EmailRecipient recipient in recipients)
+            GenerateAndSendEmailFor(mfsHtml, schedule, allMfsMeetings, recipient);
 
         Console.WriteLine();
         Console.WriteLine("Writing status of emails to recipients...");

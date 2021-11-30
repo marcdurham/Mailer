@@ -5,7 +5,7 @@
         public static List<Meeting> GetSchedule(
             IList<IList<object>> values, 
             Dictionary<string, Friend> friendMap, 
-            int dayOfWeek, 
+            int[] daysOfWeek, 
             string title, 
             int weekKeyColumnIndex = 0)
         {
@@ -27,39 +27,42 @@
             {
                 rows[wk] = values[wk][weekKeyColumnIndex]?.ToString() ?? string.Empty;
                 var monday = DateTime.Parse(values[wk][weekKeyColumnIndex].ToString() ?? string.Empty);
-                var meeting = new Meeting
-                {
-                    Name = title,
-                    Date = monday.AddDays(dayOfWeek)
-                };
-
-                for (int a = 2; a < values[wk].Count; a++)
-                {
-                    string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
-                    Friend assignee;
-                    if (friendMap.ContainsKey(assigneeName.ToUpperInvariant()))
+                //foreach (int dayOfWeek in daysOfWeek)
+                //{
+                    var meeting = new Meeting
                     {
-                        assignee = friendMap[assigneeName.ToUpperInvariant()];
-                    }
-                    else
-                    {
-                        assignee = new MissingFriend(assigneeName);
-                    }
-
-                    string assignementKey = headers[a];
-                    var assignment = new Assignment
-                    {
-                        Key = assignementKey,
-                        Name = assignmentNames[assignementKey.ToUpper()],
-                        Date = meeting.Date,
-                        School = 0,
-                        Friend = assignee,
+                        Name = title,
+                        Date = monday.AddDays(daysOfWeek[0])
                     };
 
-                    meeting.Assignments[assignment.Key] = assignment;
-                }
+                    for (int a = 2; a < values[wk].Count; a++)
+                    {
+                        string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
+                        Friend assignee;
+                        if (friendMap.ContainsKey(assigneeName.ToUpperInvariant()))
+                        {
+                            assignee = friendMap[assigneeName.ToUpperInvariant()];
+                        }
+                        else
+                        {
+                            assignee = new MissingFriend(assigneeName);
+                        }
 
-                meetings.Add(meeting);
+                        string assignementKey = headers[a];
+                        var assignment = new Assignment
+                        {
+                            Key = assignementKey,
+                            Name = assignmentNames[assignementKey.ToUpper()],
+                            Date = meeting.Date,
+                            School = 0,
+                            Friend = assignee,
+                        };
+
+                        meeting.Assignments[assignment.Key] = assignment;
+                    }
+
+                    meetings.Add(meeting);
+                //}
             }
 
             return meetings;
