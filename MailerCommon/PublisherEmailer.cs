@@ -72,6 +72,7 @@ public class PublisherEmailer
 
             if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
             {
+                recipient.Friend = friend;
                 recipient.EmailAddressFromFriend = string.Equals(
                     recipient.EmailAddress,
                     friend.EmailAddress,
@@ -153,7 +154,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Generating HTML CLM schedules and sending CLM emails...");
         List<Meeting> thursdayMeetings = schedule.AllMeetings()
-            .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Thursday)
+            .Where(m => m.Date >= thisMonday && m.Name == "CLM")
             .OrderBy(m => m.Date)
             .Take(4)
             .ToList();
@@ -170,7 +171,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Generating HTML PW schedules and sending emails...");
         List<Meeting> saturdayMeetings = schedule.AllMeetings()
-            .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Saturday)
+            .Where(m => m.Date >= thisMonday && m.Name == "PW")
             .OrderBy(m => m.Date)
             .Take(4)
             .ToList();
@@ -231,8 +232,11 @@ public class PublisherEmailer
     {
         htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
             friendName: recipient.Name,
+            friend: recipient.Friend,
             template: htmlMessageText,
             schedule: schedule);
+
+        htmlMessageText = HtmlScheduleGenerator.Highlight(recipient.Friend, htmlMessageText);
 
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";

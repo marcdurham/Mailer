@@ -55,6 +55,8 @@ public class Assignment
     public DateTime Date { get; set; } 
     public int School { get; set; }
     public Friend Friend { get; set; } = Friend.Nobody;
+    public string Meeting { get; set; } = string.Empty;
+    public string MeetingName { get; set; } = string.Empty;
 }
 
 public class EmptyAssignment : Assignment

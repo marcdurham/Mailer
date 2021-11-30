@@ -27,42 +27,43 @@
             {
                 rows[wk] = values[wk][weekKeyColumnIndex]?.ToString() ?? string.Empty;
                 var monday = DateTime.Parse(values[wk][weekKeyColumnIndex].ToString() ?? string.Empty);
-                //foreach (int dayOfWeek in daysOfWeek)
-                //{
-                    var meeting = new Meeting
+                var meeting = new Meeting
+                {
+                    Name = title,
+                    Date = monday.AddDays(daysOfWeek[0])
+                };
+
+                for (int a = 2; a < values[wk].Count; a++)
+                {
+                    string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
+                    Friend assignee;
+                    if (friendMap.ContainsKey(assigneeName.ToUpperInvariant()))
                     {
-                        Name = title,
-                        Date = monday.AddDays(daysOfWeek[0])
-                    };
-
-                    for (int a = 2; a < values[wk].Count; a++)
+                        assignee = friendMap[assigneeName.ToUpperInvariant()];
+                    }
+                    else
                     {
-                        string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
-                        Friend assignee;
-                        if (friendMap.ContainsKey(assigneeName.ToUpperInvariant()))
-                        {
-                            assignee = friendMap[assigneeName.ToUpperInvariant()];
-                        }
-                        else
-                        {
-                            assignee = new MissingFriend(assigneeName);
-                        }
-
-                        string assignementKey = headers[a];
-                        var assignment = new Assignment
-                        {
-                            Key = assignementKey,
-                            Name = assignmentNames[assignementKey.ToUpper()],
-                            Date = meeting.Date,
-                            School = 0,
-                            Friend = assignee,
-                        };
-
-                        meeting.Assignments[assignment.Key] = assignment;
+                        assignee = new MissingFriend(assigneeName);
                     }
 
-                    meetings.Add(meeting);
-                //}
+                    string assignementKey = headers[a];
+                    var assignment = new Assignment
+                    {
+                        Key = assignementKey,
+                        Name = assignmentNames[assignementKey.ToUpper()],
+                        Date = meeting.Date,
+                        School = 0,
+                        Friend = assignee,
+                        Meeting = meeting.Name,
+                        MeetingName = meeting.Name == "CLM" 
+                            ? "CLM"
+                            : (meeting.Name == "PW" ? "PT/WS" :(meeting.Name == "MFS" ? "Service" : ""))
+                    };
+
+                    meeting.Assignments[assignment.Key] = assignment;
+                }
+
+                meetings.Add(meeting);
             }
 
             return meetings;

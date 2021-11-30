@@ -1,4 +1,6 @@
-﻿namespace Mailer.Sender;
+﻿using MailerCommon;
+
+namespace Mailer.Sender;
 
 public class EmailRecipient
 {
@@ -7,6 +9,7 @@ public class EmailRecipient
     public string? EmailAddressFromFriend { get; set;  }
     public string? Sent { get; set; }
     public string? Result { get; set; }
+    public Friend Friend { get; set; }
 
     public override string ToString()
     {

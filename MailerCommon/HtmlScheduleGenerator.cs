@@ -140,7 +140,7 @@ public class HtmlScheduleGenerator
         return template;
     }
 
-    public static string InjectUpcomingAssignments(string friendName, string template, Schedule schedule)
+    public static string InjectUpcomingAssignments(string friendName, Friend friend, string template, Schedule schedule)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
@@ -149,7 +149,10 @@ public class HtmlScheduleGenerator
         Console.WriteLine($"Upcoming Assignments for {friendName}");
         var futurePresentDays = schedule.AllAssignments()
             .Where(a => a.Date >= thisMonday)
-            .Where(a => a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase))
+            .Where(a => 
+                a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase)
+                || a.Friend.SimplifiedChineseName.Equals(friendName, StringComparison.OrdinalIgnoreCase)
+                || a.Friend.PinYinName.Equals(friendName, StringComparison.OrdinalIgnoreCase))
             .OrderBy(a => a.Date)
             .ToList();
 
@@ -157,7 +160,7 @@ public class HtmlScheduleGenerator
 
         foreach (Assignment assignment in futurePresentDays)
         {
-            lineBuilder.AppendLine($"<li>{assignment.Date.ToString("yyyy MMM-dd dddd")}: {assignment.Name}</li>");
+            lineBuilder.AppendLine($"<li>{assignment.Date.ToString("yyyy MMM-dd dddd")}: <strong>{assignment.MeetingName}:</strong> {assignment.Name}</li>");
         }
 
         var upcomingAssignments = new StringBuilder(1000);
@@ -168,5 +171,17 @@ public class HtmlScheduleGenerator
         template = Regex.Replace(template, @"<\s*inject-upcoming-assignments-here\s*/\s*>", upcomingAssignments.ToString(), RegexOptions.IgnoreCase);
 
         return template;
+    }
+
+    public static string Highlight(Friend friend, string html)
+    {
+        if(!string.IsNullOrWhiteSpace(friend.Name))
+            html = html.Replace(friend.Name, $"<span class='selected-friend'>{friend.Name}</span>");
+        if(!string.IsNullOrWhiteSpace(friend.SimplifiedChineseName))
+            html = html.Replace(friend.SimplifiedChineseName, $"<span class='selected-friend'>{friend.SimplifiedChineseName}</span>");
+        if(!string.IsNullOrWhiteSpace(friend.PinYinName))
+            html = html.Replace(friend.PinYinName, $"<span class='selected-friend'>{friend.PinYinName}</span>");
+
+        return html;
     }
 }
