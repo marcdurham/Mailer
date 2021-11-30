@@ -63,11 +63,37 @@ public class PublisherEmailer
 
         foreach(EmailRecipient recipient in recipients)
         {
-            recipient.EmailAddressFromFriend = friendMap.ContainsKey(recipient.Name.ToUpperInvariant()) 
-                ? friendMap[recipient.Name.ToUpperInvariant()].EmailAddress 
-                : "Friend Not Found";
+            recipient.EmailAddressFromFriend = "Friend Not Found";
+
+            if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
+            {
+                recipient.EmailAddressFromFriend = string.Equals(
+                    recipient.EmailAddress,
+                    friend.EmailAddress,
+                    StringComparison.OrdinalIgnoreCase) 
+                    ? "Friend Email Match" : "Friend Email Different";
+            }
         }
 
+        Console.WriteLine();
+        Console.WriteLine("Writing status of emails to recipients...");
+        foreach (EmailRecipient publisher in recipients)
+        {
+            clmSendEmailsRows[recipients.IndexOf(publisher)] = new object[5] {
+                publisher.Name,
+                publisher.EmailAddress,
+                publisher.Sent,
+                publisher.EmailAddressFromFriend,
+                "Preparing to send email" };
+        }
+
+        _sheets.Write(
+            documentId: clmSendEmailsDocumentId,
+            range: ClmSendEmailsRange,
+            values: clmSendEmailsRows);
+
+        Console.WriteLine();
+        Console.WriteLine("Creating schedule...");
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         var schedule = new Schedule()
         {
@@ -109,13 +135,35 @@ public class PublisherEmailer
 
         Console.WriteLine();
         Console.WriteLine("Generating HTML CLM schedules and sending CLM emails...");
+        List<Meeting> thursdayMeetings = schedule.AllMeetings()
+            .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Thursday)
+            .OrderBy(m => m.Date)
+            .ToList();
+
+        string thursdayHtml = HtmlScheduleGenerator.Generate(
+            template: clmTemplate,
+            meetings: thursdayMeetings);
+
+        Console.WriteLine();
+        Console.WriteLine("Sending CLM schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
-            GenerateAndSendEmailFor(clmTemplate, thisMonday, DayOfWeek.Thursday, schedule, recipient);
+            GenerateAndSendEmailFor(thursdayHtml, schedule, thursdayMeetings, recipient);
 
         Console.WriteLine();
         Console.WriteLine("Generating HTML PW schedules and sending emails...");
+        List<Meeting> saturdayMeetings = schedule.AllMeetings()
+            .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == DayOfWeek.Saturday)
+            .OrderBy(m => m.Date)
+            .ToList();
+        
+        string saturdayHtml = HtmlScheduleGenerator.Generate(
+            template: pwTemplate,
+            meetings: saturdayMeetings);
+
+        Console.WriteLine();
+        Console.WriteLine("Sending PW schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
-            GenerateAndSendEmailFor(pwTemplate, thisMonday, DayOfWeek.Saturday, schedule, recipient);
+            GenerateAndSendEmailFor(saturdayHtml, schedule, saturdayMeetings, recipient);
 
         Console.WriteLine();
         Console.WriteLine("Writing status of emails to recipients...");
@@ -124,8 +172,8 @@ public class PublisherEmailer
             clmSendEmailsRows[recipients.IndexOf(publisher)] = new object[5] {
                 publisher.Name,
                 publisher.EmailAddress,
-                publisher.EmailAddressFromFriend,
                 publisher.Sent,
+                publisher.EmailAddressFromFriend,
                 publisher.Result };
         }
 
@@ -138,18 +186,12 @@ public class PublisherEmailer
         Console.WriteLine("Done");
     }
 
-    void GenerateAndSendEmailFor(string htmlTemplate, DateTime thisMonday, DayOfWeek dayOfWeek, Schedule schedule, EmailRecipient recipient)
+    void GenerateAndSendEmailFor(
+        string htmlMessageText, 
+        Schedule schedule, 
+        IEnumerable<Meeting> meetings, 
+        EmailRecipient recipient)
     {
-        List<Meeting> meetings = schedule.AllMeetings()
-            .Where(m => m.Date >= thisMonday && m.Date.DayOfWeek == dayOfWeek)
-            .OrderBy(m => m.Date)
-            .ToList();
-
-        string htmlMessageText = HtmlScheduleGenerator.Generate(
-            friendName: recipient.Name,
-            template: htmlTemplate,
-            meetings: meetings);
-
         htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
             friendName: recipient.Name,
             template: htmlMessageText,

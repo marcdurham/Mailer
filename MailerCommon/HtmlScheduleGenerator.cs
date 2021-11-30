@@ -4,10 +4,7 @@ using System.Text.RegularExpressions;
 namespace MailerCommon;
 public class HtmlScheduleGenerator
 {
-    public static string Generate(
-        string friendName,
-        string template,
-        List<Meeting> meetings)
+    public static string Generate(string template, List<Meeting> meetings)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
@@ -17,24 +14,22 @@ public class HtmlScheduleGenerator
             .OrderBy(m => m.Date)
             .Take(4)
             .ToList();
-
         
-        
-        template = InjectAssignmentsReverse(friendName, template, latestMeetings);
+        template = InjectAssignmentsReverse(template, latestMeetings);
 
         return template;
     }
 
-    static string InjectAssignmentsReverse(string friendName, string template, List<Meeting> meetings)
+    static string InjectAssignmentsReverse(string html, List<Meeting> meetings)
     {
         for (int wk = 0; wk < 4; wk++)
         {
-            template = template.Replace($"@{{Day{wk}}}", meetings[wk].Date.ToString("yyyy-MM-dd"));
+            html = html.Replace($"@{{Day{wk}}}", meetings[wk].Date.ToString("yyyy-MM-dd"));
         }
 
         Regex regex = new Regex(@"@{.+}");
 
-        MatchCollection? matches = regex.Matches(template);
+        MatchCollection? matches = regex.Matches(html);
 
         foreach (Match match in matches)
         {
@@ -55,28 +50,28 @@ public class HtmlScheduleGenerator
                     if (string.Equals(property, "N") || string.Equals(property, "Name"))
                     {
                         Console.WriteLine($"Name: {meetings[indexValue].Assignments[key].Name}");
-                        template = template.Replace(value, meetings[indexValue].Assignments[key].Name);
+                        html = html.Replace(value, meetings[indexValue].Assignments[key].Name);
                     }
                     else if (string.Equals(property, "E"))
                     {
                         Console.WriteLine($"E: {meetings[indexValue].Assignments[key].Friend.EnglishName}");
-                        template = template.Replace(value, meetings[indexValue].Assignments[key].Friend.EnglishName);
+                        html = html.Replace(value, meetings[indexValue].Assignments[key].Friend.EnglishName);
                     }
                     else if (string.Equals(property, "CHS"))
                     {
                         Console.WriteLine($"CHS: {meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}");
-                        template = template.Replace(value, meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName);
+                        html = html.Replace(value, meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName);
                     }
                     else
                     {
                         Console.WriteLine($"A: {meetings[indexValue].Assignments[key].Friend.AllNames()}");
                         string htmlName = $"{ meetings[indexValue].Assignments[key].Friend.PinYinName}<br/>{ meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}<br/>{ meetings[indexValue].Assignments[key].Friend.Name}";
-                        template = template.Replace(value, htmlName);
+                        html = html.Replace(value, htmlName);
                     }
                 }
                 else
                 {
-                    template = template.Replace(value, string.Empty);
+                    html = html.Replace(value, string.Empty);
                 }
             }
             else
@@ -86,7 +81,7 @@ public class HtmlScheduleGenerator
             Console.WriteLine();
         }
 
-        return template;
+        return html;
     }
 
     static string InjectAssignments(string friendName, string template, List<Meeting> latest)

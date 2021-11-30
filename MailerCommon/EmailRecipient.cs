@@ -7,4 +7,9 @@ public class EmailRecipient
     public string? EmailAddressFromFriend { get; set;  }
     public string? Sent { get; set; }
     public string? Result { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Name} {EmailAddress} {Sent} {Result}";
+    }
 }

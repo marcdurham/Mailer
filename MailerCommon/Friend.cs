@@ -11,6 +11,10 @@ public class Friend
     public string SimplifiedChineseName { get; set; } = string.Empty;
     public string EmailAddress { get; set; } = string.Empty;
     public string[] AllNames() => new string[] { PinYinName, SimplifiedChineseName, EnglishName };
+    public override string ToString()
+    {
+        return $"{Name} {EmailAddress}";
+    }
 }
 
 public class Nobody : Friend
@@ -27,5 +31,10 @@ public class MissingFriend : Friend
     {
         Name = name;
         IsMissing = true;
+    }
+
+    public override string ToString()
+    {
+        return $"Missing: {base.ToString()}";
     }
 }
