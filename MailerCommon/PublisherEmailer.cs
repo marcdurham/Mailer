@@ -230,13 +230,13 @@ public class PublisherEmailer
         IEnumerable<Meeting> meetings, 
         EmailRecipient recipient)
     {
+        htmlMessageText = HtmlScheduleGenerator.Highlight(recipient.Friend, htmlMessageText);
+
         htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
             friendName: recipient.Name,
             friend: recipient.Friend,
             template: htmlMessageText,
             schedule: schedule);
-
-        htmlMessageText = HtmlScheduleGenerator.Highlight(recipient.Friend, htmlMessageText);
 
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
