@@ -142,7 +142,5 @@ public class CsvSheetsTests
         CsvSheets.ColumnIndex("AA").Should().Be(26);
         CsvSheets.ColumnIndex("AB").Should().Be(27);
         CsvSheets.ColumnIndex("AZ").Should().Be(51);
-        //CsvSheets.ColumnIndex("AAA").Should().Be(676);
-        //CsvSheets.ColumnIndex("AAB").Should().Be(677);
     }
 }

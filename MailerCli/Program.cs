@@ -13,20 +13,23 @@ string clmAssignmentListDocumentId = args[4];
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
-//ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-//new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
-//    clmSendEmailsDocumentId: clmSendEmailsDocumentId,
-//    clmAssignmentListDocumentId: clmAssignmentListDocumentId,
-//    pwAssignmentListDocumentId: clmAssignmentListDocumentId,
-//    friendInfoDocumentId: clmAssignmentListDocumentId);
-
-ISheets sheets = new CsvSheets();
+ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
-    clmSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Send Emails.csv",
-    clmAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Assignment List - Copy.csv",
-    pwAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - PW Assignment List.csv",
-    mfsAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Service Schedule.csv",
-    friendInfoDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Friend Info.csv");
+    clmSendEmailsDocumentId: clmSendEmailsDocumentId,
+    clmAssignmentListDocumentId: clmAssignmentListDocumentId,
+    pwSendEmailsDocumentId: clmSendEmailsDocumentId,
+    pwAssignmentListDocumentId: clmAssignmentListDocumentId,
+    mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
+    mfsAssignmentListDocumentId: clmAssignmentListDocumentId,
+    friendInfoDocumentId: clmAssignmentListDocumentId);
+
+//ISheets sheets = new CsvSheets();
+//new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
+//    clmSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Send Emails.csv",
+//    clmAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Assignment List - Copy.csv",
+//    pwAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - PW Assignment List.csv",
+//    mfsAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Service Schedule.csv",
+//    friendInfoDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Friend Info.csv");
 
 //string template = File.ReadAllText("./template1.html");
 //string output = new ClmScheduleGenerator()
