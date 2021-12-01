@@ -7,7 +7,7 @@
             Dictionary<string, Friend> friendMap, 
             int[] daysOfWeek, 
             string title, 
-            int weekKeyColumnIndex = 0)
+            int mondayColumnIndex = 0)
         {
             const int HeaderRowIndex = 0;
 
@@ -25,15 +25,15 @@
             string[] rows = new string[values.Count];
             for (int wk = 1; wk < values.Count; wk++)
             {
-                rows[wk] = values[wk][weekKeyColumnIndex]?.ToString() ?? string.Empty;
-                var monday = DateTime.Parse(values[wk][weekKeyColumnIndex].ToString() ?? string.Empty);
+                rows[wk] = values[wk][mondayColumnIndex]?.ToString() ?? string.Empty;
+                var monday = DateTime.Parse(values[wk][mondayColumnIndex].ToString() ?? string.Empty);
                 var meeting = new Meeting
                 {
                     Name = title,
                     Date = monday.AddDays(daysOfWeek[0])
                 };
 
-                for (int a = 2; a < values[wk].Count; a++)
+                for (int a = 2; a < values[wk].Count && a < headers.Length; a++)
                 {
                     string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
                     Friend assignee;
