@@ -56,6 +56,8 @@ public class PublisherEmailer
         string pwTemplate = File.ReadAllText(PwTemplatePath);
         string mfsTemplate = File.ReadAllText(MfsTemplatePath);
 
+
+
         Console.WriteLine();
         Console.WriteLine("Loading Friends...");
         IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500"); //"Friend Info!B1:AI500");
@@ -96,6 +98,9 @@ public class PublisherEmailer
             if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
             {
                 recipient.Friend = friend;
+                if (string.IsNullOrWhiteSpace(recipient.EmailAddress))
+                    recipient.EmailAddress = friend.EmailAddress;
+
                 recipient.Result = string.Equals(
                     recipient.EmailAddress,
                     friend.EmailAddress,
@@ -181,6 +186,9 @@ public class PublisherEmailer
             if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
             {
                 recipient.Friend = friend;
+                if(string.IsNullOrWhiteSpace(recipient.EmailAddress))
+                    recipient.EmailAddress = friend.EmailAddress;
+
                 recipient.Result = string.Equals(
                     recipient.EmailAddress,
                     friend.EmailAddress,
@@ -265,6 +273,9 @@ public class PublisherEmailer
             if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
             {
                 recipient.Friend = friend;
+                if (string.IsNullOrWhiteSpace(recipient.EmailAddress))
+                    recipient.EmailAddress = friend.EmailAddress;
+
                 recipient.Result = string.Equals(
                     recipient.EmailAddress,
                     friend.EmailAddress,
