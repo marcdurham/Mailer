@@ -29,21 +29,23 @@ public class Schedule
 public class ScheduleWeek
 {
     public DateTime Start { get; set; }
-    public Meeting Midweek { get; set; } = Meeting.Empty;
-    public Meeting Weekend { get; set; } = Meeting.Empty;
-    public Dictionary<DateTime, Meeting> MeetingsForService { get; set; } = new Dictionary<DateTime, Meeting>();
+    //public Meeting Midweek { get; set; } = Meeting.Empty;
+    //public Meeting Weekend { get; set; } = Meeting.Empty;
+    //public Dictionary<DateTime, Meeting> MeetingsForService { get; set; } = new Dictionary<DateTime, Meeting>();
+    public List<Meeting> Meetings { get; set; } = new List<Meeting>();
 
     public List<Meeting> AllMeetings()
     {
-        var list = new List<Meeting>()
-        { 
-            Midweek,
-            Weekend
-        };
+        //var list = new List<Meeting>()
+        //{ 
+        //    Midweek,
+        //    Weekend
+        //};
 
-        list.AddRange(MeetingsForService.Select(m => m.Value).ToList());
+        //list.AddRange(MeetingsForService.Select(m => m.Value).ToList());
 
-        return list;
+        //return list;
+        return Meetings;
     }
 }
 

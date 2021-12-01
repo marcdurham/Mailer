@@ -179,21 +179,22 @@ public class PublisherEmailer
 
             if (week != null)
             {
-                switch (meeting.Name)
-                {
-                    case "CLM":
-                        week.Midweek = meeting;
-                        break;
-                    case "PW":
-                        week.Weekend = meeting;
-                        break;
-                    case "MFS":
-                        week.MeetingsForService.Add(meeting.Date, meeting);
-                        break;
-                    default:
-                        week.MeetingsForService.Add(meeting.Date, meeting);
-                        break;
-                }
+                //switch (meeting.Name)
+                //{
+                //    case "CLM":
+                //        week.Midweek = meeting;
+                //        break;
+                //    case "PW":
+                //        week.Weekend = meeting;
+                //        break;
+                //    case "MFS":
+                //        week.MeetingsForService.Add(meeting.Date, meeting);
+                //        break;
+                //    default:
+                //        week.MeetingsForService.Add(meeting.Date, meeting);
+                //        break;
+                //}
+                week.Meetings.Add(meeting);
             }
             
         }
