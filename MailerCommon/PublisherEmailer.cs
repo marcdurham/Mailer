@@ -6,12 +6,12 @@ namespace Mailer.Sender;
 
 public class PublisherEmailer 
 {
-    private const string ClmSendEmailsRange = "CLM Send Emails!B2:F300";
-    private const string PwSendEmailsRange = "PW Send Emails!B2:F300";
-    private const string MfsSendEmailsRange = "Service Send Emails!B2:F300";
-    private const string ClmTemplatePath = "./template1.html";
-    private const string PwTemplatePath = "./template3.html";
-    private const string MfsTemplatePath = "./template4.html";
+    //private const string ClmSendEmailsRange = "CLM Send Emails!B2:F300";
+    //private const string PwSendEmailsRange = "PW Send Emails!B2:F300";
+    //private const string MfsSendEmailsRange = "Service Send Emails!B2:F300";
+    //private const string ClmTemplatePath = "./template1.html";
+    //private const string PwTemplatePath = "./template3.html";
+    //private const string MfsTemplatePath = "./template4.html";
     private const string IsoDateFormat = "yyyy-MM-dd";
     readonly IEmailSender _emailSender;
     private readonly ISheets _sheets;
@@ -52,38 +52,44 @@ public class PublisherEmailer
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
 
-        string clmTemplate = File.ReadAllText(ClmTemplatePath);
-        string pwTemplate = File.ReadAllText(PwTemplatePath);
-        string mfsTemplate = File.ReadAllText(MfsTemplatePath);
+        //string clmTemplate = File.ReadAllText(ClmTemplatePath);
+        //string pwTemplate = File.ReadAllText(PwTemplatePath);
+        //string mfsTemplate = File.ReadAllText(MfsTemplatePath);
 
-        var toSend = new List<ScheduleInputs>()
+        var schedules = new List<ScheduleInputs>()
         {
             new ScheduleInputs()
             {
                 MeetingName = "CLM",
-                HtmlTemplate = clmTemplate,
+                HtmlTemplatePath = "./template1.html",
                 SendEmailsDocumentId = clmSendEmailsDocumentId,
                 SendEmailsRange = "CLM Send Emails!B2:F300",
                 AssignmentListDocumentId = clmAssignmentListDocumentId,
+                AssignmentListRange =  $"CLM Assignment List!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Monday,
+                MeetingDayOfWeek = DayOfWeek.Thursday,
             },
             new ScheduleInputs()
             {
                 MeetingName = "PW",
-                HtmlTemplate = pwTemplate,
+                HtmlTemplatePath = "./template3.html",
                 SendEmailsDocumentId = pwSendEmailsDocumentId,
                 SendEmailsRange = "PW Send Emails!B2:F300",
                 AssignmentListDocumentId = pwAssignmentListDocumentId,
+                AssignmentListRange =  $"PW Assignment List!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Wednesday,
+                MeetingDayOfWeek = DayOfWeek.Saturday
             },
             new ScheduleInputs()
             {
                 MeetingName = "MFS",
-                HtmlTemplate = mfsTemplate,
+                HtmlTemplatePath = "./template4.html",
                 SendEmailsDocumentId = mfsSendEmailsDocumentId,
                 SendEmailsRange = "Service Send Emails!B2:F300",
                 AssignmentListDocumentId = mfsAssignmentListDocumentId,
+                AssignmentListRange =  $"Service Schedule!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Sunday,
+                MeetingDayOfWeek = (DayOfWeek)0,
             }
         };
 
@@ -115,19 +121,22 @@ public class PublisherEmailer
             schedule.Weeks.Add(week);
         }
         
-        SendShedulesFor("CLM", clmSendEmailsDocumentId, ClmSendEmailsRange, clmAssignmentListDocumentId, $"CLM Assignment List!B1:AY9999", clmTemplate, friendMap, thisMonday, schedule, DayOfWeek.Monday, DayOfWeek.Thursday);
-        SendShedulesFor("PW", pwSendEmailsDocumentId, PwSendEmailsRange, pwAssignmentListDocumentId, "PW Assignment List!B1:AY9999", pwTemplate, friendMap, thisMonday, schedule, DayOfWeek.Wednesday, DayOfWeek.Saturday);
-        SendShedulesFor("MFS", mfsSendEmailsDocumentId, MfsSendEmailsRange, mfsAssignmentListDocumentId, "Service Schedule!B1:AY9999", mfsTemplate, friendMap, thisMonday, schedule, DayOfWeek.Sunday, (DayOfWeek)0);
+        foreach(var sch in schedules)
+        {
+            SendSchedulesFor(sch, friendMap, thisMonday, schedule);
+        }
 
         Console.WriteLine();
         Console.WriteLine("Done");
     }
 
-    private void SendShedulesFor(string? meetingName, string? sendEmailsDocumentId, string? sendEmailsRange, string? assignmentListDocumentId, string? assignmentListRange, string htmlTemplate, Dictionary<string, Friend> friendMap, DateTime thisMonday, Schedule schedule, DayOfWeek sendDayOfWeek, DayOfWeek meetingDayOfWeek)
+    void SendSchedulesFor(ScheduleInputs scheduleInputs, Dictionary<string, Friend> friendMap, DateTime thisMonday, Schedule schedule)
     {
+        string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
+
         Console.WriteLine();
-        Console.WriteLine($"Loading {meetingName} Email Recipients...");
-        IList<IList<object>> sendEmailsRows = _sheets.Read(sendEmailsDocumentId, sendEmailsRange);
+        Console.WriteLine($"Loading {scheduleInputs.MeetingName} Email Recipients...");
+        IList<IList<object>> sendEmailsRows = _sheets.Read(scheduleInputs.SendEmailsDocumentId, scheduleInputs.SendEmailsRange);
         List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(sendEmailsRows);
 
         foreach (EmailRecipient recipient in recipients)
@@ -153,7 +162,7 @@ public class PublisherEmailer
         }
 
         Console.WriteLine();
-        Console.WriteLine($"Writing status of {meetingName} emails to recipients...");
+        Console.WriteLine($"Writing status of {scheduleInputs.MeetingName} emails to recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
             sendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
@@ -164,14 +173,14 @@ public class PublisherEmailer
         }
 
         _sheets.Write(
-            documentId: sendEmailsDocumentId,
-            range: sendEmailsRange,
+            documentId: scheduleInputs.SendEmailsDocumentId,
+            range: scheduleInputs.SendEmailsRange,
             values: sendEmailsRows);
 
         Console.WriteLine();
-        Console.WriteLine($"Loading Assignment List for {meetingName}...");
-        IList<IList<object>> values = _sheets.Read(documentId: assignmentListDocumentId, range: assignmentListRange);
-        List<Meeting> meetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { (int)meetingDayOfWeek }, meetingName);
+        Console.WriteLine($"Loading Assignment List for {scheduleInputs.MeetingName}...");
+        IList<IList<object>> values = _sheets.Read(documentId: scheduleInputs.AssignmentListDocumentId, range: scheduleInputs.AssignmentListRange);
+        List<Meeting> meetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { (int)scheduleInputs.MeetingDayOfWeek }, scheduleInputs.MeetingName);
         foreach (Meeting meeting in meetings.Where(m => m.Date >= thisMonday))
         {
             var week = schedule.Weeks.SingleOrDefault(w => meeting.Date >= w.Start && meeting.Date < w.Start.AddDays(7));
@@ -181,9 +190,9 @@ public class PublisherEmailer
         }
 
         Console.WriteLine();
-        Console.WriteLine($"Generating HTML {meetingName} schedules and sending {meetingName} emails...");
+        Console.WriteLine($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> allMeetings = schedule.AllMeetings()
-            .Where(m => m.Date >= thisMonday && m.Date <= thisMonday.AddDays(35) && m.Name == meetingName)
+            .Where(m => m.Date >= thisMonday && m.Date <= thisMonday.AddDays(35) && m.Name == scheduleInputs.MeetingName)
             .OrderBy(m => m.Date)
             .ToList();
 
@@ -192,12 +201,12 @@ public class PublisherEmailer
             meetings: allMeetings);
 
         Console.WriteLine();
-        Console.WriteLine($"Sending {meetingName} schedules and setting status...");
+        Console.WriteLine($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
-            GenerateAndSendEmailFor(html, schedule, allMeetings, recipient, sendDayOfWeek);
+            GenerateAndSendEmailFor(html, schedule, allMeetings, recipient, scheduleInputs.SendDayOfWeek);
 
         Console.WriteLine();
-        Console.WriteLine($"Writing status of emails to {meetingName} recipients...");
+        Console.WriteLine($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
             sendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
@@ -208,8 +217,8 @@ public class PublisherEmailer
         }
 
         _sheets.Write(
-            documentId: sendEmailsDocumentId,
-            range: sendEmailsRange,
+            documentId: scheduleInputs.SendEmailsDocumentId,
+            range: scheduleInputs.SendEmailsRange,
             values: sendEmailsRows);
     }
 
