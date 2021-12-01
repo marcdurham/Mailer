@@ -1,7 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using GoogleAdapter.Adapters;
 using Mailer.Sender;
-using MailerCommon;
 
 Console.WriteLine("Mailer");
 

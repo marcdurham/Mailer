@@ -1,17 +1,10 @@
 using GoogleAdapter.Adapters;
 using MailerCommon;
-using System.Text.Json;
 
 namespace Mailer.Sender;
 
 public class PublisherEmailer 
 {
-    //private const string ClmSendEmailsRange = "CLM Send Emails!B2:F300";
-    //private const string PwSendEmailsRange = "PW Send Emails!B2:F300";
-    //private const string MfsSendEmailsRange = "Service Send Emails!B2:F300";
-    //private const string ClmTemplatePath = "./template1.html";
-    //private const string PwTemplatePath = "./template3.html";
-    //private const string MfsTemplatePath = "./template4.html";
     private const string IsoDateFormat = "yyyy-MM-dd";
     readonly IEmailSender _emailSender;
     private readonly ISheets _sheets;
@@ -58,8 +51,8 @@ public class PublisherEmailer
             {
                 MeetingName = "CLM",
                 HtmlTemplatePath = "./template1.html",
-                SendEmailsDocumentId = clmSendEmailsDocumentId,
-                SendEmailsRange = "CLM Send Emails!B2:F300",
+                EmailRecipientsDocumentId = clmSendEmailsDocumentId,
+                EmailRecipientsRange = "CLM Send Emails!B2:F300",
                 AssignmentListDocumentId = clmAssignmentListDocumentId,
                 AssignmentListRange =  $"CLM Assignment List!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Monday,
@@ -69,8 +62,8 @@ public class PublisherEmailer
             {
                 MeetingName = "PW",
                 HtmlTemplatePath = "./template3.html",
-                SendEmailsDocumentId = pwSendEmailsDocumentId,
-                SendEmailsRange = "PW Send Emails!B2:F300",
+                EmailRecipientsDocumentId = pwSendEmailsDocumentId,
+                EmailRecipientsRange = "PW Send Emails!B2:F300",
                 AssignmentListDocumentId = pwAssignmentListDocumentId,
                 AssignmentListRange =  $"PW Assignment List!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Wednesday,
@@ -80,8 +73,8 @@ public class PublisherEmailer
             {
                 MeetingName = "MFS",
                 HtmlTemplatePath = "./template4.html",
-                SendEmailsDocumentId = mfsSendEmailsDocumentId,
-                SendEmailsRange = "Service Send Emails!B2:F300",
+                EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
+                EmailRecipientsRange = "Service Send Emails!B2:F300",
                 AssignmentListDocumentId = mfsAssignmentListDocumentId,
                 AssignmentListRange =  $"Service Schedule!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Sunday,
@@ -91,20 +84,17 @@ public class PublisherEmailer
 
         Console.WriteLine();
         Console.WriteLine("Loading Friends...");
-        IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500"); //"Friend Info!B1:AI500");
+        IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500");
         var friendMap = FriendLoader.GetFriends(friendInfoRows);
-        foreach (string friend in friendMap.Keys)
-        {
-            Console.WriteLine($"{friend}: {friendMap[friend.ToUpperInvariant()]}");
-        }
+        Console.WriteLine($"{friendMap.Count} Friends Loaded");
 
         Console.WriteLine();
         Console.WriteLine("Sending schedules...");
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
        
-        foreach(var sch in schedules)
+        foreach(ScheduleInputs schedule in schedules)
         {
-            SendSchedulesFor(sch, friendMap, thisMonday);
+            SendSchedulesFor(schedule, friendMap, thisMonday);
         }
 
         Console.WriteLine();
@@ -117,12 +107,12 @@ public class PublisherEmailer
 
         Console.WriteLine();
         Console.WriteLine($"Loading {scheduleInputs.MeetingName} Email Recipients...");
-        IList<IList<object>> sendEmailsRows = _sheets.Read(scheduleInputs.SendEmailsDocumentId, scheduleInputs.SendEmailsRange);
+        IList<IList<object>> sendEmailsRows = _sheets.Read(scheduleInputs.EmailRecipientsDocumentId, scheduleInputs.EmailRecipientsRange);
         List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(sendEmailsRows);
 
         foreach (EmailRecipient recipient in recipients)
         {
-            recipient.EmailAddressFromFriend = "Friend Not Found";
+            //recipient.HtmlMessage = htmlTemplate;
 
             if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
             {
@@ -154,8 +144,8 @@ public class PublisherEmailer
         }
 
         _sheets.Write(
-            documentId: scheduleInputs.SendEmailsDocumentId,
-            range: scheduleInputs.SendEmailsRange,
+            documentId: scheduleInputs.EmailRecipientsDocumentId,
+            range: scheduleInputs.EmailRecipientsRange,
             values: sendEmailsRows);
 
         Console.WriteLine();
@@ -192,8 +182,8 @@ public class PublisherEmailer
         }
 
         _sheets.Write(
-            documentId: scheduleInputs.SendEmailsDocumentId,
-            range: scheduleInputs.SendEmailsRange,
+            documentId: scheduleInputs.EmailRecipientsDocumentId,
+            range: scheduleInputs.EmailRecipientsRange,
             values: sendEmailsRows);
     }
 
@@ -250,36 +240,5 @@ public class PublisherEmailer
 
         recipient.Sent = result.EmailWasSent ? DateTime.Now.ToString() : null;
         recipient.Result = result.Status;
-    }
-
-    public static bool IsJsonForAServiceAccount(string? json)
-    {
-        var options = new JsonDocumentOptions
-        {
-            AllowTrailingCommas = true,
-            MaxDepth = 3
-        };
-
-        JsonDocument document = JsonDocument.Parse(json, options);
-
-        bool isServiceAccount;
-        if (document.RootElement.TryGetProperty("type", out JsonElement element) 
-            && element.GetString() == "service_account")
-        {
-            isServiceAccount = true;
-        }
-
-        // This file looks like an OAuth 2.0 JSON file
-        else if (document.RootElement.TryGetProperty("installed", out JsonElement installedElement)
-                && installedElement.TryGetProperty("redirect_uris", out _))
-        {
-            isServiceAccount = false;
-        }
-        else
-        {
-            throw new Exception("Unknown secrets json file type");
-        }
-
-        return isServiceAccount;
     }
 }

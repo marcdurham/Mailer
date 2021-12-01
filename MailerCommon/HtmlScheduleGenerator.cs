@@ -20,7 +20,6 @@ public class HtmlScheduleGenerator
         foreach (Match match in matches)
         {
             string value = match.Value;
-            Console.WriteLine($"{value}");
             Match m = Regex.Match(value, @"@{([^:]+)(:(\d+))?(:([^:0-9]+))?}");
             if (m.Success)
             {
@@ -53,12 +52,10 @@ public class HtmlScheduleGenerator
                         if(id.Contains("/"))
                             id = meetings[indexValue].Assignments[key].Friend.Name.Split("/").Last();
 
-                        Console.WriteLine($"NoService: {id}");
                         html = html.Replace(value, id);
                     }
                     else
                     {
-                        Console.WriteLine($"A: {meetings[indexValue].Assignments[key].Friend.AllNames()}");
                         string htmlName = $"{ meetings[indexValue].Assignments[key].Friend.PinYinName}<br/>{ meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}<br/>{ meetings[indexValue].Assignments[key].Friend.Name}";
                         html = html.Replace(value, htmlName);
                     }
@@ -72,7 +69,6 @@ public class HtmlScheduleGenerator
             {
                 Console.WriteLine("Parse failed");
             }
-            Console.WriteLine();
         }
 
         return html;
@@ -118,8 +114,8 @@ public class HtmlScheduleGenerator
             htmlName = $"<span class='selected-friend'>{htmlName}</span>";
         }
 
-        Console.WriteLine($"{weekKey}:{assignment.Name}:{assignment.Friend.Name}");
-        template = template.Replace($"@{{{assignment.Name}:{wk}}}", htmlName);
+        //template = template.Replace($"@{{{assignment.Name}:{wk}}}", htmlName);
+        Regex.Replace(template, @"<td(\\s+class=\\""(.+)\\""\\s*)?>@{" + assignment.Name + "\\:" + wk + @"(:(\w+))?}</td>", $"<td class='selected-friend'>{htmlName}</td>", RegexOptions.IgnoreCase);
         return template;
     }
 
@@ -128,8 +124,6 @@ public class HtmlScheduleGenerator
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
 
-        Console.WriteLine("");
-        Console.WriteLine($"Upcoming Assignments for {friendName}");
         var assignments = new List<Assignment>();
         foreach (Meeting meeting in meetings)
             assignments.AddRange(meeting.Assignments.Values.ToList());
