@@ -102,6 +102,10 @@ public class PublisherEmailer
                     StringComparison.OrdinalIgnoreCase)
                     ? "Friend Email Match" : "Friend Email Different";
             }
+            else
+            {
+                recipient.Friend = new MissingFriend(recipient.Name);
+            }
         }
 
         Console.WriteLine();
@@ -183,6 +187,10 @@ public class PublisherEmailer
                     StringComparison.OrdinalIgnoreCase)
                     ? "Friend Email Match" : "Friend Email Different";
             }
+            else
+            {
+                recipient.Friend = new MissingFriend(recipient.Name);
+            }
         }
 
         Console.WriteLine();
@@ -263,13 +271,17 @@ public class PublisherEmailer
                     StringComparison.OrdinalIgnoreCase)
                     ? "Friend Email Match" : "Friend Email Different";
             }
+            else
+            {
+                recipient.Friend = new MissingFriend(recipient.Name);
+            }
         }
 
         Console.WriteLine();
         Console.WriteLine("Writing status of MFS emails to recipients...");
         foreach (EmailRecipient publisher in mfsRecipients)
         {
-            clmSendEmailsRows[mfsRecipients.IndexOf(publisher)] = new object[4] {
+            mfsSendEmailsRows[mfsRecipients.IndexOf(publisher)] = new object[4] {
                 publisher.Name,
                 publisher.EmailAddress,
                 publisher.Sent,
