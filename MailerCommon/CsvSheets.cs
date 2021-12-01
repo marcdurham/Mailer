@@ -131,7 +131,7 @@ namespace MailerCommon
                     line[i] = string.Empty;
 
                 for(int i = startColumn; i < (startColumn + row.Count); i++)
-                    line[i] = row[i-startColumn].ToString();
+                    line[i] = row[i-startColumn]?.ToString();
 
                 lines.Add(string.Join(",", line));
             }

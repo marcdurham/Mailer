@@ -56,7 +56,36 @@ public class PublisherEmailer
         string pwTemplate = File.ReadAllText(PwTemplatePath);
         string mfsTemplate = File.ReadAllText(MfsTemplatePath);
 
-
+        var toSend = new List<ScheduleInputs>()
+        {
+            new ScheduleInputs()
+            {
+                MeetingName = "CLM",
+                HtmlTemplate = clmTemplate,
+                SendEmailsDocumentId = clmSendEmailsDocumentId,
+                SendEmailsRange = "CLM Send Emails!B2:F300",
+                AssignmentListDocumentId = clmAssignmentListDocumentId,
+                SendDayOfWeek = DayOfWeek.Monday,
+            },
+            new ScheduleInputs()
+            {
+                MeetingName = "PW",
+                HtmlTemplate = pwTemplate,
+                SendEmailsDocumentId = pwSendEmailsDocumentId,
+                SendEmailsRange = "PW Send Emails!B2:F300",
+                AssignmentListDocumentId = pwAssignmentListDocumentId,
+                SendDayOfWeek = DayOfWeek.Wednesday,
+            },
+            new ScheduleInputs()
+            {
+                MeetingName = "MFS",
+                HtmlTemplate = clmTemplate,
+                SendEmailsDocumentId = clmSendEmailsDocumentId,
+                SendEmailsRange = "Service Send Emails!B2:F300",
+                AssignmentListDocumentId = clmAssignmentListDocumentId,
+                SendDayOfWeek = DayOfWeek.Sunday,
+            }
+        };
 
         Console.WriteLine();
         Console.WriteLine("Loading Friends...");
@@ -75,7 +104,7 @@ public class PublisherEmailer
             NextMeetingDate = thisMonday,
         };
 
-        for(int w = 0; w < 4; w++)
+        for (int w = 0; w < 4; w++)
         {
             DateTime monday = thisMonday.AddDays(w * 7);
             var week = new ScheduleWeek
@@ -85,94 +114,8 @@ public class PublisherEmailer
 
             schedule.Weeks.Add(week);
         }
-
-        Console.WriteLine();
-        Console.WriteLine("Loading CLM Email Recipients...");
-        IList<IList<object>> clmSendEmailsRows = _sheets.Read(clmSendEmailsDocumentId, ClmSendEmailsRange);
-        List<EmailRecipient> clmRecipients = EmailRecipientLoader.ConvertToEmailRecipients(clmSendEmailsRows);
-
-        foreach (EmailRecipient recipient in clmRecipients)
-        {
-            recipient.EmailAddressFromFriend = "Friend Not Found";
-
-            if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
-            {
-                recipient.Friend = friend;
-                if (string.IsNullOrWhiteSpace(recipient.EmailAddress))
-                    recipient.EmailAddress = friend.EmailAddress;
-
-                recipient.Result = string.Equals(
-                    recipient.EmailAddress,
-                    friend.EmailAddress,
-                    StringComparison.OrdinalIgnoreCase)
-                    ? "Friend Email Match" : "Friend Email Different";
-            }
-            else
-            {
-                recipient.Friend = new MissingFriend(recipient.Name);
-            }
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("Writing status of CLM emails to recipients...");
-        foreach (EmailRecipient publisher in clmRecipients)
-        {
-            clmSendEmailsRows[clmRecipients.IndexOf(publisher)] = new object[4] {
-                publisher.Name,
-                publisher.EmailAddress,
-                publisher.Sent,
-                "Preparing to send email" };
-        }
-
-        _sheets.Write(
-            documentId: clmSendEmailsDocumentId,
-            range: ClmSendEmailsRange,
-            values: clmSendEmailsRows);
-
-        Console.WriteLine();
-        Console.WriteLine("Loading Assignment List for CLM...");
-        IList<IList<object>> values = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
-        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { 3 }, "CLM");
-        foreach(Meeting meeting in clmMeetings.Where(m => m.Date >= thisMonday))
-        {
-            var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
-            if (week != null)
-                week.Midweek = meeting;
-        }
-
-        Console.WriteLine();
-        Console.WriteLine("Generating HTML CLM schedules and sending CLM emails...");
-        List<Meeting> thursdayMeetings = schedule.AllMeetings()
-            .Where(m => m.Date >= thisMonday && m.Name == "CLM")
-            .OrderBy(m => m.Date)
-            .Take(4)
-            .ToList();
-
-        string thursdayHtml = HtmlScheduleGenerator.Generate(
-            template: clmTemplate,
-            meetings: thursdayMeetings);
-
-        Console.WriteLine();
-        Console.WriteLine("Sending CLM schedules and setting status...");
-        foreach (EmailRecipient recipient in clmRecipients)
-            GenerateAndSendEmailFor(thursdayHtml, schedule, thursdayMeetings, recipient, DayOfWeek.Monday);
-
-
-        Console.WriteLine();
-        Console.WriteLine("Writing status of emails to CLM recipients...");
-        foreach (EmailRecipient publisher in clmRecipients)
-        {
-            clmSendEmailsRows[clmRecipients.IndexOf(publisher)] = new object[4] {
-                publisher.Name,
-                publisher.EmailAddress,
-                publisher.Sent,
-                publisher.Result };
-        }
-
-        _sheets.Write(
-            documentId: clmSendEmailsDocumentId,
-            range: ClmSendEmailsRange,
-            values: clmSendEmailsRows);
+        
+        SendShedulesFor(clmSendEmailsDocumentId, clmAssignmentListDocumentId, clmTemplate, friendMap, thisMonday, schedule);
 
         Console.WriteLine();
         Console.WriteLine("Loading PW Email Recipients...");
@@ -186,7 +129,7 @@ public class PublisherEmailer
             if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
             {
                 recipient.Friend = friend;
-                if(string.IsNullOrWhiteSpace(recipient.EmailAddress))
+                if (string.IsNullOrWhiteSpace(recipient.EmailAddress))
                     recipient.EmailAddress = friend.EmailAddress;
 
                 recipient.Result = string.Equals(
@@ -235,7 +178,7 @@ public class PublisherEmailer
             .OrderBy(m => m.Date)
             .Take(4)
             .ToList();
-        
+
         string saturdayHtml = HtmlScheduleGenerator.Generate(
             template: pwTemplate,
             meetings: saturdayMeetings);
@@ -307,7 +250,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Loading Assignment List for MFS Schedule...");
         IList<IList<object>> mfsValues = _sheets.Read(documentId: mfsAssignmentListDocumentId, range: "Service Schedule!B1:L9999");
-        List<Meeting> mfsMeetings = ScheduleLoader.GetSchedule(mfsValues, friendMap, new int[]{0}, "MFS");
+        List<Meeting> mfsMeetings = ScheduleLoader.GetSchedule(mfsValues, friendMap, new int[] { 0 }, "MFS");
         foreach (Meeting meeting in mfsMeetings.Where(m => m.Date >= thisMonday))
         {
             var week = schedule.Weeks.SingleOrDefault(w => meeting.Date >= w.Start
@@ -353,6 +296,97 @@ public class PublisherEmailer
         Console.WriteLine("Done");
     }
 
+    private void SendShedulesFor(string? clmSendEmailsDocumentId, string? clmAssignmentListDocumentId, string clmTemplate, Dictionary<string, Friend> friendMap, DateTime thisMonday, Schedule schedule)
+    {
+        Console.WriteLine();
+        Console.WriteLine("Loading CLM Email Recipients...");
+        IList<IList<object>> clmSendEmailsRows = _sheets.Read(clmSendEmailsDocumentId, ClmSendEmailsRange);
+        List<EmailRecipient> clmRecipients = EmailRecipientLoader.ConvertToEmailRecipients(clmSendEmailsRows);
+
+        foreach (EmailRecipient recipient in clmRecipients)
+        {
+            recipient.EmailAddressFromFriend = "Friend Not Found";
+
+            if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
+            {
+                recipient.Friend = friend;
+                if (string.IsNullOrWhiteSpace(recipient.EmailAddress))
+                    recipient.EmailAddress = friend.EmailAddress;
+
+                recipient.Result = string.Equals(
+                    recipient.EmailAddress,
+                    friend.EmailAddress,
+                    StringComparison.OrdinalIgnoreCase)
+                    ? "Friend Email Match" : "Friend Email Different";
+            }
+            else
+            {
+                recipient.Friend = new MissingFriend(recipient.Name);
+            }
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Writing status of CLM emails to recipients...");
+        foreach (EmailRecipient publisher in clmRecipients)
+        {
+            clmSendEmailsRows[clmRecipients.IndexOf(publisher)] = new object[4] {
+                publisher.Name,
+                publisher.EmailAddress,
+                publisher.Sent,
+                "Preparing to send email" };
+        }
+
+        _sheets.Write(
+            documentId: clmSendEmailsDocumentId,
+            range: ClmSendEmailsRange,
+            values: clmSendEmailsRows);
+
+        Console.WriteLine();
+        Console.WriteLine("Loading Assignment List for CLM...");
+        IList<IList<object>> values = _sheets.Read(documentId: clmAssignmentListDocumentId, range: "CLM Assignment List!B1:AY9999");
+        List<Meeting> clmMeetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { 3 }, "CLM");
+        foreach (Meeting meeting in clmMeetings.Where(m => m.Date >= thisMonday))
+        {
+            var week = schedule.Weeks.SingleOrDefault(w => w.Start.AddDays(3) == meeting.Date);
+            if (week != null)
+                week.Midweek = meeting;
+        }
+
+        Console.WriteLine();
+        Console.WriteLine("Generating HTML CLM schedules and sending CLM emails...");
+        List<Meeting> thursdayMeetings = schedule.AllMeetings()
+            .Where(m => m.Date >= thisMonday && m.Name == "CLM")
+            .OrderBy(m => m.Date)
+            .Take(4)
+            .ToList();
+
+        string thursdayHtml = HtmlScheduleGenerator.Generate(
+            template: clmTemplate,
+            meetings: thursdayMeetings);
+
+        Console.WriteLine();
+        Console.WriteLine("Sending CLM schedules and setting status...");
+        foreach (EmailRecipient recipient in clmRecipients)
+            GenerateAndSendEmailFor(thursdayHtml, schedule, thursdayMeetings, recipient, DayOfWeek.Monday);
+
+
+        Console.WriteLine();
+        Console.WriteLine("Writing status of emails to CLM recipients...");
+        foreach (EmailRecipient publisher in clmRecipients)
+        {
+            clmSendEmailsRows[clmRecipients.IndexOf(publisher)] = new object[4] {
+                publisher.Name,
+                publisher.EmailAddress,
+                publisher.Sent,
+                publisher.Result };
+        }
+
+        _sheets.Write(
+            documentId: clmSendEmailsDocumentId,
+            range: ClmSendEmailsRange,
+            values: clmSendEmailsRows);
+    }
+
     void GenerateAndSendEmailFor(
         string htmlMessageText, 
         Schedule schedule, 
@@ -378,7 +412,11 @@ public class PublisherEmailer
     {
         Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
 
-        DateTime.TryParse(recipient.Sent, out DateTime sent);
+        if(!DateTime.TryParse(recipient.Sent, out DateTime sent))
+        {
+            sent = DateTime.MinValue;
+        }
+
         if(sent.AddDays(7) >= DateTime.Today 
             && DateTime.Today.DayOfWeek == sendDayOfWeek
             || sent.AddDays(8) >= DateTime.Today)

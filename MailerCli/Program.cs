@@ -27,7 +27,9 @@ new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
 //new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
 //    clmSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Send Emails.csv",
 //    clmAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Assignment List - Copy.csv",
+//    pwSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - PW Send Emails.csv",
 //    pwAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - PW Assignment List.csv",
+//    mfsSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Service Send Emails.csv",
 //    mfsAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Service Schedule.csv",
 //    friendInfoDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Friend Info.csv");
 
