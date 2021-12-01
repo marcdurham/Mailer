@@ -174,29 +174,10 @@ public class PublisherEmailer
         List<Meeting> meetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { (int)meetingDayOfWeek }, meetingName);
         foreach (Meeting meeting in meetings.Where(m => m.Date >= thisMonday))
         {
-            // TODO: Make this day of the week agnostic, in case the day moves
             var week = schedule.Weeks.SingleOrDefault(w => meeting.Date >= w.Start && meeting.Date < w.Start.AddDays(7));
 
             if (week != null)
-            {
-                //switch (meeting.Name)
-                //{
-                //    case "CLM":
-                //        week.Midweek = meeting;
-                //        break;
-                //    case "PW":
-                //        week.Weekend = meeting;
-                //        break;
-                //    case "MFS":
-                //        week.MeetingsForService.Add(meeting.Date, meeting);
-                //        break;
-                //    default:
-                //        week.MeetingsForService.Add(meeting.Date, meeting);
-                //        break;
-                //}
                 week.Meetings.Add(meeting);
-            }
-            
         }
 
         Console.WriteLine();
@@ -214,7 +195,6 @@ public class PublisherEmailer
         Console.WriteLine($"Sending {meetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
             GenerateAndSendEmailFor(html, schedule, allMeetings, recipient, sendDayOfWeek);
-
 
         Console.WriteLine();
         Console.WriteLine($"Writing status of emails to {meetingName} recipients...");
