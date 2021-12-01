@@ -1,36 +1,4 @@
 ﻿namespace MailerCommon;
-public class Schedule
-{
-    public DateTime NextMeetingDate { get; set; }
-    public List<ScheduleWeek> Weeks { get; set; } = new List<ScheduleWeek>();
-    public List<Meeting> AllMeetings()
-    {
-        var list = new List<Meeting>();
-        foreach(var week in Weeks)
-        {
-            list.AddRange(week.Meetings);
-        }
-
-        return list;
-    }
-
-    public List<Assignment> AllAssignments()
-    {
-        var list = new List<Assignment>();
-        foreach(var meeting in AllMeetings())
-        {
-            list.AddRange(meeting.Assignments.Select(a => a.Value).ToList());
-        }
-
-        return list;
-    }
-}
-
-public class ScheduleWeek
-{
-    public DateTime Start { get; set; }
-    public List<Meeting> Meetings { get; set; } = new List<Meeting>();
-}
 
 public class Assignment
 {

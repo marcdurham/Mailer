@@ -52,10 +52,6 @@ public class PublisherEmailer
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
 
-        //string clmTemplate = File.ReadAllText(ClmTemplatePath);
-        //string pwTemplate = File.ReadAllText(PwTemplatePath);
-        //string mfsTemplate = File.ReadAllText(MfsTemplatePath);
-
         var schedules = new List<ScheduleInputs>()
         {
             new ScheduleInputs()
@@ -103,34 +99,19 @@ public class PublisherEmailer
         }
 
         Console.WriteLine();
-        Console.WriteLine("Building schedule...");
+        Console.WriteLine("Sending schedules...");
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
-        var schedule = new Schedule()
-        {
-            NextMeetingDate = thisMonday,
-        };
-
-        for (int w = 0; w < 4; w++)
-        {
-            DateTime monday = thisMonday.AddDays(w * 7);
-            var week = new ScheduleWeek
-            {
-                Start = monday,
-            };
-
-            schedule.Weeks.Add(week);
-        }
-        
+       
         foreach(var sch in schedules)
         {
-            SendSchedulesFor(sch, friendMap, thisMonday, schedule);
+            SendSchedulesFor(sch, friendMap, thisMonday);
         }
 
         Console.WriteLine();
         Console.WriteLine("Done");
     }
 
-    void SendSchedulesFor(ScheduleInputs scheduleInputs, Dictionary<string, Friend> friendMap, DateTime thisMonday, Schedule schedule)
+    void SendSchedulesFor(ScheduleInputs scheduleInputs, Dictionary<string, Friend> friendMap, DateTime thisMonday)
     {
         string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
 
@@ -181,29 +162,23 @@ public class PublisherEmailer
         Console.WriteLine($"Loading Assignment List for {scheduleInputs.MeetingName}...");
         IList<IList<object>> values = _sheets.Read(documentId: scheduleInputs.AssignmentListDocumentId, range: scheduleInputs.AssignmentListRange);
         List<Meeting> meetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { (int)scheduleInputs.MeetingDayOfWeek }, scheduleInputs.MeetingName);
-        foreach (Meeting meeting in meetings.Where(m => m.Date >= thisMonday))
-        {
-            var week = schedule.Weeks.SingleOrDefault(w => meeting.Date >= w.Start && meeting.Date < w.Start.AddDays(7));
 
-            if (week != null)
-                week.Meetings.Add(meeting);
-        }
 
         Console.WriteLine();
         Console.WriteLine($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
-        List<Meeting> allMeetings = schedule.AllMeetings()
+        List<Meeting> allMeetings = meetings
             .Where(m => m.Date >= thisMonday && m.Date <= thisMonday.AddDays(35) && m.Name == scheduleInputs.MeetingName)
             .OrderBy(m => m.Date)
             .ToList();
 
         string html = HtmlScheduleGenerator.Generate(
-            template: htmlTemplate,
+            html: htmlTemplate,
             meetings: allMeetings);
 
         Console.WriteLine();
         Console.WriteLine($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
-            GenerateAndSendEmailFor(html, schedule, allMeetings, recipient, scheduleInputs.SendDayOfWeek);
+            GenerateAndSendEmailFor(html, allMeetings, recipient, scheduleInputs.SendDayOfWeek);
 
         Console.WriteLine();
         Console.WriteLine($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
@@ -224,7 +199,6 @@ public class PublisherEmailer
 
     void GenerateAndSendEmailFor(
         string htmlMessageText, 
-        Schedule schedule, 
         IEnumerable<Meeting> meetings, 
         EmailRecipient recipient,
         DayOfWeek sendDayOfWeek)
@@ -235,7 +209,7 @@ public class PublisherEmailer
             friendName: recipient.Name,
             friend: recipient.Friend,
             template: htmlMessageText,
-            schedule: schedule);
+            meetings: meetings);
 
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";

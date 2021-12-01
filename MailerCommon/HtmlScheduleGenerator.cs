@@ -4,23 +4,7 @@ using System.Text.RegularExpressions;
 namespace MailerCommon;
 public class HtmlScheduleGenerator
 {
-    public static string Generate(string template, List<Meeting> meetings)
-    {
-        DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
-        string today = thisMonday.ToString("yyyy-MM-dd");
-        Console.WriteLine("This Month (New)");
-        //var latestMeetings = meetings
-        //    .Where(m => m.Date >= thisMonday)
-        //    .OrderBy(m => m.Date)
-        //    .Take(4)
-        //    .ToList();
-
-        template = InjectAssignmentsReverse(template, meetings); // latestMeetings);
-
-        return template;
-    }
-
-    static string InjectAssignmentsReverse(string html, List<Meeting> meetings)
+    public static string Generate(string html, List<Meeting> meetings)
     {
         foreach (Meeting m in meetings)
         {
@@ -40,7 +24,6 @@ public class HtmlScheduleGenerator
             Match m = Regex.Match(value, @"@{([^:]+)(:(\d+))?(:([^:0-9]+))?}");
             if (m.Success)
             {
-                Console.WriteLine($"Key: {m.Groups[1].Value} Index {m.Groups[3].Value} Property: {m.Groups[5].Value}");
                 string key = m.Groups[1].Value;
                 string index = m.Groups[3].Value;
                 string property = m.Groups[5].Value;
@@ -140,14 +123,18 @@ public class HtmlScheduleGenerator
         return template;
     }
 
-    public static string InjectUpcomingAssignments(string friendName, Friend friend, string template, Schedule schedule)
+    public static string InjectUpcomingAssignments(string friendName, Friend friend, string template, IEnumerable<Meeting> meetings)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
 
         Console.WriteLine("");
         Console.WriteLine($"Upcoming Assignments for {friendName}");
-        var futurePresentDays = schedule.AllAssignments()
+        var assignments = new List<Assignment>();
+        foreach (Meeting meeting in meetings)
+            assignments.AddRange(meeting.Assignments.Values.ToList());
+
+        var futurePresentDays = assignments
             .Where(a => a.Date >= thisMonday)
             .Where(a => 
                 a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase)
