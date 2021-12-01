@@ -19,7 +19,7 @@ namespace MailerCommon
                     {
                         Name = $"{row[0]}",
                         EmailAddress = email, // TODO: Get email address from somewhere else?
-                    Sent = $"{sent}"
+                        Sent = $"{sent}"
                     });
             }
 

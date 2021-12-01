@@ -17,6 +17,7 @@ namespace MailerCommon
         public EmailSenderResult Send(EmailMessage message)
         {
             string status = "Preparing SendMail Message";
+            bool wasSent = false;
 
             try
             {
@@ -28,13 +29,15 @@ namespace MailerCommon
                     message.Text).Result;
 
                 status = $"SendMail Status Code:{response.StatusCode}";
+                wasSent = response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
                 status = $"SendMail Error: {ex.Message}";
+                wasSent = false;
             }
             
-            return new EmailSenderResult { Status = status };
+            return new EmailSenderResult { Status = status, EmailWasSent = wasSent };
         }
     }
 }

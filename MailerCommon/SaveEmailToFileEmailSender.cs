@@ -8,7 +8,7 @@
         {
             File.WriteAllText($"{message.ToName}.{message.ToAddress}.{message.Subject.Replace(":", "")}.html", message.Text);
 
-            return new EmailSenderResult { Status = "Saved to file" };
+            return new EmailSenderResult { Status = "Saved to file", EmailWasSent = true };
         }
     }
 }

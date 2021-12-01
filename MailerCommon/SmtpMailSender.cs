@@ -38,6 +38,20 @@ public class SmtpEmailSender : IEmailSender
 
     public EmailSenderResult Send(EmailMessage msg)
     {
+        try
+        {
+            SendMessage(msg);
+            return new EmailSenderResult { Status = "Done sending SMTP email", EmailWasSent = true };
+        }
+        catch (Exception ex)
+        {
+            return new EmailSenderResult { Status = $"SMTP email error: {ex.Message}", EmailWasSent = false };
+        }
+
+    }
+
+    private static void SendMessage(EmailMessage msg)
+    {
         // I copied this from here: https://docs.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient.sendasync?view=net-6.0#System_Net_Mail_SmtpClient_SendAsync_System_String_System_String_System_String_System_String_System_Object_
         string status = "Preparing to send SMTP email";
 
@@ -73,7 +87,5 @@ public class SmtpEmailSender : IEmailSender
         ////}
         // Clean up.
         ////////////////////////////////message.Dispose();
-        
-        return new EmailSenderResult { Status = "Done sending SMTP email" };
     }
 }

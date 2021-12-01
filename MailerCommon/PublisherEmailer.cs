@@ -155,7 +155,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Sending CLM schedules and setting status...");
         foreach (EmailRecipient recipient in clmRecipients)
-            GenerateAndSendEmailFor(thursdayHtml, schedule, thursdayMeetings, recipient);
+            GenerateAndSendEmailFor(thursdayHtml, schedule, thursdayMeetings, recipient, DayOfWeek.Monday);
 
 
         Console.WriteLine();
@@ -243,7 +243,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Sending PW schedules and setting status...");
         foreach (EmailRecipient recipient in pwRecipients)
-            GenerateAndSendEmailFor(saturdayHtml, schedule, saturdayMeetings, recipient);
+            GenerateAndSendEmailFor(saturdayHtml, schedule, saturdayMeetings, recipient, DayOfWeek.Wednesday);
 
         Console.WriteLine();
         Console.WriteLine("Writing status of emails to recipients...");
@@ -331,17 +331,17 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine("Sending MFS schedules and setting status...");
         foreach (EmailRecipient recipient in mfsRecipients)
-            GenerateAndSendEmailFor(mfsHtml, schedule, allMfsMeetings, recipient);
+            GenerateAndSendEmailFor(mfsHtml, schedule, allMfsMeetings, recipient, DayOfWeek.Sunday);
 
         Console.WriteLine();
         Console.WriteLine("Writing status of emails to MFS recipients...");
-        foreach (EmailRecipient publisher in mfsRecipients)
+        foreach (EmailRecipient recipient in mfsRecipients)
         {
-            mfsSendEmailsRows[mfsRecipients.IndexOf(publisher)] = new object[4] {
-                publisher.Name,
-                publisher.EmailAddress,
-                publisher.Sent,
-                publisher.Result };
+            mfsSendEmailsRows[mfsRecipients.IndexOf(recipient)] = new object[4] {
+                recipient.Name,
+                recipient.EmailAddress,
+                recipient.Sent,
+                recipient.Result };
         }
 
         _sheets.Write(
@@ -357,7 +357,8 @@ public class PublisherEmailer
         string htmlMessageText, 
         Schedule schedule, 
         IEnumerable<Meeting> meetings, 
-        EmailRecipient recipient)
+        EmailRecipient recipient,
+        DayOfWeek sendDayOfWeek)
     {
         htmlMessageText = HtmlScheduleGenerator.Highlight(recipient.Friend, htmlMessageText);
 
@@ -370,14 +371,22 @@ public class PublisherEmailer
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
 
-        SendEmailFor(subject, htmlMessageText, recipient);
+        SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
     }
 
-    void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient)
+    void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient, DayOfWeek sendDayOfWeek)
     {
         Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
 
-        recipient.Sent = DateTime.Now.ToString();
+        DateTime.TryParse(recipient.Sent, out DateTime sent);
+        if(sent.AddDays(7) >= DateTime.Today 
+            && DateTime.Today.DayOfWeek == sendDayOfWeek
+            || sent.AddDays(8) >= DateTime.Today)
+        {
+            recipient.Result = "Skipped: Sent Too Recently";
+            return;
+        }
+
         recipient.Result = "Sending";
 
         EmailMessage message = new()
@@ -390,9 +399,10 @@ public class PublisherEmailer
             Text = htmlMessageText
         };
 
-        _emailSender.Send(message);
+        var result = _emailSender.Send(message);
 
-        recipient.Result = "Sent";
+        recipient.Sent = result.EmailWasSent ? DateTime.Now.ToString() : null;
+        recipient.Result = result.Status;
     }
 
     public static bool IsJsonForAServiceAccount(string? json)
