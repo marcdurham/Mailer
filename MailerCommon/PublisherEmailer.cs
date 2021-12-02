@@ -9,7 +9,7 @@ public class PublisherEmailer
     readonly IEmailSender _emailSender;
     private readonly ISheets _sheets;
 
-    public PublisherEmailer(ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false)
+    public PublisherEmailer(ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false, bool forceSendAll = false)
     {
         _sheets = sheets;
 
@@ -23,7 +23,11 @@ public class PublisherEmailer
                 new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
                 new SendGridEmailSender(sendGridApiKey) { SendByDefault = true }
             });
+        
+        ForceSendAll = forceSendAll;
     }
+
+    public bool ForceSendAll { get; set; }
 
     public void Run(
         string? clmSendEmailsDocumentId, 
@@ -216,9 +220,9 @@ public class PublisherEmailer
             sent = DateTime.MinValue;
         }
 
-        if(sent.AddDays(7) >= DateTime.Today 
+        if(!ForceSendAll && (sent.AddDays(7) >= DateTime.Today 
             && DateTime.Today.DayOfWeek == sendDayOfWeek
-            || sent.AddDays(8) >= DateTime.Today)
+            || sent.AddDays(8) >= DateTime.Today))
         {
             recipient.Result = "Skipped: Sent Too Recently";
             return;

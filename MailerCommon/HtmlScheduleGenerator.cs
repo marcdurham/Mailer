@@ -20,6 +20,8 @@ public class HtmlScheduleGenerator
         foreach (Match match in matches)
         {
             string value = match.Value;
+            string replacement = string.Empty;
+            string friendKey = "none";
             Match m = Regex.Match(value, @"@{([^:]+)(:(\d+))?(:([^:0-9]+))?}");
             if (m.Success)
             {
@@ -31,92 +33,37 @@ public class HtmlScheduleGenerator
 
                 if (meetings[indexValue].Assignments.ContainsKey(key))
                 {
+                    friendKey = meetings[indexValue].Assignments[key].Friend.Key;
                     if (string.Equals(property, "N") || string.Equals(property, "Name"))
                     {
-                        Console.WriteLine($"Name: {meetings[indexValue].Assignments[key].Name}");
-                        html = html.Replace(value, meetings[indexValue].Assignments[key].Name);
+                        replacement = $"{meetings[indexValue].Assignments[key].Name}";
                     }
                     else if (string.Equals(property, "E"))
                     {
-                        Console.WriteLine($"E: {meetings[indexValue].Assignments[key].Friend.EnglishName}");
-                        html = html.Replace(value, meetings[indexValue].Assignments[key].Friend.EnglishName);
+                        replacement = $"{meetings[indexValue].Assignments[key].Friend.EnglishName}";
                     }
                     else if (string.Equals(property, "CHS"))
                     {
-                        Console.WriteLine($"CHS: {meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}");
-                        html = html.Replace(value, meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName);
+                        replacement = $"{meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}";
                     }
                     else if (string.Equals(property, "NoService"))
                     {
-                        string id = meetings[indexValue].Assignments[key].Friend.Name;
-                        if(id.Contains("/"))
-                            id = meetings[indexValue].Assignments[key].Friend.Name.Split("/").Last();
-
-                        html = html.Replace(value, id);
+                        replacement = meetings[indexValue].Assignments[key].Friend.Name;
+                        if(replacement.Contains("/"))
+                            replacement = meetings[indexValue].Assignments[key].Friend.Name.Split("/").Last();
                     }
                     else
                     {
-                        string htmlName = $"{ meetings[indexValue].Assignments[key].Friend.PinYinName}<br/>{ meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}<br/>{ meetings[indexValue].Assignments[key].Friend.Name}";
-                        html = html.Replace(value, htmlName);
+                        replacement = $"{meetings[indexValue].Assignments[key].Friend.PinYinName}<br/>{ meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}<br/>{ meetings[indexValue].Assignments[key].Friend.Name}";
                     }
                 }
-                else
-                {
-                    html = html.Replace(value, string.Empty);
-                }
             }
-            else
-            {
-                Console.WriteLine("Parse failed");
-            }
+
+            html = Regex.Replace(html, $"<td(\\s+class=\")?([a-zA-Z0-9-]+)?(\")?>({value})</td>", $"<td$1$2$3 data-friend-key='{friendKey}'>{replacement}</td>");
+            
         }
 
         return html;
-    }
-
-    static string InjectAssignments(string friendName, string template, List<Meeting> meetings)
-    {
-        foreach(Meeting m in meetings)
-        {
-            int wk = meetings.IndexOf(m);
-            string weekKey = meetings[wk].Date.ToString("yyyy-MM-dd");
-            var meeting = meetings[wk];
-
-            template = InjectWeekAssignments(friendName, template, wk, weekKey, meeting);
-        }
-
-        return template;
-    }
-
-    static string InjectWeekAssignments(string friendName, string template, int wk, string weekKey, Meeting meeting)
-    {
-        template = template.Replace($"@{{Day{wk}}}", meeting.Date.ToString("yyyy-MM-dd"));
-        foreach (Assignment assignment in meeting.Assignments.Select(a => a.Value).ToList())
-        {
-            template = InjectAssignmees(friendName, template, wk, weekKey, assignment);
-        }
-
-        return template;
-    }
-
-    static string InjectAssignmees(string friendName, string template, int wk, string weekKey, Assignment assignment)
-    {
-        if (assignment.Key == "Outgoing Speaker 1")
-        {
-            Console.WriteLine("pause here");
-
-        }
-        string htmlName = "Friend";
-        htmlName = $"{assignment.Friend.PinYinName}<br/>{assignment.Friend.SimplifiedChineseName}<br/>{assignment.Friend.Name}";
-
-        if (string.Equals(friendName, assignment.Friend.Name, StringComparison.OrdinalIgnoreCase))
-        {
-            htmlName = $"<span class='selected-friend'>{htmlName}</span>";
-        }
-
-        //template = template.Replace($"@{{{assignment.Name}:{wk}}}", htmlName);
-        Regex.Replace(template, @"<td(\\s+class=\\""(.+)\\""\\s*)?>@{" + assignment.Name + "\\:" + wk + @"(:(\w+))?}</td>", $"<td class='selected-friend'>{htmlName}</td>", RegexOptions.IgnoreCase);
-        return template;
     }
 
     public static string InjectUpcomingAssignments(string friendName, Friend friend, string template, IEnumerable<Meeting> meetings)
@@ -156,12 +103,11 @@ public class HtmlScheduleGenerator
 
     public static string Highlight(Friend friend, string html)
     {
-        if(!string.IsNullOrWhiteSpace(friend.Name))
-            html = html.Replace(friend.Name, $"<span class='selected-friend'>{friend.Name}</span>");
-        if(!string.IsNullOrWhiteSpace(friend.SimplifiedChineseName))
-            html = html.Replace(friend.SimplifiedChineseName, $"<span class='selected-friend'>{friend.SimplifiedChineseName}</span>");
-        if(!string.IsNullOrWhiteSpace(friend.PinYinName))
-            html = html.Replace(friend.PinYinName, $"<span class='selected-friend'>{friend.PinYinName}</span>");
+        if (!string.IsNullOrWhiteSpace(friend.Key))
+            html = Regex.Replace(
+                html,
+                @"<td\s+((class=\"")([^\""]+)\"")?(\s*data-friend-key='" + friend.Key + "')>(.*)</td>",
+                "<td class=\"$3 selected-assignee\" $4>$5</td>");
 
         return html;
     }

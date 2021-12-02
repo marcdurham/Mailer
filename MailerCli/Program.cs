@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using GoogleAdapter.Adapters;
 using Mailer.Sender;
+using MailerCommon;
 
 Console.WriteLine("Mailer");
 
@@ -13,7 +14,7 @@ string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", 
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
+new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true, forceSendAll: true).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId,
     pwSendEmailsDocumentId: clmSendEmailsDocumentId,
@@ -23,7 +24,7 @@ new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
     friendInfoDocumentId: clmAssignmentListDocumentId);
 
 //ISheets sheets = new CsvSheets();
-//new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
+//new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true, forceSendAll: true).Run(
 //    clmSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Send Emails.csv",
 //    clmAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - CLM Assignment List - Copy.csv",
 //    pwSendEmailsDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - PW Send Emails.csv",
