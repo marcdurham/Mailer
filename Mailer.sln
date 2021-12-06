@@ -9,7 +9,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailerCommon", "MailerCommo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailerCli", "MailerCli\MailerCli.csproj", "{932E6F14-5122-418F-8B13-610E02617036}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailerCommon.Tests", "MailerCommon.Tests\MailerCommon.Tests.csproj", "{BB8C4811-2330-4545-88DF-88224F726D6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MailerCommon.Tests", "MailerCommon.Tests\MailerCommon.Tests.csproj", "{BB8C4811-2330-4545-88DF-88224F726D6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{9CD4B834-A231-4FC2-8C92-0456A3D08A6C}"
+	ProjectSection(SolutionItems) = preProject
+		.dockerignore = .dockerignore
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		docker-compose.yml = docker-compose.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

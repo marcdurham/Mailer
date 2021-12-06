@@ -14,7 +14,7 @@ string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", 
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true, forceSendAll: true).Run(
+new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId,
     pwSendEmailsDocumentId: clmSendEmailsDocumentId,

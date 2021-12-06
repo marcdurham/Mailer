@@ -1,5 +1,6 @@
 using GoogleAdapter.Adapters;
 using MailerCommon;
+using MailerCommon.Configuration;
 
 namespace Mailer.Sender;
 
@@ -20,8 +21,8 @@ public class PublisherEmailer
             new List<IEmailSender>
             {
                 new SaveEmailToFileEmailSender() { SendByDefault = dryRunMode },
-                new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
-                new SendGridEmailSender(sendGridApiKey) { SendByDefault = true }
+                //new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
+                new SendGridEmailSender(sendGridApiKey) { SendByDefault = true },
             });
         
         ForceSendAll = forceSendAll;
@@ -213,8 +214,6 @@ public class PublisherEmailer
 
     void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient, DayOfWeek sendDayOfWeek)
     {
-        Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
-
         if(!DateTime.TryParse(recipient.Sent, out DateTime sent))
         {
             sent = DateTime.MinValue;
@@ -228,6 +227,7 @@ public class PublisherEmailer
             return;
         }
 
+        Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
         recipient.Result = "Sending";
 
         EmailMessage message = new()
