@@ -6,5 +6,7 @@
         public bool DryMode { get; set; }
         public bool ForceSend { get; set; }
         public ScheduleInputs[] Schedules { get; set; } = new ScheduleInputs[] { };
+        public string? FromAddress { get; set; }
+        public string? FromName { get; set; }
     }
 }

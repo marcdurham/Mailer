@@ -63,28 +63,28 @@ public class PublisherEmailer
                 SendDayOfWeek = DayOfWeek.Monday,
                 MeetingDayOfWeek = DayOfWeek.Thursday,
             },
-            new ScheduleInputs()
-            {
-                MeetingName = "PW",
-                HtmlTemplatePath = "./template3.html",
-                EmailRecipientsDocumentId = pwSendEmailsDocumentId,
-                EmailRecipientsRange = "PW Send Emails!B2:F300",
-                AssignmentListDocumentId = pwAssignmentListDocumentId,
-                AssignmentListRange =  $"PW Assignment List!B1:AY9999",
-                SendDayOfWeek = DayOfWeek.Wednesday,
-                MeetingDayOfWeek = DayOfWeek.Saturday
-            },
-            new ScheduleInputs()
-            {
-                MeetingName = "MFS",
-                HtmlTemplatePath = "./template4.html",
-                EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
-                EmailRecipientsRange = "Service Send Emails!B2:F300",
-                AssignmentListDocumentId = mfsAssignmentListDocumentId,
-                AssignmentListRange =  $"Service Schedule!B1:AY9999",
-                SendDayOfWeek = DayOfWeek.Sunday,
-                MeetingDayOfWeek = (DayOfWeek)0,
-            }
+            //new ScheduleInputs()
+            //{
+            //    MeetingName = "PW",
+            //    HtmlTemplatePath = "./template3.html",
+            //    EmailRecipientsDocumentId = pwSendEmailsDocumentId,
+            //    EmailRecipientsRange = "PW Send Emails!B2:F300",
+            //    AssignmentListDocumentId = pwAssignmentListDocumentId,
+            //    AssignmentListRange =  $"PW Assignment List!B1:AY9999",
+            //    SendDayOfWeek = DayOfWeek.Wednesday,
+            //    MeetingDayOfWeek = DayOfWeek.Saturday
+            //},
+            //new ScheduleInputs()
+            //{
+            //    MeetingName = "MFS",
+            //    HtmlTemplatePath = "./template4.html",
+            //    EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
+            //    EmailRecipientsRange = "Service Send Emails!B2:F300",
+            //    AssignmentListDocumentId = mfsAssignmentListDocumentId,
+            //    AssignmentListRange =  $"Service Schedule!B1:AY9999",
+            //    SendDayOfWeek = DayOfWeek.Sunday,
+            //    MeetingDayOfWeek = (DayOfWeek)0,
+            //}
         };
 
         Console.WriteLine();
@@ -145,7 +145,7 @@ public class PublisherEmailer
                 publisher.Name,
                 publisher.EmailAddress,
                 publisher.Sent,
-                "Preparing to send email" };
+                $"{DateTime.Now}: Preparing to send email" };
         }
 
         _sheets.Write(
@@ -223,12 +223,12 @@ public class PublisherEmailer
             && DateTime.Today.DayOfWeek == sendDayOfWeek
             || sent.AddDays(8) >= DateTime.Today))
         {
-            recipient.Result = "Skipped: Sent Too Recently";
+            recipient.Result = $"{DateTime.Now}: Skipped: Sent Too Recently";
             return;
         }
 
         Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
-        recipient.Result = "Sending";
+        recipient.Result = $"{DateTime.Now}: Sending";
 
         EmailMessage message = new()
         {

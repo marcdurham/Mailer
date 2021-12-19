@@ -13,8 +13,11 @@ string clmAssignmentListDocumentId = args[4];
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
 string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 
+// TODO: This is temporary, remove it
+clmSendEmailsDocumentId = clmAssignmentListDocumentId;
+
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true).Run(
+new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: false).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId,
     pwSendEmailsDocumentId: clmSendEmailsDocumentId,

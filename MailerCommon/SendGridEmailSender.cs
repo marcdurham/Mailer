@@ -16,7 +16,7 @@ namespace MailerCommon
 
         public EmailSenderResult Send(EmailMessage message)
         {
-            string status = "Preparing SendMail Message";
+            string status = $"{DateTime.Now}: Preparing SendMail Message";
             bool wasSent = false;
 
             try
@@ -28,12 +28,12 @@ namespace MailerCommon
                     message.Subject, 
                     message.Text).Result;
 
-                status = $"SendMail Status Code:{response.StatusCode}";
+                status = $"{DateTime.Now}: SendMail Status Code:{response.StatusCode}";
                 wasSent = response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
-                status = $"SendMail Error: {ex.Message}";
+                status = $"{DateTime.Now}: SendMail Error: {ex.Message}";
                 wasSent = false;
             }
             
