@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddApplicationInsightsTelemetry();
+
 builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -15,7 +15,17 @@ builder.Services.AddSingleton<CalendarService>();
 builder.Services.Configure<CalendarOptions>(
     builder.Configuration.GetSection("Calendar"));
 
+
 var app = builder.Build();
+
+builder.Services.AddApplicationInsightsTelemetry(
+    options =>
+    {
+        options.InstrumentationKey = builder.Configuration["APPLICATIONINSIGHTS_INSTRUMENTATIONKEY"];
+        options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+    });
+
+app = builder.Build();
 
 app.UseHttpLogging();
 
