@@ -236,10 +236,13 @@ public class PublisherEmailer
 
         foreach (Assignment assignment in friendAssignments)
         {
+            string assignmentName = assignment.Name;
+            if(assignmentName.Contains(" - "))
+                assignmentName = string.Join("-", assignmentName.Split("-", System.StringSplitOptions.RemoveEmptyEntries).Reverse());
             var calEvent = new CalendarEvent
             {
                 Start = new CalDateTime(assignment.Date),
-                Summary = $"{assignment.Meeting}: {assignment.Name}",
+                Summary = $"{assignmentName} ({assignment.Meeting})",
             };
 
             shortCalendar.Events.Add(calEvent);
