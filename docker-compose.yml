@@ -16,7 +16,7 @@ services:
       - "5025:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - TimerIntervalSeconds=60
+      - TimerIntervalSeconds=$TimerIntervalSeconds
       - ServiceSecretsJson=$ServiceSecretsJson
       - ClmSendEmailsDocumentId=$ClmSendEmailsDocumentId
       - ClmAssignmentListDocumentId=$ClmAssignmentListDocumentId

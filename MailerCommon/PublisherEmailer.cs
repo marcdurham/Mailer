@@ -167,19 +167,19 @@ public class PublisherEmailer
 
         Console.WriteLine();
         Console.WriteLine($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
-        List<Meeting> allMeetings = meetings
+        List<Meeting> upcomingMeetings = meetings
             .Where(m => m.Date >= thisMonday && m.Date <= thisMonday.AddDays(35) && m.Name == scheduleInputs.MeetingName)
             .OrderBy(m => m.Date)
             .ToList();
 
         string html = HtmlScheduleGenerator.Generate(
             html: htmlTemplate,
-            meetings: allMeetings);
+            meetings: upcomingMeetings);
 
         Console.WriteLine();
         Console.WriteLine($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
-            GenerateAndSendEmailFor(html, allMeetings, recipient, scheduleInputs.SendDayOfWeek);
+            GenerateAndSendEmailFor(html, upcomingMeetings, meetings, recipient, scheduleInputs.SendDayOfWeek);
 
         //Console.WriteLine();
         //Console.WriteLine($"Caching {scheduleInputs.MeetingName} schedules and setting status...");
@@ -206,6 +206,7 @@ public class PublisherEmailer
     void GenerateAndSendEmailFor(
         string htmlMessageText, 
         IEnumerable<Meeting> meetings, 
+        IEnumerable<Meeting> allMeetings, 
         EmailRecipient recipient,
         DayOfWeek sendDayOfWeek)
     {
@@ -215,7 +216,8 @@ public class PublisherEmailer
             friendName: recipient.Name,
             friend: recipient.Friend,
             template: htmlMessageText,
-            meetings: meetings);
+            meetings: meetings,
+            allMeetings: allMeetings);
 
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";

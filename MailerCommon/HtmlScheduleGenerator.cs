@@ -69,7 +69,8 @@ public class HtmlScheduleGenerator
         string friendName, 
         Friend friend, 
         string template, 
-        IEnumerable<Meeting> meetings)
+        IEnumerable<Meeting> meetings,
+        IEnumerable<Meeting> allMeetings)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
@@ -101,7 +102,11 @@ public class HtmlScheduleGenerator
 
         template = Regex.Replace(template, @"<\s*inject-upcoming-assignments-here\s*/\s*>", upcomingAssignments.ToString(), RegexOptions.IgnoreCase);
 
-        var allFriendAssignments = assignments
+        var allAssignments = new List<Assignment>();
+        foreach (Meeting meeting in allMeetings)
+            allAssignments.AddRange(meeting.Assignments.Values.ToList());
+            
+        var allFriendAssignments = allAssignments
             .Where(a => 
                 a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase)
                 || a.Friend.SimplifiedChineseName.Equals(friendName, StringComparison.OrdinalIgnoreCase)
