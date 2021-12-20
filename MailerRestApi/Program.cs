@@ -14,18 +14,15 @@ builder.Services.AddHostedService<TimedHostedService>();
 builder.Services.AddSingleton<CalendarService>();
 builder.Services.Configure<CalendarOptions>(
     builder.Configuration.GetSection("Calendar"));
-
-
-var app = builder.Build();
-
 builder.Services.AddApplicationInsightsTelemetry(
     options =>
     {
-        options.InstrumentationKey = builder.Configuration["APPLICATIONINSIGHTS_INSTRUMENTATIONKEY"];
-        options.ConnectionString = builder.Configuration["APPLICATIONINSIGHTS_CONNECTION_STRING"];
+        // can't do this after Build()
+        options.InstrumentationKey = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_INSTRUMENTATIONKEY");
+        options.ConnectionString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
     });
 
-app = builder.Build();
+var app = builder.Build();
 
 app.UseHttpLogging();
 
