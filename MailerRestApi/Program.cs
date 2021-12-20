@@ -1,5 +1,7 @@
 using Mailer;
 using Mailer.Sender;
+using MailerCommon;
+using MailerRestApi;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +14,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<TimedHostedService>();
 builder.Services.AddSingleton<CalendarService>();
+builder.Services.AddSingleton<ICustomLogger, CustomLogger>();
 builder.Services.Configure<CalendarOptions>(
     builder.Configuration.GetSection("Calendar"));
 builder.Services.AddApplicationInsightsTelemetry(

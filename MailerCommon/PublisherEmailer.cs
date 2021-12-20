@@ -5,7 +5,6 @@ using Ical.Net.Serialization;
 using MailerCommon;
 using MailerCommon.Configuration;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
 
 namespace Mailer.Sender;
 
@@ -14,11 +13,17 @@ public class PublisherEmailer
     const string IsoDateFormat = "yyyy-MM-dd";
     
     readonly IEmailSender _emailSender;
-    readonly ILogger _logger;
+    readonly ICustomLogger _logger;
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
 
-    public PublisherEmailer(ILogger logger, IMemoryCache memoryCache, ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false, bool forceSendAll = false)
+    public PublisherEmailer(
+        ICustomLogger logger, 
+        IMemoryCache memoryCache, 
+        ISheets sheets, 
+        string? sendGridApiKey, 
+        bool dryRunMode =  false, 
+        bool forceSendAll = false)
     {
         _logger = logger;
         _memoryCache = memoryCache;
@@ -97,14 +102,12 @@ public class PublisherEmailer
             }
         };
 
-        Console.WriteLine();
-        Console.WriteLine("Loading Friends...");
+        _logger.LogInformation("Loading Friends...");
         IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500");
         var friendMap = FriendLoader.GetFriends(friendInfoRows);
-        Console.WriteLine($"{friendMap.Count} Friends Loaded");
+        _logger.LogInformation($"{friendMap.Count} Friends Loaded");
 
-        Console.WriteLine();
-        Console.WriteLine("Sending schedules...");
+        _logger.LogInformation("Sending schedules...");
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
        
         foreach(ScheduleInputs schedule in schedules)
@@ -112,8 +115,7 @@ public class PublisherEmailer
             SendSchedulesFor(schedule, friendMap, thisMonday);
         }
 
-        Console.WriteLine();
-        Console.WriteLine("Done");
+        _logger.LogInformation("Done");
     }
 
     void SendSchedulesFor(
@@ -123,8 +125,7 @@ public class PublisherEmailer
     {
         string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
 
-        Console.WriteLine();
-        Console.WriteLine($"Loading {scheduleInputs.MeetingName} Email Recipients...");
+        _logger.LogInformation($"Loading {scheduleInputs.MeetingName} Email Recipients...");
         IList<IList<object>> sendEmailsRows = _sheets.Read(scheduleInputs.EmailRecipientsDocumentId, scheduleInputs.EmailRecipientsRange);
         List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(sendEmailsRows);
 
@@ -150,8 +151,7 @@ public class PublisherEmailer
             }
         }
 
-        Console.WriteLine();
-        Console.WriteLine($"Writing status of {scheduleInputs.MeetingName} emails to recipients...");
+        _logger.LogInformation($"Writing status of {scheduleInputs.MeetingName} emails to recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
             sendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
@@ -166,8 +166,7 @@ public class PublisherEmailer
             range: scheduleInputs.EmailRecipientsRange,
             values: sendEmailsRows);
 
-        Console.WriteLine();
-        Console.WriteLine($"Loading Assignment List for {scheduleInputs.MeetingName}...");
+        _logger.LogInformation($"Loading Assignment List for {scheduleInputs.MeetingName}...");
         IList<IList<object>> values = _sheets.Read(documentId: scheduleInputs.AssignmentListDocumentId, range: scheduleInputs.AssignmentListRange);
         List<Meeting> meetings = ScheduleLoader.GetSchedule(
             values, 
@@ -175,8 +174,7 @@ public class PublisherEmailer
             new int[] { (int)scheduleInputs.MeetingDayOfWeek }, 
             scheduleInputs.MeetingName);
 
-        Console.WriteLine();
-        Console.WriteLine($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
+        _logger.LogInformation($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> upcomingMeetings = meetings
             .Where(m => m.Date >= thisMonday && m.Date <= thisMonday.AddDays(35) && m.Name == scheduleInputs.MeetingName)
             .OrderBy(m => m.Date)
@@ -186,13 +184,11 @@ public class PublisherEmailer
             html: htmlTemplate,
             meetings: upcomingMeetings);
 
-        Console.WriteLine();
-        Console.WriteLine($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
+        _logger.LogInformation($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
             GenerateAndSendEmailFor(html, upcomingMeetings, meetings, recipient, scheduleInputs);
 
-        Console.WriteLine();
-        Console.WriteLine($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
+        _logger.LogInformation($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
             sendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
@@ -275,7 +271,7 @@ public class PublisherEmailer
             return;
         }
 
-        Console.WriteLine($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
+        _logger.LogInformation($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
         recipient.Result = $"{DateTime.Now}: Sending";
 
         EmailMessage message = new()
