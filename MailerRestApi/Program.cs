@@ -21,8 +21,11 @@ builder.Services.AddApplicationInsightsTelemetry(
         options.InstrumentationKey = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_INSTRUMENTATIONKEY");
         options.ConnectionString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
     });
+builder.Logging.AddConsole();
 
 var app = builder.Build();
+
+app.Logger.LogInformation($"Logging is working");
 
 app.UseHttpLogging();
 
