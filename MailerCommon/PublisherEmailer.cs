@@ -236,7 +236,7 @@ public class PublisherEmailer
             {
                 Start = new CalDateTime(assignment.Date),
                 End = new CalDateTime(assignment.Date.AddMinutes(3)),
-                Summary = $"{assignment.MeetingName}: {assignment.Name}",
+                Summary = $"{assignment.Meeting}: {assignment.Name}",
             };
 
             shortCalendar.Events.Add(calEvent);
