@@ -1,17 +1,24 @@
 using GoogleAdapter.Adapters;
+using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
+using Ical.Net.Serialization;
 using MailerCommon;
 using MailerCommon.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Mailer.Sender;
 
 public class PublisherEmailer 
 {
-    private const string IsoDateFormat = "yyyy-MM-dd";
+    const string IsoDateFormat = "yyyy-MM-dd";
+    
     readonly IEmailSender _emailSender;
-    private readonly ISheets _sheets;
+    readonly IMemoryCache _memoryCache;
+    readonly ISheets _sheets;
 
-    public PublisherEmailer(ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false, bool forceSendAll = false)
+    public PublisherEmailer(IMemoryCache memoryCache, ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false, bool forceSendAll = false)
     {
+        _memoryCache = memoryCache;
         _sheets = sheets;
 
         if (sendGridApiKey == null)
@@ -63,28 +70,28 @@ public class PublisherEmailer
                 SendDayOfWeek = DayOfWeek.Monday,
                 MeetingDayOfWeek = DayOfWeek.Thursday,
             },
-            //new ScheduleInputs()
-            //{
-            //    MeetingName = "PW",
-            //    HtmlTemplatePath = "./template3.html",
-            //    EmailRecipientsDocumentId = pwSendEmailsDocumentId,
-            //    EmailRecipientsRange = "PW Send Emails!B2:F300",
-            //    AssignmentListDocumentId = pwAssignmentListDocumentId,
-            //    AssignmentListRange =  $"PW Assignment List!B1:AY9999",
-            //    SendDayOfWeek = DayOfWeek.Wednesday,
-            //    MeetingDayOfWeek = DayOfWeek.Saturday
-            //},
-            //new ScheduleInputs()
-            //{
-            //    MeetingName = "MFS",
-            //    HtmlTemplatePath = "./template4.html",
-            //    EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
-            //    EmailRecipientsRange = "Service Send Emails!B2:F300",
-            //    AssignmentListDocumentId = mfsAssignmentListDocumentId,
-            //    AssignmentListRange =  $"Service Schedule!B1:AY9999",
-            //    SendDayOfWeek = DayOfWeek.Sunday,
-            //    MeetingDayOfWeek = (DayOfWeek)0,
-            //}
+            new ScheduleInputs()
+            {
+                MeetingName = "PW",
+                HtmlTemplatePath = "/app/bin/Debug/net6.0/template3.html",
+                EmailRecipientsDocumentId = pwSendEmailsDocumentId,
+                EmailRecipientsRange = "PW Send Emails!B2:F300",
+                AssignmentListDocumentId = pwAssignmentListDocumentId,
+                AssignmentListRange =  $"PW Assignment List!B1:AY9999",
+                SendDayOfWeek = DayOfWeek.Wednesday,
+                MeetingDayOfWeek = DayOfWeek.Saturday
+            },
+            new ScheduleInputs()
+            {
+                MeetingName = "MFS",
+                HtmlTemplatePath = "/app/bin/Debug/net6.0/template4.html",
+                EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
+                EmailRecipientsRange = "Service Send Emails!B2:F300",
+                AssignmentListDocumentId = mfsAssignmentListDocumentId,
+                AssignmentListRange =  $"Service Schedule!B1:AY9999",
+                SendDayOfWeek = DayOfWeek.Sunday,
+                MeetingDayOfWeek = (DayOfWeek)0,
+            }
         };
 
         Console.WriteLine();
@@ -158,7 +165,6 @@ public class PublisherEmailer
         IList<IList<object>> values = _sheets.Read(documentId: scheduleInputs.AssignmentListDocumentId, range: scheduleInputs.AssignmentListRange);
         List<Meeting> meetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { (int)scheduleInputs.MeetingDayOfWeek }, scheduleInputs.MeetingName);
 
-
         Console.WriteLine();
         Console.WriteLine($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> allMeetings = meetings
@@ -174,6 +180,11 @@ public class PublisherEmailer
         Console.WriteLine($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
             GenerateAndSendEmailFor(html, allMeetings, recipient, scheduleInputs.SendDayOfWeek);
+
+        //Console.WriteLine();
+        //Console.WriteLine($"Caching {scheduleInputs.MeetingName} schedules and setting status...");
+        //foreach (EmailRecipient recipient in recipients)
+        //    _memoryCache.Set(reci)
 
         Console.WriteLine();
         Console.WriteLine($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
@@ -200,7 +211,7 @@ public class PublisherEmailer
     {
         htmlMessageText = HtmlScheduleGenerator.Highlight(recipient.Friend, htmlMessageText);
 
-        htmlMessageText = HtmlScheduleGenerator.InjectUpcomingAssignments(
+        (htmlMessageText, List<Assignment> friendAssignments) = HtmlScheduleGenerator.InjectUpcomingAssignments(
             friendName: recipient.Name,
             friend: recipient.Friend,
             template: htmlMessageText,
@@ -209,7 +220,36 @@ public class PublisherEmailer
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
 
+        CacheFriendAssignments(recipient, friendAssignments);
+
         SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
+    }
+
+    private void CacheFriendAssignments(EmailRecipient recipient, List<Assignment> friendAssignments)
+    {
+        var shortCalendar = new Ical.Net.Calendar();
+
+        foreach (Assignment assignment in friendAssignments)
+        {
+            var calEvent = new CalendarEvent
+            {
+                Start = new CalDateTime(assignment.Date),
+                End = new CalDateTime(assignment.Date.AddMinutes(3)),
+                Summary = $"{assignment.Name}",
+            };
+
+            shortCalendar.Events.Add(calEvent);
+        }
+
+        var serializer = new CalendarSerializer();
+        var serializedCalendar = serializer.SerializeToString(shortCalendar);
+        //return await Task.FromResult(serializedCalendar);
+        
+
+        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                .SetSlidingExpiration(TimeSpan.FromSeconds(300));
+
+        _memoryCache.Set(recipient.Name.ToUpper(), serializedCalendar, cacheEntryOptions);
     }
 
     void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient, DayOfWeek sendDayOfWeek)

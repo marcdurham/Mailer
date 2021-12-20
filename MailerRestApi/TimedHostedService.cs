@@ -1,4 +1,5 @@
 using GoogleAdapter.Adapters;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Mailer.Sender;
 public class TimedHostedService : IHostedService, IDisposable
@@ -8,11 +9,13 @@ public class TimedHostedService : IHostedService, IDisposable
     private Timer _timer = null!;
     private readonly int _intervalSeconds = 60;
     private readonly IConfiguration Configuration;
-    public TimedHostedService(IConfiguration configuration, ILogger<TimedHostedService> logger)
+    private readonly IMemoryCache _memoryCache;
+    public TimedHostedService(IConfiguration configuration, ILogger<TimedHostedService> logger, IMemoryCache memoryCache)
     {
         Configuration = configuration;
         _intervalSeconds = int.Parse(Configuration["TimerIntervalSeconds"]);
         _logger = logger;
+        _memoryCache = memoryCache;
     }
 
     public Task StartAsync(CancellationToken stoppingToken)
@@ -38,6 +41,7 @@ public class TimedHostedService : IHostedService, IDisposable
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
         new PublisherEmailer(
+            _memoryCache,
             sheets, 
             sendGridApiKey, 
             dryRunMode: true, 

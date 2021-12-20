@@ -1,5 +1,6 @@
 using Mailer;
 using Mailer.Sender;
+using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,10 @@ app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string pref
         is string shortCalFile
         ? shortCalFile
         : null
+);
+
+app.MapGet("/friend/{name}.ics", async (IMemoryCache memory, string name) =>
+        memory.Get<string>(name.ToUpper())
 );
 
 app.Run();

@@ -60,13 +60,12 @@ public class HtmlScheduleGenerator
             }
 
             html = Regex.Replace(html, $"<td(\\s+class=\")?([a-zA-Z0-9-]+)?(\")?>({value})</td>", $"<td$1$2$3 data-friend-key='{friendKey}'>{replacement}</td>");
-            
         }
 
         return html;
     }
 
-    public static string InjectUpcomingAssignments(string friendName, Friend friend, string template, IEnumerable<Meeting> meetings)
+    public static (string html, List<Assignment> friendAssignments) InjectUpcomingAssignments(string friendName, Friend friend, string template, IEnumerable<Meeting> meetings)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
@@ -98,7 +97,7 @@ public class HtmlScheduleGenerator
 
         template = Regex.Replace(template, @"<\s*inject-upcoming-assignments-here\s*/\s*>", upcomingAssignments.ToString(), RegexOptions.IgnoreCase);
 
-        return template;
+        return (template, futurePresentDays);
     }
 
     public static string Highlight(Friend friend, string html)
