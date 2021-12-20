@@ -113,7 +113,10 @@ public class PublisherEmailer
         Console.WriteLine("Done");
     }
 
-    void SendSchedulesFor(ScheduleInputs scheduleInputs, Dictionary<string, Friend> friendMap, DateTime thisMonday)
+    void SendSchedulesFor(
+        ScheduleInputs scheduleInputs, 
+        Dictionary<string, Friend> friendMap, 
+        DateTime thisMonday)
     {
         string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
 
@@ -179,12 +182,7 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
-            GenerateAndSendEmailFor(html, upcomingMeetings, meetings, recipient, scheduleInputs.SendDayOfWeek);
-
-        //Console.WriteLine();
-        //Console.WriteLine($"Caching {scheduleInputs.MeetingName} schedules and setting status...");
-        //foreach (EmailRecipient recipient in recipients)
-        //    _memoryCache.Set(reci)
+            GenerateAndSendEmailFor(html, upcomingMeetings, meetings, recipient, scheduleInputs);
 
         Console.WriteLine();
         Console.WriteLine($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
@@ -208,8 +206,9 @@ public class PublisherEmailer
         IEnumerable<Meeting> meetings, 
         IEnumerable<Meeting> allMeetings, 
         EmailRecipient recipient,
-        DayOfWeek sendDayOfWeek)
+        ScheduleInputs scheduleInputs)
     {
+        DayOfWeek sendDayOfWeek = scheduleInputs.SendDayOfWeek;
         htmlMessageText = HtmlScheduleGenerator.Highlight(recipient.Friend, htmlMessageText);
 
         (htmlMessageText, List<Assignment> friendAssignments) = HtmlScheduleGenerator.InjectUpcomingAssignments(
@@ -222,12 +221,12 @@ public class PublisherEmailer
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
 
-        CacheFriendAssignments(recipient, friendAssignments);
+        CacheFriendAssignments(scheduleInputs.MeetingName, recipient, friendAssignments);
 
         SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
     }
 
-    private void CacheFriendAssignments(EmailRecipient recipient, List<Assignment> friendAssignments)
+    private void CacheFriendAssignments(string meetingName, EmailRecipient recipient, List<Assignment> friendAssignments)
     {
         var shortCalendar = new Ical.Net.Calendar();
 
@@ -251,7 +250,7 @@ public class PublisherEmailer
         var cacheEntryOptions = new MemoryCacheEntryOptions()
                 .SetSlidingExpiration(TimeSpan.FromSeconds(300));
 
-        _memoryCache.Set(recipient.Name.ToUpper(), serializedCalendar, cacheEntryOptions);
+        _memoryCache.Set($"{meetingName}:{recipient.Name.ToUpper()}", serializedCalendar, cacheEntryOptions);
     }
 
     void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient, DayOfWeek sendDayOfWeek)

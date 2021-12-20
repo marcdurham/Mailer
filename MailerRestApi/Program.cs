@@ -33,10 +33,10 @@ app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string pref
         : null
 );
 
-app.MapGet("/friend/{name}.ics", async (IMemoryCache memory, string name) =>
+app.MapGet("/friend/{meeting}/{name}.ics", async (IMemoryCache memory, string meeting, string name) =>
     {
-        Console.WriteLine($"Getting Friend (ics) Calendar: {name.ToUpper()}");
-        return memory.Get<string>(name.ToUpper());
+        Console.WriteLine($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()}");
+        return memory.Get<string>($"{meeting}:{name.ToUpper()}");
     }
 );
 
