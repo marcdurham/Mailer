@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using GoogleAdapter.Adapters;
 using Mailer.Sender;
+using MailerCli;
 using MailerCommon;
 
 Console.WriteLine("Mailer");
@@ -17,7 +18,7 @@ string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 clmSendEmailsDocumentId = clmAssignmentListDocumentId;
 
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-new PublisherEmailer(null, sheets, sendGridApiKey, dryRunMode: false).Run(
+new PublisherEmailer(new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId,
     pwSendEmailsDocumentId: clmSendEmailsDocumentId,

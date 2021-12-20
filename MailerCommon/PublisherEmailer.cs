@@ -68,7 +68,7 @@ public class PublisherEmailer
                 AssignmentListDocumentId = clmAssignmentListDocumentId,
                 AssignmentListRange =  $"CLM Assignment List!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Monday,
-                MeetingDayOfWeek = DayOfWeek.Thursday,
+                MeetingDayOfWeek = DayOfWeek.Thursday-1,
             },
             new ScheduleInputs()
             {
@@ -79,7 +79,7 @@ public class PublisherEmailer
                 AssignmentListDocumentId = pwAssignmentListDocumentId,
                 AssignmentListRange =  $"PW Assignment List!B1:AY9999",
                 SendDayOfWeek = DayOfWeek.Wednesday,
-                MeetingDayOfWeek = DayOfWeek.Saturday
+                MeetingDayOfWeek = DayOfWeek.Saturday-1
             },
             new ScheduleInputs()
             {
@@ -166,7 +166,11 @@ public class PublisherEmailer
         Console.WriteLine();
         Console.WriteLine($"Loading Assignment List for {scheduleInputs.MeetingName}...");
         IList<IList<object>> values = _sheets.Read(documentId: scheduleInputs.AssignmentListDocumentId, range: scheduleInputs.AssignmentListRange);
-        List<Meeting> meetings = ScheduleLoader.GetSchedule(values, friendMap, new int[] { (int)scheduleInputs.MeetingDayOfWeek }, scheduleInputs.MeetingName);
+        List<Meeting> meetings = ScheduleLoader.GetSchedule(
+            values, 
+            friendMap, 
+            new int[] { (int)scheduleInputs.MeetingDayOfWeek }, 
+            scheduleInputs.MeetingName);
 
         Console.WriteLine();
         Console.WriteLine($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
