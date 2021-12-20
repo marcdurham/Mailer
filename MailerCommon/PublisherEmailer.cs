@@ -236,14 +236,10 @@ public class PublisherEmailer
 
         foreach (Assignment assignment in friendAssignments)
         {
-            //var start = TimeZoneInfo.ConvertTimeToUtc(assignment.Date, TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time"));
-            var start = assignment.Date.AddHours(-8);
-
             var calEvent = new CalendarEvent
             {
-                Start = new CalDateTime(start), // "America/Los_Angeles"),
-                //End = new CalDateTime(assignment.Date.AddMinutes(3)),
-                Summary = $"{assignment.Meeting}: {assignment.Name} (TD:{assignment.Date.ToString("yyyy-MM-dd HHmm")})",
+                Start = new CalDateTime(assignment.Date),
+                Summary = $"{assignment.Meeting}: {assignment.Name}",
             };
 
             shortCalendar.Events.Add(calEvent);
@@ -251,11 +247,9 @@ public class PublisherEmailer
 
         var serializer = new CalendarSerializer();
         var serializedCalendar = serializer.SerializeToString(shortCalendar);
-        //return await Task.FromResult(serializedCalendar);
-        
 
         var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(TimeSpan.FromSeconds(60*60));
+                .SetSlidingExpiration(TimeSpan.FromSeconds(60*60)); // One hour
 
         _memoryCache.Set($"{meetingName}:{recipient.Name.ToUpper()}", serializedCalendar, cacheEntryOptions);
     }
