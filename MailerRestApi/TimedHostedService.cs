@@ -49,7 +49,7 @@ public class TimedHostedService : IHostedService, IDisposable
             .Run(
                 clmSendEmailsDocumentId: clmSendEmailsDocumentId,
                 clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
-                pwSendEmailsDocumentId: clmAssignmentListDocumentId,
+                pwSendEmailsDocumentId: clmSendEmailsDocumentId,
                 pwAssignmentListDocumentId: clmAssignmentListDocumentId,
                 mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
                 mfsAssignmentListDocumentId: clmAssignmentListDocumentId,

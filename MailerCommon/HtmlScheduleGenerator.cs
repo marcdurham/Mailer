@@ -65,7 +65,11 @@ public class HtmlScheduleGenerator
         return html;
     }
 
-    public static (string html, List<Assignment> friendAssignments) InjectUpcomingAssignments(string friendName, Friend friend, string template, IEnumerable<Meeting> meetings)
+    public static (string html, List<Assignment> friendAssignments) InjectUpcomingAssignments(
+        string friendName, 
+        Friend friend, 
+        string template, 
+        IEnumerable<Meeting> meetings)
     {
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
         string today = thisMonday.ToString("yyyy-MM-dd");
@@ -97,7 +101,15 @@ public class HtmlScheduleGenerator
 
         template = Regex.Replace(template, @"<\s*inject-upcoming-assignments-here\s*/\s*>", upcomingAssignments.ToString(), RegexOptions.IgnoreCase);
 
-        return (template, futurePresentDays);
+        var allFriendAssignments = assignments
+            .Where(a => 
+                a.Friend.Name.Equals(friendName, StringComparison.OrdinalIgnoreCase)
+                || a.Friend.SimplifiedChineseName.Equals(friendName, StringComparison.OrdinalIgnoreCase)
+                || a.Friend.PinYinName.Equals(friendName, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(a => a.Date)
+            .ToList();
+
+        return (template, allFriendAssignments);
     }
 
     public static string Highlight(Friend friend, string html)

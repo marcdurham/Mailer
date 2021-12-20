@@ -34,7 +34,16 @@ app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string pref
 );
 
 app.MapGet("/friend/{name}.ics", async (IMemoryCache memory, string name) =>
-        memory.Get<string>(name.ToUpper())
+    {
+        Console.WriteLine($"Getting Friend: {name.ToUpper()}");
+        return memory.Get<string>(name.ToUpper());
+    }
+);
+
+app.MapGet("/health", () =>
+    {
+        return Results.Ok("Green");
+    }
 );
 
 app.Run();

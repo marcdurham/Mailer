@@ -29,7 +29,7 @@ public class PublisherEmailer
             {
                 new SaveEmailToFileEmailSender() { SendByDefault = dryRunMode },
                 //new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
-                new SendGridEmailSender(sendGridApiKey) { SendByDefault = true },
+                // new SendGridEmailSender(sendGridApiKey) { SendByDefault = true },
             });
         
         ForceSendAll = forceSendAll;
@@ -62,7 +62,7 @@ public class PublisherEmailer
             new ScheduleInputs()
             {
                 MeetingName = "CLM",
-                HtmlTemplatePath = "/app/bin/Debug/net6.0/template1.html",
+                HtmlTemplatePath = "/app/template1.html",
                 EmailRecipientsDocumentId = clmSendEmailsDocumentId,
                 EmailRecipientsRange = "CLM Send Emails!B2:F300",
                 AssignmentListDocumentId = clmAssignmentListDocumentId,
@@ -73,7 +73,7 @@ public class PublisherEmailer
             new ScheduleInputs()
             {
                 MeetingName = "PW",
-                HtmlTemplatePath = "/app/bin/Debug/net6.0/template3.html",
+                HtmlTemplatePath = "/app/template3.html",
                 EmailRecipientsDocumentId = pwSendEmailsDocumentId,
                 EmailRecipientsRange = "PW Send Emails!B2:F300",
                 AssignmentListDocumentId = pwAssignmentListDocumentId,
@@ -84,7 +84,7 @@ public class PublisherEmailer
             new ScheduleInputs()
             {
                 MeetingName = "MFS",
-                HtmlTemplatePath = "/app/bin/Debug/net6.0/template4.html",
+                HtmlTemplatePath = "/app/template4.html",
                 EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
                 EmailRecipientsRange = "Service Send Emails!B2:F300",
                 AssignmentListDocumentId = mfsAssignmentListDocumentId,
@@ -235,7 +235,7 @@ public class PublisherEmailer
             {
                 Start = new CalDateTime(assignment.Date),
                 End = new CalDateTime(assignment.Date.AddMinutes(3)),
-                Summary = $"{assignment.Name}",
+                Summary = $"{assignment.MeetingName}: {assignment.Name}",
             };
 
             shortCalendar.Events.Add(calEvent);
