@@ -5,6 +5,7 @@ using Ical.Net.Serialization;
 using MailerCommon;
 using MailerCommon.Configuration;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 
 namespace Mailer.Sender;
 
@@ -13,11 +14,13 @@ public class PublisherEmailer
     const string IsoDateFormat = "yyyy-MM-dd";
     
     readonly IEmailSender _emailSender;
+    readonly ILogger _logger;
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
 
-    public PublisherEmailer(IMemoryCache memoryCache, ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false, bool forceSendAll = false)
+    public PublisherEmailer(ILogger logger, IMemoryCache memoryCache, ISheets sheets, string? sendGridApiKey, bool dryRunMode =  false, bool forceSendAll = false)
     {
+        _logger = logger;
         _memoryCache = memoryCache;
         _sheets = sheets;
 

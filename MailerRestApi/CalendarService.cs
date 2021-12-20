@@ -8,11 +8,16 @@ namespace Mailer
 {
     public class CalendarService
     {
-        private readonly CalendarOptions _options;
-        private readonly IMemoryCache _memoryCache;
+        readonly ILogger _logger;
+        readonly CalendarOptions _options;
+        readonly IMemoryCache _memoryCache;
 
-        public CalendarService(IOptions<CalendarOptions> options, IMemoryCache memoryCache)
+        public CalendarService(
+            ILogger logger, 
+            IOptions<CalendarOptions> options,
+            IMemoryCache memoryCache)
         {
+            _logger = logger;
             _options = options.Value;
             _memoryCache = memoryCache;
         }
@@ -37,6 +42,7 @@ namespace Mailer
             List<string> eventList = new();
             foreach (Calendar calendar in calendars)
             {
+                _logger.LogInformation($"Loading calendar {calendar.Name} from {calendar.IcsUri}");
                 string? text = await httpClient.GetStringAsync(calendar.IcsUri);
                 Ical.Net.Calendar icalCal = Ical.Net.Calendar.Load(text);
 
@@ -78,6 +84,7 @@ namespace Mailer
                 string? text = null;
                 if (!_memoryCache.TryGetValue(calendar.IcsUri, out string cachedText))
                 {
+                    _logger.LogInformation($"Loading calendar file {calendar.Name} from {calendar.IcsUri}");
                     cachedText = await httpClient.GetStringAsync(calendar.IcsUri);
 
                     var cacheEntryOptions = new MemoryCacheEntryOptions()

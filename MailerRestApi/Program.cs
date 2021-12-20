@@ -40,16 +40,18 @@ app.UseRouting();
 
 // Reference Document: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
 app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string prefix) =>
-    await service.GetCalendarFileAsync(prefix)
-        is string shortCalFile
-        ? shortCalFile
-        : null
+    {
+        app.Logger.LogInformation($"Getting (ics) Calendar by prefix: {prefix}");
+        return await service.GetCalendarFileAsync(prefix)
+            is string shortCalFile
+            ? shortCalFile
+            : null;
+    }
 );
 
 app.MapGet("/friend/{meeting}/{name}.ics", async (IMemoryCache memory, string meeting, string name) =>
     {
         app.Logger.LogInformation($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()}");
-        Console.WriteLine($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()}");
         return memory.Get<string>($"{meeting}:{name.ToUpper()}");
     }
 );
