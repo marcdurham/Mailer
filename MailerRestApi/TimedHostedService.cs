@@ -37,14 +37,19 @@ public class TimedHostedService : IHostedService, IDisposable
         string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
-        new PublisherEmailer(sheets, sendGridApiKey).Run(
-            clmSendEmailsDocumentId: clmSendEmailsDocumentId,
-            clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
-            pwSendEmailsDocumentId: clmAssignmentListDocumentId,
-            pwAssignmentListDocumentId: clmAssignmentListDocumentId,
-            mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
-            mfsAssignmentListDocumentId: clmAssignmentListDocumentId,
-            friendInfoDocumentId: clmAssignmentListDocumentId);
+        new PublisherEmailer(
+            sheets, 
+            sendGridApiKey, 
+            dryRunMode: true, 
+            forceSendAll: false)
+            .Run(
+                clmSendEmailsDocumentId: clmSendEmailsDocumentId,
+                clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
+                pwSendEmailsDocumentId: clmAssignmentListDocumentId,
+                pwAssignmentListDocumentId: clmAssignmentListDocumentId,
+                mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
+                mfsAssignmentListDocumentId: clmAssignmentListDocumentId,
+                friendInfoDocumentId: clmAssignmentListDocumentId);
     }
 
     public Task StopAsync(CancellationToken stoppingToken)

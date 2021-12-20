@@ -55,7 +55,7 @@ public class PublisherEmailer
             new ScheduleInputs()
             {
                 MeetingName = "CLM",
-                HtmlTemplatePath = "./template1.html",
+                HtmlTemplatePath = "/app/bin/Debug/net6.0/template1.html",
                 EmailRecipientsDocumentId = clmSendEmailsDocumentId,
                 EmailRecipientsRange = "CLM Send Emails!B2:F300",
                 AssignmentListDocumentId = clmAssignmentListDocumentId,

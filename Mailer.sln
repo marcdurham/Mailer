@@ -14,6 +14,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{9CD4B834-A231-4FC2-8C92-0456A3D08A6C}"
 	ProjectSection(SolutionItems) = preProject
 		.dockerignore = .dockerignore
+		.env = .env
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		docker-compose.yml = docker-compose.yml
