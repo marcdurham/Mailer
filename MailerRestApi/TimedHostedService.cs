@@ -1,4 +1,5 @@
 using GoogleAdapter.Adapters;
+using MailerRestApi;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Mailer.Sender;
@@ -41,6 +42,7 @@ public class TimedHostedService : IHostedService, IDisposable
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
         new PublisherEmailer(
+            new CustomLogger(_logger),
             _memoryCache,
             sheets, 
             sendGridApiKey, 
