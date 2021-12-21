@@ -18,14 +18,15 @@ string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 clmSendEmailsDocumentId = clmAssignmentListDocumentId;
 
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-new PublisherEmailer(new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
+new PublisherEmailer(new ConsoleLogger(), new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId,
     pwSendEmailsDocumentId: clmSendEmailsDocumentId,
     pwAssignmentListDocumentId: clmAssignmentListDocumentId,
     mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
     mfsAssignmentListDocumentId: clmAssignmentListDocumentId,
-    friendInfoDocumentId: clmAssignmentListDocumentId);
+    friendInfoDocumentId: clmAssignmentListDocumentId,
+    schedules: null);
 
 //ISheets sheets = new CsvSheets();
 //new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true, forceSendAll: true).Run(

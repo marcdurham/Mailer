@@ -52,7 +52,8 @@ public class PublisherEmailer
         string? pwAssignmentListDocumentId,
         string? mfsSendEmailsDocumentId,
         string? mfsAssignmentListDocumentId,
-        string? friendInfoDocumentId)
+        string? friendInfoDocumentId,
+        List<ScheduleInputs> schedules)
     {
         if (clmSendEmailsDocumentId == null)
             throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
@@ -65,42 +66,42 @@ public class PublisherEmailer
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
 
-        var schedules = new List<ScheduleInputs>()
-        {
-            new ScheduleInputs()
-            {
-                MeetingName = "CLM",
-                HtmlTemplatePath = "/app/template1.html",
-                EmailRecipientsDocumentId = clmSendEmailsDocumentId,
-                EmailRecipientsRange = "CLM Send Emails!B2:F300",
-                AssignmentListDocumentId = clmAssignmentListDocumentId,
-                AssignmentListRange =  $"CLM Assignment List!B1:AY9999",
-                SendDayOfWeek = DayOfWeek.Monday,
-                MeetingDayOfWeek = DayOfWeek.Thursday-1,
-            },
-            new ScheduleInputs()
-            {
-                MeetingName = "PW",
-                HtmlTemplatePath = "/app/template3.html",
-                EmailRecipientsDocumentId = pwSendEmailsDocumentId,
-                EmailRecipientsRange = "PW Send Emails!B2:F300",
-                AssignmentListDocumentId = pwAssignmentListDocumentId,
-                AssignmentListRange =  $"PW Assignment List!B1:AY9999",
-                SendDayOfWeek = DayOfWeek.Wednesday,
-                MeetingDayOfWeek = DayOfWeek.Saturday-1
-            },
-            new ScheduleInputs()
-            {
-                MeetingName = "MFS",
-                HtmlTemplatePath = "/app/template4.html",
-                EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
-                EmailRecipientsRange = "Service Send Emails!B2:F300",
-                AssignmentListDocumentId = mfsAssignmentListDocumentId,
-                AssignmentListRange =  $"Service Schedule!B1:AY9999",
-                SendDayOfWeek = DayOfWeek.Sunday,
-                MeetingDayOfWeek = (DayOfWeek)0,
-            }
-        };
+        //var schedules = new List<ScheduleInputs>()
+        //{
+        //    new ScheduleInputs()
+        //    {
+        //        MeetingName = "CLM",
+        //        HtmlTemplatePath = "/app/template1.html",
+        //        EmailRecipientsDocumentId = clmSendEmailsDocumentId,
+        //        EmailRecipientsRange = "CLM Send Emails!B2:F300",
+        //        AssignmentListDocumentId = clmAssignmentListDocumentId,
+        //        AssignmentListRange =  $"CLM Assignment List!B1:AY9999",
+        //        SendDayOfWeek = DayOfWeek.Monday,
+        //        MeetingDayOfWeek = DayOfWeek.Thursday-1,
+        //    },
+        //    new ScheduleInputs()
+        //    {
+        //        MeetingName = "PW",
+        //        HtmlTemplatePath = "/app/template3.html",
+        //        EmailRecipientsDocumentId = pwSendEmailsDocumentId,
+        //        EmailRecipientsRange = "PW Send Emails!B2:F300",
+        //        AssignmentListDocumentId = pwAssignmentListDocumentId,
+        //        AssignmentListRange =  $"PW Assignment List!B1:AY9999",
+        //        SendDayOfWeek = DayOfWeek.Wednesday,
+        //        MeetingDayOfWeek = DayOfWeek.Saturday-1
+        //    },
+        //    new ScheduleInputs()
+        //    {
+        //        MeetingName = "MFS",
+        //        HtmlTemplatePath = "/app/template4.html",
+        //        EmailRecipientsDocumentId = mfsSendEmailsDocumentId,
+        //        EmailRecipientsRange = "Service Send Emails!B2:F300",
+        //        AssignmentListDocumentId = mfsAssignmentListDocumentId,
+        //        AssignmentListRange =  $"Service Schedule!B1:AY9999",
+        //        SendDayOfWeek = DayOfWeek.Sunday,
+        //        MeetingDayOfWeek = (DayOfWeek)0,
+        //    }
+        //};
 
         _logger.LogInformation("Loading Friends...");
         IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500");

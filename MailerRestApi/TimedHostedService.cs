@@ -1,4 +1,5 @@
 using GoogleAdapter.Adapters;
+using MailerCommon.Configuration;
 using MailerRestApi;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -41,6 +42,8 @@ public class TimedHostedService : IHostedService, IDisposable
         string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
+        var schedules = Configuration.GetValue<List<ScheduleInputs>>("Schedules");
+
         new PublisherEmailer(
             new CustomLogger(_logger),
             _memoryCache,
@@ -55,7 +58,8 @@ public class TimedHostedService : IHostedService, IDisposable
                 pwAssignmentListDocumentId: clmAssignmentListDocumentId,
                 mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
                 mfsAssignmentListDocumentId: clmAssignmentListDocumentId,
-                friendInfoDocumentId: clmAssignmentListDocumentId);
+                friendInfoDocumentId: clmAssignmentListDocumentId,
+                schedules: schedules);
     }
 
     public Task StopAsync(CancellationToken stoppingToken)
