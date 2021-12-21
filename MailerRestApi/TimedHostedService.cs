@@ -42,9 +42,13 @@ public class TimedHostedService : IHostedService, IDisposable
         string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
-        var schedules = Configuration.GetSection("Schedules").GetValue<ScheduleInputs[]>("Schedules");
+        //var schedules = Configuration.GetSection("Schedules").GetValue<ScheduleInputs[]>("Schedules");
+        var scheduleOptions = new ScheduleOptions();
+        Configuration.GetSection("Schedules").Bind(scheduleOptions);
+        var schedules = scheduleOptions.Schedules;
+
         _logger.LogInformation($"Schedules Count: {schedules.Length}");
-        Configuration.
+   
         new PublisherEmailer(
             new CustomLogger(_logger),
             _memoryCache,
