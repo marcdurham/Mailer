@@ -24,7 +24,7 @@ builder.Services.AddApplicationInsightsTelemetry(
         options.InstrumentationKey = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_INSTRUMENTATIONKEY");
         options.ConnectionString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
     });
-builder.Logging.AddConsole();
+//builder.Logging.AddConsole();
 
 var app = builder.Build();
 
@@ -52,9 +52,8 @@ app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string pref
     }
 );
 
-app.MapGet("/friend/{meeting}/{name}.ics", async (ILogger logger, IMemoryCache memory, string meeting, string name) =>
+app.MapGet("/friend/{meeting}/{name}.ics", async (IMemoryCache memory, string meeting, string name) =>
     {
-        logger.LogInformation($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()} (ILogger)");
         app.Logger.LogInformation($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()} (app.Logger)");
         return memory.Get<string>($"{meeting}:{name.ToUpper()}");
     }
