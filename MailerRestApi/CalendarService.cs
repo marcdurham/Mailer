@@ -8,12 +8,12 @@ namespace Mailer
 {
     public class CalendarService
     {
-        readonly ILogger _logger;
+        readonly ILogger<CalendarService> _logger;
         readonly CalendarOptions _options;
         readonly IMemoryCache _memoryCache;
 
         public CalendarService(
-            ILogger logger, 
+            ILogger<CalendarService> logger, 
             IOptions<CalendarOptions> options,
             IMemoryCache memoryCache)
         {

@@ -16,7 +16,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<TimedHostedService>();
 builder.Services.AddSingleton<CalendarService>();
-builder.Services.AddSingleton<ICustomLogger, CustomLogger>();
+builder.Services.AddSingleton<ICustomLogger<PublisherEmailer>, CustomLogger<PublisherEmailer>>();
 builder.Services.Configure<CalendarOptions>(
     builder.Configuration.GetSection("Calendar"));
 builder.Services.AddApplicationInsightsTelemetry(

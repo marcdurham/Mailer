@@ -2,7 +2,7 @@
 
 namespace MailerCli
 {
-    public class ConsoleLogger : ICustomLogger
+    public class ConsoleLogger<T> : ICustomLogger<T>
     {
         public void LogInformation(string message)
         {

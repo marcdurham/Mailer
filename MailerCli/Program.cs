@@ -18,7 +18,7 @@ string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 clmSendEmailsDocumentId = clmAssignmentListDocumentId;
 
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-new PublisherEmailer(new ConsoleLogger(), new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
+new PublisherEmailer(new ConsoleLogger<PublisherEmailer>(), new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
     clmSendEmailsDocumentId: clmSendEmailsDocumentId,
     clmAssignmentListDocumentId: clmAssignmentListDocumentId,
     pwSendEmailsDocumentId: clmSendEmailsDocumentId,

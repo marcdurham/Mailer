@@ -2,11 +2,11 @@
 
 namespace MailerRestApi
 {
-    public class CustomLogger : ICustomLogger
+    public class CustomLogger<T> : ICustomLogger<T>
     {
-        private readonly ILogger _logger;
+        private readonly ILogger<T> _logger;
 
-        public CustomLogger(ILogger logger)
+        public CustomLogger(ILogger<T> logger)
         {
             _logger = logger;
         }

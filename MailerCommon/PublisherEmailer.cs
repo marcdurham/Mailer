@@ -13,12 +13,12 @@ public class PublisherEmailer
     const string IsoDateFormat = "yyyy-MM-dd";
     
     readonly IEmailSender _emailSender;
-    readonly ICustomLogger _logger;
+    readonly ICustomLogger<PublisherEmailer> _logger;
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
 
     public PublisherEmailer(
-        ICustomLogger logger, 
+        ICustomLogger<PublisherEmailer> logger, 
         IMemoryCache memoryCache, 
         ISheets sheets, 
         string? sendGridApiKey, 
