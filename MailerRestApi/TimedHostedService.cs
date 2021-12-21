@@ -42,7 +42,7 @@ public class TimedHostedService : IHostedService, IDisposable
         string googleApiSecretsJson = File.ReadAllText("/app/GoogleApi.secrets.json");
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
-        var schedules = Configuration.GetSection("Schedules").GetValue<List<ScheduleInputs>>("Schedules");
+        var schedules = Configuration.GetSection("Schedules").GetValue<ScheduleInputs[]>("Schedules");
 
         new PublisherEmailer(
             new CustomLogger(_logger),
@@ -59,7 +59,7 @@ public class TimedHostedService : IHostedService, IDisposable
                 mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
                 mfsAssignmentListDocumentId: clmAssignmentListDocumentId,
                 friendInfoDocumentId: clmAssignmentListDocumentId,
-                schedules: schedules);
+                schedules: schedules.ToList());
     }
 
     public Task StopAsync(CancellationToken stoppingToken)
