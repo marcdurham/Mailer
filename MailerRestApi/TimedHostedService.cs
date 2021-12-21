@@ -43,7 +43,8 @@ public class TimedHostedService : IHostedService, IDisposable
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
         var schedules = Configuration.GetSection("Schedules").GetValue<ScheduleInputs[]>("Schedules");
-
+        _logger.LogInformation($"Schedules Count: {schedules.Length}");
+        Configuration.
         new PublisherEmailer(
             new CustomLogger(_logger),
             _memoryCache,
