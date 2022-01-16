@@ -54,7 +54,7 @@ public class TimedHostedService : IHostedService, IDisposable
             _memoryCache,
             sheets, 
             sendGridApiKey, 
-            dryRunMode: true, 
+            dryRunMode: false, 
             forceSendAll: false)
             .Run(
                 clmSendEmailsDocumentId: clmSendEmailsDocumentId,

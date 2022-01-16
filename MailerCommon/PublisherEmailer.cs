@@ -36,8 +36,8 @@ public class PublisherEmailer
             new List<IEmailSender>
             {
                 new SaveEmailToFileEmailSender() { SendByDefault = dryRunMode },
-                //new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
-                // new SendGridEmailSender(sendGridApiKey) { SendByDefault = true },
+                new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
+                new SendGridEmailSender(sendGridApiKey) { SendByDefault = true },
             });
         
         ForceSendAll = forceSendAll;
