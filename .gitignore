@@ -366,4 +366,5 @@ FodyWeavers.xsd
 .env
 launchSettings.json
 documents.json
+documents.*.json
 
