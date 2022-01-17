@@ -36,8 +36,7 @@ public class TimedHostedService : IHostedService, IDisposable
 
         _logger.LogInformation($"Timed Hosted Service is working. Interval (sec): {_intervalSeconds} Count: {count}");
 
-        string? clmSendEmailsDocumentId = Environment.GetEnvironmentVariable("ClmSendEmailsDocumentId", EnvironmentVariableTarget.Process);
-        string? clmAssignmentListDocumentId = Environment.GetEnvironmentVariable("ClmAssignmentListDocumentId", EnvironmentVariableTarget.Process);
+        string? friendInfoDocumentId = Environment.GetEnvironmentVariable("FriendInfoDocumentId", EnvironmentVariableTarget.Process);
         string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
         string googleApiSecretsJson = File.ReadAllText("./GoogleApi.secrets.json");
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
@@ -57,13 +56,7 @@ public class TimedHostedService : IHostedService, IDisposable
             dryRunMode: false, 
             forceSendAll: false)
             .Run(
-                clmSendEmailsDocumentId: clmSendEmailsDocumentId,
-                clmAssignmentListDocumentId: clmAssignmentListDocumentId, 
-                pwSendEmailsDocumentId: clmSendEmailsDocumentId,
-                pwAssignmentListDocumentId: clmAssignmentListDocumentId,
-                mfsSendEmailsDocumentId: clmSendEmailsDocumentId,
-                mfsAssignmentListDocumentId: clmAssignmentListDocumentId,
-                friendInfoDocumentId: clmAssignmentListDocumentId,
+                friendInfoDocumentId: friendInfoDocumentId,
                 schedules: schedules.ToList());
     }
 
