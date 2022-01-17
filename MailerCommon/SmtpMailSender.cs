@@ -78,7 +78,7 @@ public class SmtpEmailSender : IEmailSender
         // //client.SendAsync(message, userState);
         Thread.Sleep(200);
         client.Send(message);
-        //Console.WriteLine("Sending message... press c to cancel mail. Press any other key to exit.");
+        Console.WriteLine($"Sending message to {msg.ToAddress}");
         ////string answer = Console.ReadLine();
         // If the user canceled the send, and mail hasn't been sent yet,
         // then cancel the pending operation.
