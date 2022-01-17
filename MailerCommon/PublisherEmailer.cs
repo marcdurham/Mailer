@@ -226,8 +226,8 @@ public class PublisherEmailer
 
         EmailMessage message = new()
         {
-            FromAddress = "some@email.com",
-            FromName = "My City My Group Information Board",
+            FromAddress = "auto@mailer.org",
+            FromName = "Mailer Information Board",
             ToAddress = recipient.EmailAddress!,
             ToName = recipient.Name,
             Subject = subject,

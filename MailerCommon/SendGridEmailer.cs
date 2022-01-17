@@ -8,7 +8,7 @@ public class SendGridEmailer
     public static async Task<Response> SendEmail(string name, string email, string sendGridApiKey, string subject, string htmlContent)
     {
         var client = new SendGridClient(sendGridApiKey);
-        var from = new EmailAddress("some@email.com", "My City My Group Information Board");
+        var from = new EmailAddress("auto@mailer.org", "Mailer Information Board");
        
         var to = new EmailAddress(email, name);
         var plainTextContent = subject;
