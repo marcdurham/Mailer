@@ -18,9 +18,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - TimerIntervalSeconds=$TimerIntervalSeconds
       - ServiceSecretsJson=$ServiceSecretsJson
-      - ClmSendEmailsDocumentId=$ClmSendEmailsDocumentId
-      - ClmAssignmentListDocumentId=$ClmAssignmentListDocumentId
-      - Range=$Range
+      - FriendInfoDocumentId=$FriendInfoDocumentId
       - SENDGRID_API_KEY=$SENDGRID_API_KEY
       - ScheduleViewSheet=CLM EMailer
       - ScheduleViewPublisherCell=A1

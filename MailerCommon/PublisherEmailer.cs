@@ -46,23 +46,9 @@ public class PublisherEmailer
     public bool ForceSendAll { get; set; }
 
     public void Run(
-        string? clmSendEmailsDocumentId, 
-        string? clmAssignmentListDocumentId,
-        string? pwSendEmailsDocumentId,
-        string? pwAssignmentListDocumentId,
-        string? mfsSendEmailsDocumentId,
-        string? mfsAssignmentListDocumentId,
         string? friendInfoDocumentId,
         List<ScheduleInputs> schedules)
     {
-        if (clmSendEmailsDocumentId == null)
-            throw new ArgumentNullException(nameof(clmSendEmailsDocumentId));
-        if (pwAssignmentListDocumentId == null)
-            throw new ArgumentNullException(nameof(pwAssignmentListDocumentId));
-        if (clmAssignmentListDocumentId == null)
-            throw new ArgumentNullException(nameof(clmAssignmentListDocumentId));
-        if (mfsAssignmentListDocumentId == null)
-            throw new ArgumentNullException(nameof(mfsAssignmentListDocumentId));
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
 

@@ -50,12 +50,19 @@ public class GoogleSheets : ISheets
 
     public IList<IList<object>> Read(string documentId, string range)
     {
-        SpreadsheetsResource.ValuesResource.GetRequest request =
-            _service.Spreadsheets.Values.Get(documentId, range);
+        try
+        {
+            SpreadsheetsResource.ValuesResource.GetRequest request =
+                _service.Spreadsheets.Values.Get(documentId, range);
 
-        ValueRange response = request.Execute();
+            ValueRange response = request.Execute();
 
-        return response.Values;
+            return response.Values;
+        }
+        catch(Exception e)
+        {
+            throw new System.Exception($"Read Google Sheet Error! DocumentId: {documentId} Range: {range} Error Message: {e.Message}", e);
+        }
     }
 
     public static bool IsJsonForAServiceAccount(string? json)
