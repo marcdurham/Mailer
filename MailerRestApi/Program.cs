@@ -10,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
 builder.Configuration.AddJsonFile("appsettings.json");
+builder.Configuration.AddJsonFile("documents.json");
 
 builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();

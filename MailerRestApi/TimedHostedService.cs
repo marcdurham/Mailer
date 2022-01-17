@@ -36,7 +36,8 @@ public class TimedHostedService : IHostedService, IDisposable
 
         _logger.LogInformation($"Timed Hosted Service is working. Interval (sec): {_intervalSeconds} Count: {count}");
 
-        string? friendInfoDocumentId = Environment.GetEnvironmentVariable("FriendInfoDocumentId", EnvironmentVariableTarget.Process);
+        string? friendInfoDocumentId = Configuration.GetValue<string>("FriendInfoDocumentId");
+        //string? friendInfoDocumentId = Environment.GetEnvironmentVariable("FriendInfoDocumentId", EnvironmentVariableTarget.Process);
         string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
         string googleApiSecretsJson = File.ReadAllText("./GoogleApi.secrets.json");
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);

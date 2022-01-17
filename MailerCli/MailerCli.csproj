@@ -10,7 +10,19 @@
   <ItemGroup>
     <ProjectReference Include="..\MailerCommon\MailerCommon.csproj" />
   </ItemGroup>
-
+	
+    <ItemGroup>
+	    <Content Include="..\MailerRestApi\template1.html" Link="template1.html">
+		    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    </Content>
+	    <Content Include="..\MailerRestApi\template4.html" Link="template4.html">
+		    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    </Content>
+	    <Content Include="..\MailerRestApi\template3.html" Link="template3.html">
+		    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	    </Content>
+    </ItemGroup>
+	
   <ItemGroup>
     <None Update="template4.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
