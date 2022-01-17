@@ -54,12 +54,19 @@ app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string pref
     }
 );
 
-app.MapGet("/friend/{meeting}/{name}.ics", async (IMemoryCache memory, string meeting, string name) =>
-    {
-        app.Logger.LogInformation($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()} (app.Logger)");
-        return memory.Get<string>($"{meeting}:{name.ToUpper()}");
-    }
+app.MapGet("/friend/{name}.ics", async (IMemoryCache memory, string name) =>
+{
+    app.Logger.LogInformation($"Getting Friend (ics) Calendar: {name.ToUpper()} (app.Logger)");
+    return memory.Get<string>($"{name.ToUpper()}");
+}
 );
+
+//app.MapGet("/friend/{meeting}/{name}.ics", async (IMemoryCache memory, string meeting, string name) =>
+//    {
+//        app.Logger.LogInformation($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()} (app.Logger)");
+//        return memory.Get<string>($"{meeting}:{name.ToUpper()}");
+//    }
+//);
 
 app.MapGet("/health", () =>
     {

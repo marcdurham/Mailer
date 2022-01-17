@@ -16,6 +16,7 @@ public class PublisherEmailer
     readonly ICustomLogger<PublisherEmailer> _logger;
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
+    readonly Dictionary<string, List<Assignment>> friendCalendars = new Dictionary<string, List<Assignment>>();
 
     public PublisherEmailer(
         ICustomLogger<PublisherEmailer> logger, 
@@ -63,6 +64,11 @@ public class PublisherEmailer
         foreach(ScheduleInputs schedule in schedules)
         {
             SendSchedulesFor(schedule, friendMap, thisMonday);
+        }
+
+        foreach(var calendar in friendCalendars)
+        {
+            CacheFriendAssignments(calendar.Key, calendar.Value);
         }
 
         _logger.LogInformation("Done");
@@ -174,20 +180,59 @@ public class PublisherEmailer
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
 
-        CacheFriendAssignments(scheduleInputs.MeetingName, recipient, friendAssignments);
+        //CacheFriendAssignments(scheduleInputs.MeetingName, recipient, friendAssignments);
+
+        string friendKey = $"{recipient.Name.ToUpper()}";
+        if (!friendCalendars.ContainsKey(friendKey))
+        {
+            friendCalendars.Add(friendKey, friendAssignments);
+        }
+        else
+        {
+            friendCalendars[friendKey].AddRange(friendAssignments);
+        }
 
         SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
     }
 
-    private void CacheFriendAssignments(string meetingName, EmailRecipient recipient, List<Assignment> friendAssignments)
+    //private void CacheFriendAssignments(string meetingName, EmailRecipient recipient, List<Assignment> friendAssignments)
+    //{
+    //    var shortCalendar = new Ical.Net.Calendar();
+
+    //    foreach (Assignment assignment in friendAssignments)
+    //    {
+    //        string assignmentName = assignment.Name;
+    //        if(assignmentName.Contains(" - "))
+    //            assignmentName = string.Join("-", assignmentName.Split("-", System.StringSplitOptions.RemoveEmptyEntries).Reverse());
+    //        var calEvent = new CalendarEvent
+    //        {
+    //            Start = new CalDateTime(assignment.Date),
+    //            Summary = $"{assignmentName} ({assignment.Meeting})",
+    //        };
+
+    //        shortCalendar.Events.Add(calEvent);
+    //    }
+
+    //    var serializer = new CalendarSerializer();
+    //    var serializedCalendar = serializer.SerializeToString(shortCalendar);
+
+    //    var cacheEntryOptions = new MemoryCacheEntryOptions()
+    //            .SetSlidingExpiration(TimeSpan.FromSeconds(60*60)); // One hour
+
+    //    string publisherCalendarCacheKey = $"{meetingName}:{recipient.Name.ToUpper()}";
+
+    //    _memoryCache.Set(publisherCalendarCacheKey, serializedCalendar, cacheEntryOptions);
+    //}
+
+    private void CacheFriendAssignments(string friendKey, List<Assignment> friendAssignments)
     {
         var shortCalendar = new Ical.Net.Calendar();
 
         foreach (Assignment assignment in friendAssignments)
         {
             string assignmentName = assignment.Name;
-            if(assignmentName.Contains(" - "))
-                assignmentName = string.Join("-", assignmentName.Split("-", System.StringSplitOptions.RemoveEmptyEntries).Reverse());
+            if (assignmentName.Contains(" - "))
+                assignmentName = string.Join("-", assignmentName.Split("-", StringSplitOptions.RemoveEmptyEntries).Reverse());
             var calEvent = new CalendarEvent
             {
                 Start = new CalDateTime(assignment.Date),
@@ -201,9 +246,9 @@ public class PublisherEmailer
         var serializedCalendar = serializer.SerializeToString(shortCalendar);
 
         var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(TimeSpan.FromSeconds(60*60)); // One hour
+                .SetSlidingExpiration(TimeSpan.FromSeconds(60 * 60)); // One hour
 
-        _memoryCache.Set($"{meetingName}:{recipient.Name.ToUpper()}", serializedCalendar, cacheEntryOptions);
+        _memoryCache.Set(friendKey, serializedCalendar, cacheEntryOptions);
     }
 
     void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient, DayOfWeek sendDayOfWeek)
