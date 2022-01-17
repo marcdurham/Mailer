@@ -57,7 +57,7 @@ public class PublisherEmailer
         var friendMap = FriendLoader.GetFriends(friendInfoRows);
         _logger.LogInformation($"{friendMap.Count} Friends Loaded");
 
-        _logger.LogInformation("Sending schedules...");
+        _logger.LogInformation($"Sending {schedules.Count} schedules...");
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
        
         foreach(ScheduleInputs schedule in schedules)
