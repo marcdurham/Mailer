@@ -128,7 +128,10 @@ public class PublisherEmailer
             values, 
             friendMap, 
             new int[] { (int)scheduleInputs.MeetingDayOfWeek }, 
-            scheduleInputs.MeetingName);
+            scheduleInputs.MeetingName,
+            scheduleInputs.MeetingStartTime.HasValue 
+                ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime) 
+                : null);
 
         _logger.LogInformation($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> upcomingMeetings = meetings

@@ -7,6 +7,7 @@
             Dictionary<string, Friend> friendMap, 
             int[] daysOfWeek, 
             string title, 
+            TimeOnly? meetingStartTime,
             int mondayColumnIndex = 0)
         {
             const int HeaderRowIndex = 0;
@@ -30,7 +31,7 @@
                 var meeting = new Meeting
                 {
                     Name = title,
-                    Date = monday.AddDays(daysOfWeek[0])
+                    Date = monday.AddDays(daysOfWeek[0]).AddTicks(meetingStartTime.HasValue ? meetingStartTime.Value.Ticks : 0),
                 };
 
                 for (int a = 2; a < values[wk].Count && a < headers.Length; a++)

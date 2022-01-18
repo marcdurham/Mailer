@@ -10,5 +10,6 @@
         public string? AssignmentListRange { get; set; }
         public DayOfWeek SendDayOfWeek { get; set; }
         public DayOfWeek MeetingDayOfWeek { get; set; }
+        public DateTime? MeetingStartTime { get; set; }
     }
 }
