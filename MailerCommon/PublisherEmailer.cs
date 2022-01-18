@@ -13,12 +13,14 @@ public class PublisherEmailer
     const string IsoDateFormat = "yyyy-MM-dd";
     
     readonly IEmailSender _emailSender;
+    readonly ScheduleOptions _scheduleOptions;
     readonly ICustomLogger<PublisherEmailer> _logger;
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
     readonly Dictionary<string, List<Assignment>> friendCalendars = new Dictionary<string, List<Assignment>>();
 
     public PublisherEmailer(
+        ScheduleOptions scheduleOptions,
         ICustomLogger<PublisherEmailer> logger, 
         IMemoryCache memoryCache, 
         ISheets sheets, 
@@ -26,12 +28,16 @@ public class PublisherEmailer
         bool dryRunMode =  false, 
         bool forceSendAll = false)
     {
+        _scheduleOptions = scheduleOptions;
         _logger = logger;
         _memoryCache = memoryCache;
         _sheets = sheets;
 
         if (sendGridApiKey == null)
             throw new ArgumentNullException(nameof(sendGridApiKey));
+
+        if (string.IsNullOrWhiteSpace(scheduleOptions.TimeZone))
+            throw new ArgumentNullException(nameof(scheduleOptions.TimeZone));
 
         _emailSender = new EmailSenderProxy(
             new List<IEmailSender>
@@ -238,7 +244,7 @@ public class PublisherEmailer
                 assignmentName = string.Join("-", assignmentName.Split("-", StringSplitOptions.RemoveEmptyEntries).Reverse());
             var calEvent = new CalendarEvent
             {
-                Start = new CalDateTime(assignment.Date),
+                Start = new CalDateTime(assignment.Date, _scheduleOptions.TimeZone),
                 Summary = $"{assignmentName} ({assignment.Meeting})",
             };
 
