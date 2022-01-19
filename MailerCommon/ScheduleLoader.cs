@@ -8,7 +8,8 @@
             int[] daysOfWeek, 
             string title, 
             TimeOnly? meetingStartTime,
-            int mondayColumnIndex = 0)
+            int mondayColumnIndex = 0,
+            int meetingDateColumnIndex = 0)
         {
             const int HeaderRowIndex = 0;
 
@@ -27,11 +28,12 @@
             for (int wk = 1; wk < values.Count; wk++)
             {
                 rows[wk] = values[wk][mondayColumnIndex]?.ToString() ?? string.Empty;
-                var monday = DateTime.Parse(values[wk][mondayColumnIndex].ToString() ?? string.Empty);
+                //var monday = DateTime.Parse(values[wk][mondayColumnIndex].ToString() ?? string.Empty);
+                var meetingDay = DateTime.Parse(values[wk][meetingDateColumnIndex].ToString() ?? string.Empty);
                 var meeting = new Meeting
                 {
                     Name = title,
-                    Date = monday.AddDays(daysOfWeek[0]).AddTicks(meetingStartTime.HasValue ? meetingStartTime.Value.Ticks : 0),
+                    Date = meetingDay.AddTicks(meetingStartTime.HasValue ? meetingStartTime.Value.Ticks : 0),
                 };
 
                 for (int a = 2; a < values[wk].Count && a < headers.Length; a++)

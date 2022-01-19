@@ -18,6 +18,7 @@ public class PublisherEmailer
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
     readonly Dictionary<string, List<Assignment>> friendCalendars = new Dictionary<string, List<Assignment>>();
+    readonly double _timeZoneOffsetHours = 0.0;
 
     public PublisherEmailer(
         ScheduleOptions scheduleOptions,
@@ -48,6 +49,8 @@ public class PublisherEmailer
             });
         
         ForceSendAll = forceSendAll;
+
+        _timeZoneOffsetHours = scheduleOptions.TimeZoneOffsetHours ?? 0.0;
     }
 
     public bool ForceSendAll { get; set; }
@@ -137,7 +140,9 @@ public class PublisherEmailer
             scheduleInputs.MeetingName,
             scheduleInputs.MeetingStartTime.HasValue 
                 ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime) 
-                : null);
+                : null,
+            mondayColumnIndex: 0,
+            meetingDateColumnIndex: scheduleInputs.MeetingDateColumnIndex ?? 0);
 
         _logger.LogInformation($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> upcomingMeetings = meetings
@@ -204,35 +209,6 @@ public class PublisherEmailer
         SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
     }
 
-    //private void CacheFriendAssignments(string meetingName, EmailRecipient recipient, List<Assignment> friendAssignments)
-    //{
-    //    var shortCalendar = new Ical.Net.Calendar();
-
-    //    foreach (Assignment assignment in friendAssignments)
-    //    {
-    //        string assignmentName = assignment.Name;
-    //        if(assignmentName.Contains(" - "))
-    //            assignmentName = string.Join("-", assignmentName.Split("-", System.StringSplitOptions.RemoveEmptyEntries).Reverse());
-    //        var calEvent = new CalendarEvent
-    //        {
-    //            Start = new CalDateTime(assignment.Date),
-    //            Summary = $"{assignmentName} ({assignment.Meeting})",
-    //        };
-
-    //        shortCalendar.Events.Add(calEvent);
-    //    }
-
-    //    var serializer = new CalendarSerializer();
-    //    var serializedCalendar = serializer.SerializeToString(shortCalendar);
-
-    //    var cacheEntryOptions = new MemoryCacheEntryOptions()
-    //            .SetSlidingExpiration(TimeSpan.FromSeconds(60*60)); // One hour
-
-    //    string publisherCalendarCacheKey = $"{meetingName}:{recipient.Name.ToUpper()}";
-
-    //    _memoryCache.Set(publisherCalendarCacheKey, serializedCalendar, cacheEntryOptions);
-    //}
-
     private void CacheFriendAssignments(string friendKey, List<Assignment> friendAssignments)
     {
         var shortCalendar = new Ical.Net.Calendar();
@@ -242,9 +218,11 @@ public class PublisherEmailer
             string assignmentName = assignment.Name;
             if (assignmentName.Contains(" - "))
                 assignmentName = string.Join("-", assignmentName.Split("-", StringSplitOptions.RemoveEmptyEntries).Reverse());
+            // TODO: Fix: I don't think this is a time zone thing...
+            DateTime utcStart = assignment.Date.AddHours(_timeZoneOffsetHours);
             var calEvent = new CalendarEvent
             {
-                Start = new CalDateTime(assignment.Date, _scheduleOptions.TimeZone),
+                Start = new CalDateTime(utcStart, _scheduleOptions.TimeZone),
                 Summary = $"{assignmentName} ({assignment.Meeting})",
             };
 

@@ -11,5 +11,6 @@
         public DayOfWeek SendDayOfWeek { get; set; }
         public DayOfWeek MeetingDayOfWeek { get; set; }
         public DateTime? MeetingStartTime { get; set; }
+        public int? MeetingDateColumnIndex { get; set; }
     }
 }
