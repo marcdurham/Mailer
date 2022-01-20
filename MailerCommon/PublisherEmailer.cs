@@ -138,6 +138,7 @@ public class PublisherEmailer
             friendMap, 
             new int[] { (int)scheduleInputs.MeetingDayOfWeek }, 
             scheduleInputs.MeetingName,
+            scheduleInputs.MeetingTitle,
             scheduleInputs.MeetingStartTime.HasValue 
                 ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime) 
                 : null,
@@ -218,11 +219,16 @@ public class PublisherEmailer
             string assignmentName = assignment.Name;
             if (assignmentName.Contains(" - "))
                 assignmentName = string.Join("-", assignmentName.Split("-", StringSplitOptions.RemoveEmptyEntries).Reverse());
-            // TODO: Fix: I don't think this is a time zone thing...
-            DateTime utcStart = assignment.Date.AddHours(_timeZoneOffsetHours);
+
+            DateTime start = assignment.Date.AddHours(_timeZoneOffsetHours);
+            if(!assignment.Start.Equals(TimeOnly.MinValue))
+            {
+                start.Add(assignment.Start.ToTimeSpan());
+            }
+
             var calEvent = new CalendarEvent
             {
-                Start = new CalDateTime(utcStart, _scheduleOptions.TimeZone),
+                Start = new CalDateTime(start, _scheduleOptions.TimeZone),
                 Summary = $"{assignmentName} ({assignment.Meeting})",
             };
 

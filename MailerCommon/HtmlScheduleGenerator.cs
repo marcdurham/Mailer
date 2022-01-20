@@ -92,7 +92,7 @@ public class HtmlScheduleGenerator
 
         foreach (Assignment assignment in futurePresentDays)
         {
-            lineBuilder.AppendLine($"<li>{assignment.Date.ToString("yyyy MMM-dd dddd")}: <strong>{assignment.MeetingName}:</strong> {assignment.Name}</li>");
+            lineBuilder.AppendLine($"<li>{assignment.Date.ToString("yyyy MMM-dd dddd")}: <strong>{assignment.MeetingTitle}:</strong> {assignment.Name}</li>");
         }
 
         var upcomingAssignments = new StringBuilder(1000);

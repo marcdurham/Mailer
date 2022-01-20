@@ -24,6 +24,7 @@ namespace MailerCommon.Tests
                 values,
                 friendMap,
                 new int[] { 4 },
+                "MTG",
                 "Test Meeting",
                 TimeOnly.Parse("19:30"),
                 mondayColumnIndex: 0,
@@ -37,9 +38,9 @@ namespace MailerCommon.Tests
         {
             IList<IList<object>> values = new List<IList<object>>()
             {
-                new List<object>() { "Week Date", "Assignment 1", "Assignment 2" },
-                new List<object>() { DateTime.Parse("2022-01-01"), "Peter Parker", "Clark Kent" },
-                new List<object>() { DateTime.Parse("2022-01-07"), "Bruce Wayne", "Lois Lane" }
+                new List<object>() { "Week Date", "Assignment 1 Start", "Assignment 1", "Assignment 2 Start", "Assignment 2" },
+                new List<object>() { DateTime.Parse("2022-01-01"), "17:30", "Peter Parker", "17:35", "Clark Kent" },
+                new List<object>() { DateTime.Parse("2022-01-07"), "00:00", "Bruce Wayne", "00:10", "Lois Lane" }
             };
 
             Dictionary<string, Friend> friendMap = new Dictionary<string, Friend>()
@@ -54,12 +55,18 @@ namespace MailerCommon.Tests
                 values,
                 friendMap,
                 new int[] { 4 },
+                "MTG",
                 "Test Meeting",
                 TimeOnly.Parse("19:30"),
                 mondayColumnIndex: 0,
                 meetingDateColumnIndex: 0);
 
             //meetings[0].Assignments["Assignment 1"].Name.Should().Be("Peter Parker");
+            meetings[0].Assignments["Assignment 1"].Start.Should().Be(TimeOnly.Parse("17:30"));
+            meetings[0].Assignments["Assignment 2"].Start.Should().Be(TimeOnly.Parse("17:35"));
+            meetings[1].Assignments["Assignment 1"].Start.Should().Be(TimeOnly.Parse("00:00"));
+            meetings[1].Assignments["Assignment 2"].Start.Should().Be(TimeOnly.Parse("00:10"));
+
             meetings[0].Assignments["Assignment 1"].Friend.Name.Should().Be("Peter Parker");
             meetings[0].Assignments["Assignment 2"].Friend.Name.Should().Be("Clark Kent");
             meetings[1].Assignments["Assignment 1"].Friend.Name.Should().Be("Bruce Wayne");

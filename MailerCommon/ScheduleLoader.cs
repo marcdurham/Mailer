@@ -6,6 +6,7 @@
             IList<IList<object>> values, 
             Dictionary<string, Friend> friendMap, 
             int[] daysOfWeek, 
+            string name,
             string title, 
             TimeOnly? meetingStartTime,
             int mondayColumnIndex = 0,
@@ -35,7 +36,8 @@
                 var meetingDay = DateTime.Parse(values[wk][meetingDateColumnIndex].ToString() ?? string.Empty);
                 var meeting = new Meeting
                 {
-                    Name = title,
+                    Name = name,
+                    Title = title,
                     Date = meetingDay.AddTicks(meetingStartTime.HasValue ? meetingStartTime.Value.Ticks : 0),
                 };
 
@@ -53,17 +55,19 @@
                     }
 
                     string assignementKey = headers[a];
+                    int indexOfStart = headers.ToList().IndexOf($"{assignementKey} Start");
                     var assignment = new Assignment
                     {
                         Key = assignementKey,
                         Name = assignmentNames[assignementKey.ToUpper()],
                         Date = meeting.Date,
+                        Start = indexOfStart >= 0 
+                            ? TimeOnly.Parse(values[wk][indexOfStart].ToString()) 
+                            : TimeOnly.MinValue,
                         School = 0,
                         Friend = assignee,
                         Meeting = meeting.Name,
-                        MeetingName = meeting.Name == "CLM" 
-                            ? "CLM"
-                            : (meeting.Name == "PW" ? "PT/WS" :(meeting.Name == "MFS" ? "Service" : ""))
+                        MeetingTitle = meeting.Title
                     };
 
                     meeting.Assignments[assignment.Key] = assignment;
