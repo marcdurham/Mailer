@@ -13,6 +13,9 @@
         {
             const int HeaderRowIndex = 0;
 
+            if(values == null || values.Count == 0)
+                return new List<Meeting>();
+
             string[] headers = new string[values[HeaderRowIndex].Count];
             var assignmentNames = new Dictionary<string, string>();
             for (int col = 0; col < values[HeaderRowIndex].Count; col++)
@@ -36,7 +39,7 @@
                     Date = meetingDay.AddTicks(meetingStartTime.HasValue ? meetingStartTime.Value.Ticks : 0),
                 };
 
-                for (int a = 2; a < values[wk].Count && a < headers.Length; a++)
+                for (int a = 0; a < values[wk].Count && a < headers.Length; a++)
                 {
                     string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
                     Friend assignee;
