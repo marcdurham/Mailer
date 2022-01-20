@@ -220,7 +220,7 @@ public class PublisherEmailer
             if (assignmentName.Contains(" - "))
                 assignmentName = string.Join("-", assignmentName.Split("-", StringSplitOptions.RemoveEmptyEntries).Reverse());
 
-            DateTime start = assignment.Date.AddHours(_timeZoneOffsetHours);
+            DateTime start = assignment.Date;
             if(!assignment.Start.Equals(TimeOnly.MinValue))
             {
                 start.Add(assignment.Start.ToTimeSpan());
