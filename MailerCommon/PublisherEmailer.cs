@@ -62,6 +62,8 @@ public class PublisherEmailer
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
 
+        friendCalendars.Clear();
+
         _logger.LogInformation("Loading Friends...");
         IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500");
         var friendMap = FriendLoader.GetFriends(friendInfoRows);
