@@ -12,5 +12,8 @@
         public DayOfWeek MeetingDayOfWeek { get; set; }
         public DateTime? MeetingStartTime { get; set; }
         public int? MeetingDateColumnIndex { get; set; }
+        public int? WeekDateColumnIndex { get; set; }
+        public int? AssignmentStartColumnIndex { get; set; }
+        public int? AssignmentEndColumnIndex { get; set; }
     }
 }
