@@ -223,7 +223,7 @@ public class PublisherEmailer
             DateTime start = assignment.Date;
             if(!assignment.Start.Equals(TimeOnly.MinValue))
             {
-                start.Add(assignment.Start.ToTimeSpan());
+                start = start.Add(assignment.Start.ToTimeSpan());
             }
 
             var calEvent = new CalendarEvent

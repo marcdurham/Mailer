@@ -55,14 +55,15 @@
                     }
 
                     string assignementKey = headers[a];
-                    int indexOfStart = headers.ToList().IndexOf($"{assignementKey} Start");
+                    int indexOfStart = HeaderArray.StartColumnIndexOf(headers, assignementKey);
+
                     var assignment = new Assignment
                     {
                         Key = assignementKey,
                         Name = assignmentNames[assignementKey.ToUpper()],
                         Date = meeting.Date,
-                        Start = indexOfStart >= 0 
-                            ? TimeOnly.Parse(values[wk][indexOfStart].ToString()) 
+                        Start = indexOfStart >= 0
+                            ? TimeOnly.Parse(values[wk][indexOfStart].ToString())
                             : TimeOnly.MinValue,
                         School = 0,
                         Friend = assignee,
