@@ -2,7 +2,7 @@
 using GoogleAdapter.Adapters;
 using Mailer.Sender;
 using MailerCli;
-using MailerCommon;
+using MailerCommon.Configuration;
 
 Console.WriteLine("Mailer");
 
@@ -18,7 +18,13 @@ string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
 clmSendEmailsDocumentId = clmAssignmentListDocumentId;
 
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
-new PublisherEmailer(new ConsoleLogger<PublisherEmailer>(), new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
+ScheduleOptions options = new()
+{
+    EmailFromAddress = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process),
+    EmailFromName = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process)
+};
+
+new PublisherEmailer(options, new ConsoleLogger<PublisherEmailer>(), new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
     friendInfoDocumentId: clmAssignmentListDocumentId,
     schedules: null);
 

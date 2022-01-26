@@ -20,7 +20,9 @@ services:
       - ServiceSecretsJson=$ServiceSecretsJson
       - FriendInfoDocumentId=$FriendInfoDocumentId
       - SENDGRID_API_KEY=$SENDGRID_API_KEY
-      - ScheduleViewSheet=CLM EMailer
+      - EmailFromName=$EmailFromName
+      - EmailFromAddress=$EmailFromAddress
+      - ScheduleViewSheet=$ScheduleViewSheet
       - ScheduleViewPublisherCell=A1
       - APPLICATIONINSIGHTS_INSTRUMENTATIONKEY=$APPLICATIONINSIGHTS_INSTRUMENTATIONKEY
       - APPLICATIONINSIGHTS_CONNECTION_STRING=$APPLICATIONINSIGHTS_CONNECTION_STRING

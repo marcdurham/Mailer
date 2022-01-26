@@ -13,11 +13,13 @@ public class PublisherEmailer
     const string IsoDateFormat = "yyyy-MM-dd";
     
     readonly IEmailSender _emailSender;
+    readonly ScheduleOptions _options;
     readonly ICustomLogger<PublisherEmailer> _logger;
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
 
     public PublisherEmailer(
+        ScheduleOptions options,
         ICustomLogger<PublisherEmailer> logger, 
         IMemoryCache memoryCache, 
         ISheets sheets, 
@@ -25,6 +27,7 @@ public class PublisherEmailer
         bool dryRunMode =  false, 
         bool forceSendAll = false)
     {
+        _options = options;
         _logger = logger;
         _memoryCache = memoryCache;
         _sheets = sheets;
@@ -37,7 +40,7 @@ public class PublisherEmailer
             {
                 new SaveEmailToFileEmailSender() { SendByDefault = dryRunMode },
                 new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
-                new SendGridEmailSender(sendGridApiKey) { SendByDefault = true },
+                new SendGridEmailSender(sendGridApiKey, _options) { SendByDefault = true },
             });
         
         ForceSendAll = forceSendAll;
@@ -226,8 +229,8 @@ public class PublisherEmailer
 
         EmailMessage message = new()
         {
-            FromAddress = "auto@mailer.org",
-            FromName = "Mailer Information Board",
+            FromAddress = _options.EmailFromAddress ?? "auto@mailer.org",
+            FromName = _options.EmailFromName ?? "Mailer Information Board",
             ToAddress = recipient.EmailAddress!,
             ToName = recipient.Name,
             Subject = subject,

@@ -1,15 +1,20 @@
 ﻿using Mailer.Sender;
+using MailerCommon.Configuration;
 using SendGrid;
 
 namespace MailerCommon
 {
     public class SendGridEmailSender : IEmailSender
     {
-        private readonly string sendGridApiKey;
+        readonly string _sendGridApiKey;
+        readonly ScheduleOptions _options;
+        readonly SendGridEmailer _emailer;
 
-        public SendGridEmailSender(string sendGridApiKey)
+        public SendGridEmailSender(string sendGridApiKey, ScheduleOptions options)
         {
-            this.sendGridApiKey = sendGridApiKey;
+            _sendGridApiKey = sendGridApiKey;
+            _options = options;
+            _emailer = new SendGridEmailer(options);
         }
 
         public bool SendByDefault { get; set; } = true;
@@ -21,10 +26,10 @@ namespace MailerCommon
 
             try
             {
-                Response response = SendGridEmailer.SendEmail(
+                Response response = _emailer.SendEmail(
                     message.ToName, 
                     message.ToAddress, 
-                    sendGridApiKey, 
+                    _sendGridApiKey, 
                     message.Subject, 
                     message.Text).Result;
 
