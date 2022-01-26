@@ -46,8 +46,8 @@ new PublisherEmailer(
 //    mfsAssignmentListDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Service Schedule.csv",
 //    friendInfoDocumentId: @"D:\Downloads\Meeting Assignment Schedule and EMailer - Friend Info.csv");
 
-//string template = File.ReadAllText("./template1.html");
+//string template = File.ReadAllText("./clm-template.html");
 //string output = new ClmScheduleGenerator()
 //    .Generate(secretsJsonPath, documentId, range, friendName, template);
 
-//File.WriteAllText(@"c:\Users\Marc\Desktop\template5.html", output);
+//File.WriteAllText(@"c:\Users\Marc\Desktop\clm.html", output);

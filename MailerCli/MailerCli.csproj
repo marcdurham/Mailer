@@ -12,10 +12,10 @@
   </ItemGroup>
 	
   <ItemGroup>
-    <None Update="template4.html">
+    <None Update="mfs-template.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="template2.html">
+    <None Update="clm-template-week.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
