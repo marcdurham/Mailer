@@ -43,8 +43,14 @@ public class TimedHostedService : IHostedService, IDisposable
         ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
         //var schedules = Configuration.GetSection("Schedules").GetValue<ScheduleInputs[]>("Schedules");
-        var scheduleOptions = new ScheduleOptions();
-        Configuration.GetSection("Schedules").Bind(scheduleOptions);
+        var scheduleOptions = new ScheduleOptions()
+        {
+            EmailFromAddress = Environment.GetEnvironmentVariable("EmailFromAddress", EnvironmentVariableTarget.Process),
+            EmailFromName = Environment.GetEnvironmentVariable("EmailFromName", EnvironmentVariableTarget.Process),
+            TimeZone = Environment.GetEnvironmentVariable("TimeZone", EnvironmentVariableTarget.Process)
+        };
+
+        //Configuration.GetSection("Schedules").Bind(scheduleOptions);
         var schedules = scheduleOptions.Schedules;
 
         _logger.LogInformation($"Schedules Count: {schedules.Length}");
