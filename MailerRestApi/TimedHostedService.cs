@@ -50,7 +50,7 @@ public class TimedHostedService : IHostedService, IDisposable
         _logger.LogInformation($"Schedules Count: {schedules.Length}");
    
         new PublisherEmailer(
-           scheduleOptions,
+            scheduleOptions,
             new CustomLogger<PublisherEmailer>(_logger),
             _memoryCache,
             sheets, 

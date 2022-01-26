@@ -6,10 +6,16 @@
             IList<IList<object>> values, 
             Dictionary<string, Friend> friendMap, 
             int[] daysOfWeek, 
+            string name,
             string title, 
-            int mondayColumnIndex = 0)
+            TimeOnly? meetingStartTime,
+            int mondayColumnIndex = 0,
+            int meetingDateColumnIndex = 0)
         {
             const int HeaderRowIndex = 0;
+
+            if(values == null || values.Count == 0)
+                return new List<Meeting>();
 
             string[] headers = new string[values[HeaderRowIndex].Count];
             var assignmentNames = new Dictionary<string, string>();
@@ -26,14 +32,16 @@
             for (int wk = 1; wk < values.Count; wk++)
             {
                 rows[wk] = values[wk][mondayColumnIndex]?.ToString() ?? string.Empty;
-                var monday = DateTime.Parse(values[wk][mondayColumnIndex].ToString() ?? string.Empty);
+                //var monday = DateTime.Parse(values[wk][mondayColumnIndex].ToString() ?? string.Empty);
+                var meetingDay = DateTime.Parse(values[wk][meetingDateColumnIndex].ToString() ?? string.Empty);
                 var meeting = new Meeting
                 {
-                    Name = title,
-                    Date = monday.AddDays(daysOfWeek[0])
+                    Name = name,
+                    Title = title,
+                    Date = meetingDay.AddTicks(meetingStartTime.HasValue ? meetingStartTime.Value.Ticks : 0),
                 };
 
-                for (int a = 2; a < values[wk].Count && a < headers.Length; a++)
+                for (int a = 0; a < values[wk].Count && a < headers.Length; a++)
                 {
                     string assigneeName = values[wk][a]?.ToString() ?? string.Empty;
                     Friend assignee;
@@ -47,17 +55,20 @@
                     }
 
                     string assignementKey = headers[a];
+                    int indexOfStart = HeaderArray.StartColumnIndexOf(headers, assignementKey);
+
                     var assignment = new Assignment
                     {
                         Key = assignementKey,
                         Name = assignmentNames[assignementKey.ToUpper()],
                         Date = meeting.Date,
+                        Start = indexOfStart >= 0
+                            ? TimeOnly.Parse(values[wk][indexOfStart].ToString())
+                            : TimeOnly.MinValue,
                         School = 0,
                         Friend = assignee,
                         Meeting = meeting.Name,
-                        MeetingName = meeting.Name == "CLM" 
-                            ? "CLM"
-                            : (meeting.Name == "PW" ? "PT/WS" :(meeting.Name == "MFS" ? "Service" : ""))
+                        MeetingTitle = meeting.Title
                     };
 
                     meeting.Assignments[assignment.Key] = assignment;

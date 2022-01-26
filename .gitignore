@@ -367,4 +367,5 @@ FodyWeavers.xsd
 launchSettings.json
 documents.json
 documents.*.json
+*-template.html
 

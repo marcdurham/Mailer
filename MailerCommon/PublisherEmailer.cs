@@ -13,13 +13,15 @@ public class PublisherEmailer
     const string IsoDateFormat = "yyyy-MM-dd";
     
     readonly IEmailSender _emailSender;
-    readonly ScheduleOptions _options;
+    readonly ScheduleOptions _scheduleOptions;
     readonly ICustomLogger<PublisherEmailer> _logger;
     readonly IMemoryCache _memoryCache;
     readonly ISheets _sheets;
+    readonly Dictionary<string, List<Assignment>> friendCalendars = new Dictionary<string, List<Assignment>>();
+    readonly double _timeZoneOffsetHours = 0.0;
 
     public PublisherEmailer(
-        ScheduleOptions options,
+        ScheduleOptions scheduleOptions,
         ICustomLogger<PublisherEmailer> logger, 
         IMemoryCache memoryCache, 
         ISheets sheets, 
@@ -27,7 +29,7 @@ public class PublisherEmailer
         bool dryRunMode =  false, 
         bool forceSendAll = false)
     {
-        _options = options;
+        _scheduleOptions = scheduleOptions;
         _logger = logger;
         _memoryCache = memoryCache;
         _sheets = sheets;
@@ -35,15 +37,20 @@ public class PublisherEmailer
         if (sendGridApiKey == null)
             throw new ArgumentNullException(nameof(sendGridApiKey));
 
+        if (string.IsNullOrWhiteSpace(scheduleOptions.TimeZone))
+            throw new ArgumentNullException(nameof(scheduleOptions.TimeZone));
+
         _emailSender = new EmailSenderProxy(
             new List<IEmailSender>
             {
                 new SaveEmailToFileEmailSender() { SendByDefault = dryRunMode },
                 new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
-                new SendGridEmailSender(sendGridApiKey, _options) { SendByDefault = true },
+                new SendGridEmailSender(sendGridApiKey, _scheduleOptions) { SendByDefault = true },
             });
         
         ForceSendAll = forceSendAll;
+
+        _timeZoneOffsetHours = scheduleOptions.TimeZoneOffsetHours ?? 0.0;
     }
 
     public bool ForceSendAll { get; set; }
@@ -54,6 +61,8 @@ public class PublisherEmailer
     {
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
+
+        friendCalendars.Clear();
 
         _logger.LogInformation("Loading Friends...");
         IList<IList<object>> friendInfoRows = _sheets.Read(documentId: friendInfoDocumentId, range: "Friend Info!B1:Z500");
@@ -66,6 +75,11 @@ public class PublisherEmailer
         foreach(ScheduleInputs schedule in schedules)
         {
             SendSchedulesFor(schedule, friendMap, thisMonday);
+        }
+
+        foreach(var calendar in friendCalendars)
+        {
+            CacheFriendAssignments(calendar.Key, calendar.Value);
         }
 
         _logger.LogInformation("Done");
@@ -125,7 +139,13 @@ public class PublisherEmailer
             values, 
             friendMap, 
             new int[] { (int)scheduleInputs.MeetingDayOfWeek }, 
-            scheduleInputs.MeetingName);
+            scheduleInputs.MeetingName,
+            scheduleInputs.MeetingTitle,
+            scheduleInputs.MeetingStartTime.HasValue 
+                ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime) 
+                : null,
+            mondayColumnIndex: 0,
+            meetingDateColumnIndex: scheduleInputs.MeetingDateColumnIndex ?? 0);
 
         _logger.LogInformation($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> upcomingMeetings = meetings
@@ -177,23 +197,40 @@ public class PublisherEmailer
         string nextMeetingDate = meetings.Min(m => m.Date).ToString(IsoDateFormat);
         string subject = $"Eastside {meetings.First().Name} Assignments for {nextMeetingDate}";
 
-        CacheFriendAssignments(scheduleInputs.MeetingName, recipient, friendAssignments);
+        //CacheFriendAssignments(scheduleInputs.MeetingName, recipient, friendAssignments);
+
+        string friendKey = $"{recipient.Name.ToUpper()}";
+        if (!friendCalendars.ContainsKey(friendKey))
+        {
+            friendCalendars.Add(friendKey, friendAssignments);
+        }
+        else
+        {
+            friendCalendars[friendKey].AddRange(friendAssignments);
+        }
 
         SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
     }
 
-    private void CacheFriendAssignments(string meetingName, EmailRecipient recipient, List<Assignment> friendAssignments)
+    private void CacheFriendAssignments(string friendKey, List<Assignment> friendAssignments)
     {
         var shortCalendar = new Ical.Net.Calendar();
 
         foreach (Assignment assignment in friendAssignments)
         {
             string assignmentName = assignment.Name;
-            if(assignmentName.Contains(" - "))
-                assignmentName = string.Join("-", assignmentName.Split("-", System.StringSplitOptions.RemoveEmptyEntries).Reverse());
+            if (assignmentName.Contains(" - "))
+                assignmentName = string.Join("-", assignmentName.Split("-", StringSplitOptions.RemoveEmptyEntries).Reverse());
+
+            DateTime start = assignment.Date;
+            if(!assignment.Start.Equals(TimeOnly.MinValue))
+            {
+                start = start.Add(assignment.Start.ToTimeSpan());
+            }
+
             var calEvent = new CalendarEvent
             {
-                Start = new CalDateTime(assignment.Date),
+                Start = new CalDateTime(start, _scheduleOptions.TimeZone),
                 Summary = $"{assignmentName} ({assignment.Meeting})",
             };
 
@@ -204,9 +241,9 @@ public class PublisherEmailer
         var serializedCalendar = serializer.SerializeToString(shortCalendar);
 
         var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(TimeSpan.FromSeconds(60*60)); // One hour
+                .SetSlidingExpiration(TimeSpan.FromSeconds(60 * 60)); // One hour
 
-        _memoryCache.Set($"{meetingName}:{recipient.Name.ToUpper()}", serializedCalendar, cacheEntryOptions);
+        _memoryCache.Set(friendKey, serializedCalendar, cacheEntryOptions);
     }
 
     void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient, DayOfWeek sendDayOfWeek)
@@ -229,8 +266,8 @@ public class PublisherEmailer
 
         EmailMessage message = new()
         {
-            FromAddress = _options.EmailFromAddress ?? "auto@mailer.org",
-            FromName = _options.EmailFromName ?? "Mailer Information Board",
+            FromAddress = _scheduleOptions.EmailFromAddress ?? "auto@mailer.org",
+            FromName = _scheduleOptions.EmailFromName ?? "Mailer Information Board",
             ToAddress = recipient.EmailAddress!,
             ToName = recipient.Name,
             Subject = subject,

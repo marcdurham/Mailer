@@ -18,6 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{9CD4B834
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		docker-compose.yml = docker-compose.yml
+		publish-restapi.sh = publish-restapi.sh
 	EndProjectSection
 EndProject
 Global

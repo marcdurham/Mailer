@@ -3,6 +3,7 @@ using GoogleAdapter.Adapters;
 using Mailer.Sender;
 using MailerCli;
 using MailerCommon.Configuration;
+using MailerCommon.Configuration;
 
 Console.WriteLine("Mailer");
 
@@ -24,9 +25,16 @@ ScheduleOptions options = new()
     EmailFromName = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process)
 };
 
-new PublisherEmailer(options, new ConsoleLogger<PublisherEmailer>(), new DummyMemoryCache(), sheets, sendGridApiKey, dryRunMode: true).Run(
-    friendInfoDocumentId: clmAssignmentListDocumentId,
-    schedules: null);
+new PublisherEmailer(
+        new ScheduleOptions(),
+        new ConsoleLogger<PublisherEmailer>(), 
+        new DummyMemoryCache(), 
+        sheets, 
+        sendGridApiKey, 
+        dryRunMode: true)
+    .Run(
+        friendInfoDocumentId: clmAssignmentListDocumentId,
+        schedules: null);
 
 //ISheets sheets = new CsvSheets();
 //new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true, forceSendAll: true).Run(
