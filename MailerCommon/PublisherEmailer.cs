@@ -93,20 +93,19 @@ public class PublisherEmailer
         string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
 
         _logger.LogInformation($"Loading {scheduleInputs.MeetingName} Email Recipients...");
-        IList<IList<object>> sendEmailsRows = _sheets.Read(scheduleInputs.EmailRecipientsDocumentId, scheduleInputs.EmailRecipientsRange);
-        List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(sendEmailsRows);
+        IList<IList<object>> emailRecipientRows = _sheets.Read(scheduleInputs.EmailRecipientsDocumentId, scheduleInputs.EmailRecipientsRange);
+        List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(emailRecipientRows);
 
         foreach (EmailRecipient recipient in recipients)
         {
-            //recipient.HtmlMessage = htmlTemplate;
-
             if (friendMap.TryGetValue(recipient.Name.ToUpper(), out Friend friend))
             {
                 recipient.Friend = friend;
                 if (string.IsNullOrWhiteSpace(recipient.EmailAddress))
                     recipient.EmailAddress = friend.EmailAddress;
 
-                recipient.Result = string.Equals(
+                recipient.Check = $"{DateTime.Now}";
+                recipient.CheckStatus = string.Equals(
                     recipient.EmailAddress,
                     friend.EmailAddress,
                     StringComparison.OrdinalIgnoreCase)
@@ -121,7 +120,7 @@ public class PublisherEmailer
         _logger.LogInformation($"Writing status of {scheduleInputs.MeetingName} emails to recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
-            sendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
+            emailRecipientRows[recipients.IndexOf(publisher)] = new object[4] {
                 publisher.Name,
                 publisher.EmailAddress,
                 publisher.Sent,
@@ -131,7 +130,7 @@ public class PublisherEmailer
         _sheets.Write(
             documentId: scheduleInputs.EmailRecipientsDocumentId,
             range: scheduleInputs.EmailRecipientsRange,
-            values: sendEmailsRows);
+            values: emailRecipientRows);
 
         _logger.LogInformation($"Loading Assignment List for {scheduleInputs.MeetingName}...");
         IList<IList<object>> values = _sheets.Read(documentId: scheduleInputs.AssignmentListDocumentId, range: scheduleInputs.AssignmentListRange);
@@ -164,17 +163,19 @@ public class PublisherEmailer
         _logger.LogInformation($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
-            sendEmailsRows[recipients.IndexOf(publisher)] = new object[4] {
+            emailRecipientRows[recipients.IndexOf(publisher)] = new object[6] {
                 publisher.Name,
                 publisher.EmailAddress,
                 publisher.Sent,
-                publisher.Result };
+                publisher.SentStatus,
+                publisher.Check,
+                publisher.CheckStatus };
         }
 
         _sheets.Write(
             documentId: scheduleInputs.EmailRecipientsDocumentId,
             range: scheduleInputs.EmailRecipientsRange,
-            values: sendEmailsRows);
+            values: emailRecipientRows);
     }
 
     void GenerateAndSendEmailFor(
@@ -257,12 +258,14 @@ public class PublisherEmailer
             && DateTime.Today.DayOfWeek == sendDayOfWeek
             || sent.AddDays(8) >= DateTime.Today))
         {
-            recipient.Result = $"{DateTime.Now}: Skipped: Sent Too Recently";
-            return;
+            recipient.Check = $"{DateTime.Now}";
+            recipient.CheckStatus = "Skipped: Sent too recently";
+            return; 
         }
 
         _logger.LogInformation($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
-        recipient.Result = $"{DateTime.Now}: Sending";
+        recipient.Check = $"{DateTime.Now}";
+        recipient.CheckStatus = "Sending...";
 
         EmailMessage message = new()
         {
@@ -276,7 +279,10 @@ public class PublisherEmailer
 
         var result = _emailSender.Send(message);
 
-        recipient.Sent = result.EmailWasSent ? DateTime.Now.ToString() : null;
-        recipient.Result = result.Status;
+        var now = DateTime.Now;
+        recipient.Sent = result.EmailWasSent ? now.ToString() : null;
+        recipient.SentStatus = result.Status;
+        recipient.Check = now.ToString();
+        recipient.CheckStatus = result.Status;
     }
 }
