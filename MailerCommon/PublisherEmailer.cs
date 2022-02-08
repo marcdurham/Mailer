@@ -282,7 +282,7 @@ public class PublisherEmailer
         var result = _emailSender.Send(message);
 
         var now = DateTime.Now;
-        recipient.Sent = result.EmailWasSent ? now.ToString() : null;
+        recipient.Sent = now.ToString();
         recipient.SentStatus = result.Status;
         recipient.Check = now.ToString();
         recipient.CheckStatus = result.Status;
