@@ -120,11 +120,13 @@ public class PublisherEmailer
         _logger.LogInformation($"Writing status of {scheduleInputs.MeetingName} emails to recipients...");
         foreach (EmailRecipient publisher in recipients)
         {
-            emailRecipientRows[recipients.IndexOf(publisher)] = new object[4] {
+            emailRecipientRows[recipients.IndexOf(publisher)] = new object[6] {
                 publisher.Name,
                 publisher.EmailAddress,
                 publisher.Sent,
-                $"{DateTime.Now}: Preparing to send email" };
+                publisher.SentStatus,
+                $"{DateTime.Now}:",
+                "Preparing to send email" };
         }
 
         _sheets.Write(
