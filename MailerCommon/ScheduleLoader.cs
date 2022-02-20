@@ -62,9 +62,9 @@
                         Key = assignementKey,
                         Name = assignmentNames[assignementKey.ToUpper()],
                         Date = meeting.Date,
-                        Start = values[wk][indexOfStart] != null
+                        Start = indexOfStart >= 0
+                                && values[wk][indexOfStart] != null
                                 && !string.IsNullOrWhiteSpace(values[wk][indexOfStart].ToString()) 
-                                && indexOfStart >= 0
                             ? TimeOnly.Parse(values[wk][indexOfStart].ToString())
                             : TimeOnly.MinValue,
                         School = 0,
