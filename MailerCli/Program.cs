@@ -4,19 +4,21 @@ using Mailer.Sender;
 using MailerCli;
 using MailerCommon.Configuration;
 using MailerCommon.Configuration;
+using Newtonsoft.Json;
 
 Console.WriteLine("Mailer");
 
-string googleApiServiceAccountSecretsJsonPath = args[0];
-string clmSendEmailsDocumentId = args[1];
-string googleApiOAuthSecretsJsonPath  = args[3];
-string clmAssignmentListDocumentId = args[4];
+//string googleApiServiceAccountSecretsJsonPath = args[0];
+//string clmSendEmailsDocumentId = args[1];
+//string googleApiOAuthSecretsJsonPath  = args[0];
+string clmAssignmentListDocumentId = args[0];
 
 string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
-string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
+//string googleApiSecretsJson = File.ReadAllText(googleApiOAuthSecretsJsonPath);
+string googleApiSecretsJson = File.ReadAllText("./GoogleApi.secrets.json");
 
 // TODO: This is temporary, remove it
-clmSendEmailsDocumentId = clmAssignmentListDocumentId;
+//clmSendEmailsDocumentId = clmAssignmentListDocumentId;
 
 ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 ScheduleOptions options = new()
@@ -25,8 +27,15 @@ ScheduleOptions options = new()
     EmailFromName = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process)
 };
 
+var scheduleOptions = new ScheduleOptions();
+
+string documentsJson = File.ReadAllText("documents.json");
+
+FullConfiguration? config = JsonConvert.DeserializeObject<FullConfiguration>(documentsJson) ;
+var schedules = config.Schedules.Schedules;
+
 new PublisherEmailer(
-        new ScheduleOptions(),
+        config.Schedules, //new ScheduleOptions(),
         new ConsoleLogger<PublisherEmailer>(), 
         new DummyMemoryCache(), 
         sheets, 
@@ -34,7 +43,7 @@ new PublisherEmailer(
         dryRunMode: true)
     .Run(
         friendInfoDocumentId: clmAssignmentListDocumentId,
-        schedules: null);
+        schedules: schedules.ToList());
 
 //ISheets sheets = new CsvSheets();
 //new PublisherEmailer(sheets, sendGridApiKey, dryRunMode: true, forceSendAll: true).Run(
