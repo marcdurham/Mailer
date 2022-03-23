@@ -73,7 +73,7 @@ app.MapGet("/health", () =>
         foreach(string file in scheduleFiles)
         {
             string path = Path.Combine(scheduleRootFolder, $"{file}.html");
-            if (File.Exists(path))
+            if (!File.Exists(path))
             {
                 app.Logger.LogInformation($"Missing File: {path}");
                 missingFiles.Add(path);
