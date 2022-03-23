@@ -5,6 +5,7 @@ using Ical.Net.Serialization;
 using MailerCommon;
 using MailerCommon.Configuration;
 using Microsoft.Extensions.Caching.Memory;
+using System.Text;
 
 namespace Mailer.Sender;
 
@@ -158,6 +159,9 @@ public class PublisherEmailer
             html: htmlTemplate,
             meetings: upcomingMeetings);
 
+        _logger.LogInformation($"Saving master copy {scheduleInputs.MeetingName} schedule...");
+        System.IO.File.WriteAllText($"/app/wwwroot/{scheduleInputs.MeetingName.ToLower()}.html", html, Encoding.UTF8);
+
         _logger.LogInformation($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
             GenerateAndSendEmailFor(html, upcomingMeetings, meetings, recipient, scheduleInputs);
@@ -188,6 +192,7 @@ public class PublisherEmailer
         ScheduleInputs scheduleInputs)
     {
         DayOfWeek sendDayOfWeek = scheduleInputs.SendDayOfWeek;
+
         htmlMessageText = HtmlScheduleGenerator.Highlight(recipient.Friend, htmlMessageText);
 
         (htmlMessageText, List<Assignment> friendAssignments) = HtmlScheduleGenerator.InjectUpcomingAssignments(

@@ -19,7 +19,7 @@ builder.Services.AddHostedService<TimedHostedService>();
 builder.Services.AddSingleton<CalendarService>();
 builder.Services.AddSingleton<ICustomLogger<PublisherEmailer>, CustomLogger<PublisherEmailer>>();
 builder.Services.Configure<CalendarOptions>(
-    builder.Configuration.GetSection("Calendar"));
+builder.Configuration.GetSection("Calendar"));
 builder.Services.AddApplicationInsightsTelemetry(
     options =>
     {
@@ -27,6 +27,8 @@ builder.Services.AddApplicationInsightsTelemetry(
         options.InstrumentationKey = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_INSTRUMENTATIONKEY");
         options.ConnectionString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
     });
+
+builder.Services.AddRazorPages();
 
 var app = builder.Build();
 
@@ -41,6 +43,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseStaticFiles();
 app.UseRouting();
 
 // Reference Document: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
@@ -74,6 +77,8 @@ app.MapGet("/health", () =>
         return Results.Ok("Green");
     }
 );
+
+app.MapRazorPages();
 
 app.Run();
 

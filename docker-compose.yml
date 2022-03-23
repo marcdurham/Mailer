@@ -3,17 +3,18 @@ services:
   smtp:
     container_name: mailer-smtp
     image: bytemark/smtp
-    restart: always
+    restart: unless-stopped
   restapi:
     container_name: mailer-rest-api
     #image: ${DOCKER_REGISTRY-}mywebapi
+    restart: unless-stopped
     build:
       context: .
       dockerfile: MailerRestApi/Dockerfile
     links:
       - smtp
     ports:
-      - "5025:80"
+      - "127.0.0.1:5025:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - TimerIntervalSeconds=$TimerIntervalSeconds
