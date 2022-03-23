@@ -59,7 +59,8 @@ public class HtmlScheduleGenerator
                 }
             }
 
-            html = Regex.Replace(html, $"<td(\\s+class=\")?([a-zA-Z0-9-]+)?(\")?>({value})</td>", $"<td$1$2$3 data-friend-key='{friendKey}'>{replacement}</td>");
+            string escaped = value.Replace("(", "\\(").Replace(")", "\\)");
+            html = Regex.Replace(html, $"<td(\\s+class=\")?([a-zA-Z0-9-]+)?(\")?>({escaped})</td>", $"<td$1$2$3 data-friend-key='{friendKey}'>{replacement}</td>");
         }
 
         return html;
