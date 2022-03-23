@@ -19,14 +19,14 @@ builder.Services.AddHostedService<TimedHostedService>();
 builder.Services.AddSingleton<CalendarService>();
 builder.Services.AddSingleton<ICustomLogger<PublisherEmailer>, CustomLogger<PublisherEmailer>>();
 builder.Services.Configure<CalendarOptions>(
-builder.Configuration.GetSection("Calendar"));
-builder.Services.AddApplicationInsightsTelemetry(
-    options =>
-    {
-        // can't do this after Build()
-        options.InstrumentationKey = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_INSTRUMENTATIONKEY");
-        options.ConnectionString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
-    });
+    builder.Configuration.GetSection("Calendar"));
+    builder.Services.AddApplicationInsightsTelemetry(
+        options =>
+        {
+            // can't do this after Build()
+            options.InstrumentationKey = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_INSTRUMENTATIONKEY");
+            options.ConnectionString = System.Environment.GetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING");
+        });
 
 builder.Services.AddRazorPages();
 
@@ -64,17 +64,32 @@ app.MapGet("/friend/{name}.ics", async (IMemoryCache memory, string name) =>
 }
 );
 
-//app.MapGet("/friend/{meeting}/{name}.ics", async (IMemoryCache memory, string meeting, string name) =>
-//    {
-//        app.Logger.LogInformation($"Getting Friend (ics) Calendar: {meeting}:{name.ToUpper()} (app.Logger)");
-//        return memory.Get<string>($"{meeting}:{name.ToUpper()}");
-//    }
-//);
+string scheduleRootFolder = app.Configuration.GetValue<string>("Schedules:StaticScheduleRootFolder");
+string[] scheduleFiles = new string[] { "clm", "pw", "mfs" };
 
 app.MapGet("/health", () =>
     {
-        app.Logger.LogInformation($"Health: Green");
-        return Results.Ok("Green");
+        List<string> missingFiles = new();
+        foreach(string file in scheduleFiles)
+        {
+            string path = Path.Combine(scheduleRootFolder, $"{file}.html");
+            if (File.Exists(path))
+            {
+                app.Logger.LogInformation($"Missing File: {path}");
+                missingFiles.Add(path);
+            }
+        }
+        
+        if (missingFiles.Count == scheduleFiles.Length)
+        {
+            app.Logger.LogInformation($"Health: Green");
+            return Results.Ok("Green");
+        }
+        else
+        {
+            app.Logger.LogInformation($"Health: Red");
+            return Results.Ok($"Red. Missing static HTML files: {string.Join(",", missingFiles)}");
+        }        
     }
 );
 
@@ -98,4 +113,5 @@ app.Run();
 
 //})
 //.WithName("SendMail");
+
 

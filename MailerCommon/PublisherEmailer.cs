@@ -159,8 +159,12 @@ public class PublisherEmailer
             html: htmlTemplate,
             meetings: upcomingMeetings);
 
+        string schedulePath = Path.Combine(
+            _scheduleOptions.StaticScheduleRootFolder, 
+            scheduleInputs.MeetingName.ToLower());
+
         _logger.LogInformation($"Saving master copy {scheduleInputs.MeetingName} schedule...");
-        System.IO.File.WriteAllText($"/app/wwwroot/{scheduleInputs.MeetingName.ToLower()}.html", html, Encoding.UTF8);
+        File.WriteAllText($"{schedulePath}.html", html, Encoding.UTF8);
 
         _logger.LogInformation($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)

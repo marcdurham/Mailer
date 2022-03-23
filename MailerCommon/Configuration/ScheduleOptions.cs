@@ -7,5 +7,6 @@
         public ScheduleInputs[] Schedules { get; set; }
         public string? EmailFromName { get; set; }
         public string? EmailFromAddress { get; set; }
+        public string? StaticScheduleRootFolder { get; set; }
     }
 }

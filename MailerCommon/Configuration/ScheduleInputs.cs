@@ -5,7 +5,7 @@
         public string? EmailRecipientsDocumentId { get; set; }
         public string? EmailRecipientsRange { get; set; }
         public string? AssignmentListDocumentId { get; set; }
-        public string? MeetingName { get; set; }
+        public string MeetingName { get; set; } = "MTG";
         public string? MeetingTitle { get; set; }
         public string? HtmlTemplatePath { get; set; }
         public string? AssignmentListRange { get; set; }
