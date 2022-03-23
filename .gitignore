@@ -369,3 +369,4 @@ documents.json
 documents.*.json
 *-template.html
 
+/commit.txt
