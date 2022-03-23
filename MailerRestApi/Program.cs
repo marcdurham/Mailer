@@ -80,7 +80,7 @@ app.MapGet("/health", () =>
             }
         }
         
-        if (missingFiles.Count == scheduleFiles.Length)
+        if (missingFiles.Count == 0)
         {
             app.Logger.LogInformation($"Health: Green");
             return Results.Ok("Green");
