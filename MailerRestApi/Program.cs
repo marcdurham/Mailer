@@ -48,12 +48,14 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 app.UseRouting();
 
-RewriteOptions rewriteOptions = new RewriteOptions()
-    .AddRewrite("clm", "clm.html", true)
-    .AddRewrite("mfs", "mfs.html", true)
-    .AddRewrite("pw", "pw.html", true);
+app.MapGet("/clm", (HttpRequest _, HttpResponse response) =>
+    response.Redirect("/clm.html"));
 
-app.UseRewriter(rewriteOptions);
+app.MapGet("/pw", (HttpRequest _, HttpResponse response) =>
+    response.Redirect("/pw.html"));
+
+app.MapGet("/mfs", (HttpRequest _, HttpResponse response) =>
+    response.Redirect("/mfs.html"));
 
 // Reference Document: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
 app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string prefix) =>
