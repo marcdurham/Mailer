@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("appsettings.json");
 builder.Configuration.AddJsonFile("documents.json");
+builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
