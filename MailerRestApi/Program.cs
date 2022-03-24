@@ -54,8 +54,9 @@ app.MapGet("/clm", (HttpRequest _, HttpResponse response) =>
 app.MapGet("/pw", (HttpRequest _, HttpResponse response) =>
     response.Redirect("/pw.html"));
 
-app.MapGet("/mfs", (HttpRequest _, HttpResponse response) =>
-    response.Redirect("/mfs.html"));
+app.MapGet("/mfs", (HttpContext context) => {
+    context.Request.Path = new PathString("/mfs.html");
+    }); 
 
 // Reference Document: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
 app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string prefix) =>
