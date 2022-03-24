@@ -2,6 +2,7 @@ using Mailer;
 using Mailer.Sender;
 using MailerCommon;
 using MailerRestApi;
+using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -46,6 +47,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseStaticFiles();
 app.UseRouting();
+
+RewriteOptions rewriteOptions = new RewriteOptions()
+    .AddRewrite(@"/clm", "/clm.html", true)
+    .AddRewrite(@"/mfs", "/mfs.html", true)
+    .AddRewrite(@"/pw", "/pw.html", true);
+
+app.UseRewriter(rewriteOptions);
+
 
 // Reference Document: https://docs.microsoft.com/en-us/aspnet/core/tutorials/min-web-api?view=aspnetcore-6.0&tabs=visual-studio
 app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string prefix) =>
@@ -114,5 +123,6 @@ app.Run();
 
 //})
 //.WithName("SendMail");
+
 
 
