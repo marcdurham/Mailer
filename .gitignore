@@ -370,3 +370,4 @@ documents.*.json
 *-template.html
 
 /commit.txt
+/app/
