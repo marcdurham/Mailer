@@ -368,6 +368,7 @@ launchSettings.json
 documents.json
 documents.*.json
 *-template.html
+*-template.print.html
 
 /commit.txt
 /app/
