@@ -46,6 +46,15 @@ public class HtmlScheduleGenerator
                     {
                         replacement = $"{meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}";
                     }
+                    else if (string.Equals(property, "E/PY/CHS"))
+                    {
+                        replacement = $"{meetings[indexValue].Assignments[key].Friend.PinYinName}<br/>{ meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName}<br/>{ meetings[indexValue].Assignments[key].Friend.Name}";
+                    }
+                    else if (string.Equals(property, "CHS/E"))
+                    {
+                        replacement = $"{meetings[indexValue].Assignments[key].Friend.SimplifiedChineseName} {meetings[indexValue].Assignments[key].Friend.Name}";
+                    }
+
                     else if (string.Equals(property, "NoService"))
                     {
                         replacement = meetings[indexValue].Assignments[key].Friend.Name;

@@ -166,6 +166,21 @@ public class PublisherEmailer
         _logger.LogInformation($"Saving master copy {scheduleInputs.MeetingName} schedule...");
         File.WriteAllText($"{schedulePath}.html", html, Encoding.UTF8);
 
+        string printTemplatePath = scheduleInputs.HtmlTemplatePath.Replace(".html", ".print.html");
+        if (File.Exists(printTemplatePath))
+        {
+            string htmlPrintTemplate = File.ReadAllText(printTemplatePath);
+            string htmlPrint = HtmlScheduleGenerator.Generate(
+                       html: htmlPrintTemplate,
+                       meetings: upcomingMeetings);
+            _logger.LogInformation($"Saving print copy {scheduleInputs.MeetingName} schedule...");
+            File.WriteAllText($"{schedulePath}.print.html", htmlPrint, Encoding.UTF8);
+        }
+        else
+        {
+            _logger.LogInformation($"No print template '{printTemplatePath}' was found.");
+        }
+
         _logger.LogInformation($"Sending {scheduleInputs.MeetingName} schedules and setting status...");
         foreach (EmailRecipient recipient in recipients)
             GenerateAndSendEmailFor(html, upcomingMeetings, meetings, recipient, scheduleInputs);

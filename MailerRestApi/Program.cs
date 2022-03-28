@@ -2,7 +2,6 @@ using Mailer;
 using Mailer.Sender;
 using MailerCommon;
 using MailerRestApi;
-using Microsoft.AspNetCore.Rewrite;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
