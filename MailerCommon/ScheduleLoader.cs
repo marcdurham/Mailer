@@ -84,7 +84,7 @@
                     && indexOfStart < values[wk].Count
                     && values[wk][indexOfStart] != null
                     && !string.IsNullOrWhiteSpace(values[wk][indexOfStart].ToString())
-                ? TimeOnly.Parse(values[wk][indexOfStart].ToString())
+                ? TimeOnly.Parse(values[wk][indexOfStart].ToString()!)
                 : TimeOnly.MinValue;
 
             return new Assignment
