@@ -55,23 +55,9 @@
                     }
 
                     string assignementKey = headers[a];
-                    int indexOfStart = HeaderArray.StartColumnIndexOf(headers, assignementKey);
+                    
 
-                    var assignment = new Assignment
-                    {
-                        Key = assignementKey,
-                        Name = assignmentNames[assignementKey.ToUpper()],
-                        Date = meeting.Date,
-                        Start = indexOfStart >= 0
-                                && values[wk][indexOfStart] != null
-                                && !string.IsNullOrWhiteSpace(values[wk][indexOfStart].ToString()) 
-                            ? TimeOnly.Parse(values[wk][indexOfStart].ToString())
-                            : TimeOnly.MinValue,
-                        School = 0,
-                        Friend = assignee,
-                        Meeting = meeting.Name,
-                        MeetingTitle = meeting.Title
-                    };
+                    Assignment assignment = MapAssignment(headers, values, assignmentNames, wk, meeting, assignee, assignementKey);
 
                     meeting.Assignments[assignment.Key] = assignment;
                 }
@@ -80,6 +66,38 @@
             }
 
             return meetings;
+        }
+
+        private static Assignment MapAssignment(
+            string[] headers,
+            IList<IList<object>> values, 
+            Dictionary<string, string> assignmentNames, 
+            int wk, 
+            Meeting meeting, 
+            Friend assignee, 
+            string assignmentKey)
+        {
+            int indexOfStart = HeaderArray.StartColumnIndexOf(headers, assignmentKey);
+
+            TimeOnly start = indexOfStart >= 0
+                    && wk < values.Count
+                    && indexOfStart < values[wk].Count
+                    && values[wk][indexOfStart] != null
+                    && !string.IsNullOrWhiteSpace(values[wk][indexOfStart].ToString())
+                ? TimeOnly.Parse(values[wk][indexOfStart].ToString())
+                : TimeOnly.MinValue;
+
+            return new Assignment
+            {
+                Key = assignmentKey,
+                Name = assignmentNames[assignmentKey.ToUpper()],
+                Date = meeting.Date,
+                Start = start,
+                School = 0,
+                Friend = assignee,
+                Meeting = meeting.Name,
+                MeetingTitle = meeting.Title
+            };
         }
     }
 }
