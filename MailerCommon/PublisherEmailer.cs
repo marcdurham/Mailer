@@ -9,10 +9,10 @@ using System.Text;
 
 namespace Mailer.Sender;
 
-public class PublisherEmailer 
+public class PublisherEmailer
 {
     const string IsoDateFormat = "yyyy-MM-dd";
-    
+
     readonly IEmailSender _emailSender;
     readonly ScheduleOptions _scheduleOptions;
     readonly ICustomLogger<PublisherEmailer> _logger;
@@ -23,11 +23,11 @@ public class PublisherEmailer
 
     public PublisherEmailer(
         ScheduleOptions scheduleOptions,
-        ICustomLogger<PublisherEmailer> logger, 
-        IMemoryCache memoryCache, 
-        ISheets sheets, 
-        string? sendGridApiKey, 
-        bool dryRunMode =  false, 
+        ICustomLogger<PublisherEmailer> logger,
+        IMemoryCache memoryCache,
+        ISheets sheets,
+        string? sendGridApiKey,
+        bool dryRunMode = false,
         bool forceSendAll = false)
     {
         _scheduleOptions = scheduleOptions;
@@ -48,7 +48,7 @@ public class PublisherEmailer
                 new SmtpEmailSender(isSender: m => m.ToAddress.ToUpper().EndsWith("@GMAIL.COM")),
                 new SendGridEmailSender(sendGridApiKey, _scheduleOptions) { SendByDefault = true },
             });
-        
+
         ForceSendAll = forceSendAll;
 
         _timeZoneOffsetHours = scheduleOptions.TimeZoneOffsetHours ?? 0.0;
@@ -72,13 +72,13 @@ public class PublisherEmailer
 
         _logger.LogInformation($"Sending {schedules.Count} schedules...");
         DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
-       
-        foreach(ScheduleInputs schedule in schedules)
+
+        foreach (ScheduleInputs schedule in schedules)
         {
             SendSchedulesFor(schedule, friendMap, thisMonday);
         }
 
-        foreach(var calendar in friendCalendars)
+        foreach (var calendar in friendCalendars)
         {
             CacheFriendAssignments(calendar.Key, calendar.Value);
         }
@@ -87,8 +87,8 @@ public class PublisherEmailer
     }
 
     void SendSchedulesFor(
-        ScheduleInputs scheduleInputs, 
-        Dictionary<string, Friend> friendMap, 
+        ScheduleInputs scheduleInputs,
+        Dictionary<string, Friend> friendMap,
         DateTime thisMonday)
     {
         string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
@@ -138,13 +138,13 @@ public class PublisherEmailer
         _logger.LogInformation($"Loading Assignment List for {scheduleInputs.MeetingName}...");
         IList<IList<object>> values = _sheets.Read(documentId: scheduleInputs.AssignmentListDocumentId, range: scheduleInputs.AssignmentListRange);
         List<Meeting> meetings = ScheduleLoader.GetSchedule(
-            values, 
-            friendMap, 
-            new int[] { (int)scheduleInputs.MeetingDayOfWeek }, 
+            values,
+            friendMap,
+            new int[] { (int)scheduleInputs.MeetingDayOfWeek },
             scheduleInputs.MeetingName,
             scheduleInputs.MeetingTitle,
-            scheduleInputs.MeetingStartTime.HasValue 
-                ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime) 
+            scheduleInputs.MeetingStartTime.HasValue
+                ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime)
                 : null,
             mondayColumnIndex: 0,
             meetingDateColumnIndex: scheduleInputs.MeetingDateColumnIndex ?? 0);
@@ -160,7 +160,7 @@ public class PublisherEmailer
             meetings: upcomingMeetings);
 
         string schedulePath = Path.Combine(
-            _scheduleOptions.StaticScheduleRootFolder, 
+            _scheduleOptions.StaticScheduleRootFolder,
             scheduleInputs.MeetingName.ToLower());
 
         _logger.LogInformation($"Saving master copy {scheduleInputs.MeetingName} schedule...");
@@ -185,7 +185,7 @@ public class PublisherEmailer
         foreach (EmailRecipient recipient in recipients)
             GenerateAndSendEmailFor(html, upcomingMeetings, meetings, recipient, scheduleInputs);
 
-        _logger.LogInformation($"Writing status of emails to {scheduleInputs.MeetingName} recipients...");
+        _logger.LogInformation($"Writing status of emails to {scheduleInputs.MeetingName} recipients list...");
         foreach (EmailRecipient publisher in recipients)
         {
             emailRecipientRows[recipients.IndexOf(publisher)] = new object[6] {
@@ -204,9 +204,9 @@ public class PublisherEmailer
     }
 
     void GenerateAndSendEmailFor(
-        string htmlMessageText, 
-        IEnumerable<Meeting> meetings, 
-        IEnumerable<Meeting> allMeetings, 
+        string htmlMessageText,
+        IEnumerable<Meeting> meetings,
+        IEnumerable<Meeting> allMeetings,
         EmailRecipient recipient,
         ScheduleInputs scheduleInputs)
     {
@@ -250,7 +250,7 @@ public class PublisherEmailer
                 assignmentName = string.Join("-", assignmentName.Split("-", StringSplitOptions.RemoveEmptyEntries).Reverse());
 
             DateTime start = assignment.Date;
-            if(!assignment.Start.Equals(TimeOnly.MinValue))
+            if (!assignment.Start.Equals(TimeOnly.MinValue))
             {
                 start = start.Add(assignment.Start.ToTimeSpan());
             }
@@ -275,18 +275,18 @@ public class PublisherEmailer
 
     void SendEmailFor(string subject, string htmlMessageText, EmailRecipient recipient, DayOfWeek sendDayOfWeek)
     {
-        if(!DateTime.TryParse(recipient.Sent, out DateTime sent))
+        if (!DateTime.TryParse(recipient.Sent, out DateTime sent))
         {
             sent = DateTime.MinValue;
         }
 
-        if(!ForceSendAll && (sent.AddDays(7) >= DateTime.Today 
+        if (!ForceSendAll && (sent.AddDays(7) >= DateTime.Today
             && DateTime.Today.DayOfWeek == sendDayOfWeek
             || sent.AddDays(8) >= DateTime.Today))
         {
             recipient.Check = $"{DateTime.Now}";
             recipient.CheckStatus = "Skipped: Sent too recently";
-            return; 
+            return;
         }
 
         _logger.LogInformation($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
@@ -303,11 +303,23 @@ public class PublisherEmailer
             Text = htmlMessageText
         };
 
-        var result = _emailSender.Send(message);
+        EmailSenderResult? result = _emailSender.Send(message);
 
-        var now = DateTime.Now;
-        recipient.Sent = now.ToString();
-        recipient.SentStatus = result.Status;
+        DateTime now = DateTime.Now;
+        if (recipient.SentStatus?.EndsWith("; please try again later.") ?? false)
+        {
+            recipient.Sent = null;
+            recipient.SentStatus = null;
+        }
+        else
+        {
+            // If there was another type of error, not one that ends in
+            // "please try again later", then don't try again and burden the
+            // email services.
+            recipient.Sent = now.ToString();
+            recipient.SentStatus = result.Status;
+        }
+
         recipient.Check = now.ToString();
         recipient.CheckStatus = result.Status;
     }

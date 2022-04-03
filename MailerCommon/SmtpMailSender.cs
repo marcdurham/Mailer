@@ -74,11 +74,11 @@ public class SmtpEmailSender : IEmailSender
         // The userState can be any object that allows your callback
         // method to identify this send operation.
         // For this example, the userToken is a string constant.
-        string userState = "test message1";
+        // //string userState = "test message1";
         // //client.SendAsync(message, userState);
         Thread.Sleep(200);
         client.Send(message);
-        Console.WriteLine($"Sending message to {msg.ToAddress}");
+        Console.WriteLine($"Sending message To: {msg.ToAddress}, Subject: {msg.Subject}");
         ////string answer = Console.ReadLine();
         // If the user canceled the send, and mail hasn't been sent yet,
         // then cancel the pending operation.
