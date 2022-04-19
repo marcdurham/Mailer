@@ -2,6 +2,7 @@ using Mailer;
 using Mailer.Sender;
 using MailerCommon;
 using MailerRestApi;
+using MailerRestApi.Services;
 using Microsoft.Extensions.Caching.Memory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<TimedHostedService>();
 builder.Services.AddSingleton<CalendarService>();
 builder.Services.AddSingleton<ICustomLogger<PublisherEmailer>, CustomLogger<PublisherEmailer>>();
+builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.Configure<CalendarOptions>(
     builder.Configuration.GetSection("Calendar"));
     builder.Services.AddApplicationInsightsTelemetry(
@@ -93,6 +95,19 @@ app.MapGet("/health", () =>
         }        
     }
 );
+
+app.MapGet("/schedules/generate/{key}", async (
+    IScheduleService scheduler, 
+    IConfiguration configuration,
+    string key) =>
+{
+    string apiKey = configuration.GetValue<string>("ScheduleGeneratorApiKey");
+    if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(apiKey))
+        return Results.BadRequest("Bad key");
+
+    scheduler.Run();
+    return Results.Ok();
+});
 
 app.MapRazorPages();
 
