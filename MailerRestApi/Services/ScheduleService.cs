@@ -51,6 +51,7 @@ namespace MailerRestApi.Services
                 dryRunMode: false,
                 forceSendAll: false)
                 .Run(
+                    utcNow: DateTime.UtcNow,
                     friendInfoDocumentId: friendInfoDocumentId,
                     schedules: schedules.ToList());
         }

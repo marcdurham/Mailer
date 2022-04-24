@@ -20,11 +20,11 @@ public class SmtpEmailSender : IEmailSender
 
         if (e.Cancelled)
         {
-                Console.WriteLine("[{0}] Send canceled.", token);
+            Console.WriteLine("[{0}] Send canceled.", token);
         }
         if (e.Error != null)
         {
-                Console.WriteLine("[{0}] {1}", token, e.Error.ToString());
+            Console.WriteLine("[{0}] {1}", token, e.Error.ToString());
         } else
         {
             Console.WriteLine("Message sent.");
@@ -41,11 +41,19 @@ public class SmtpEmailSender : IEmailSender
         try
         {
             SendMessage(msg);
-            return new EmailSenderResult { Status = "Done sending SMTP email", EmailWasSent = true };
+            return new EmailSenderResult 
+            { 
+                Status = "Done sending SMTP email", 
+                EmailWasSent = true 
+            };
         }
         catch (Exception ex)
         {
-            return new EmailSenderResult { Status = $"SMTP email error: {ex.Message}", EmailWasSent = false };
+            return new EmailSenderResult
+            { 
+                Status = $"SMTP email error: {ex.Message}", 
+                EmailWasSent = false 
+            };
         }
 
     }

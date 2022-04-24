@@ -60,7 +60,7 @@ app.MapGet("/calendar/{prefix}.ics", async (CalendarService service, string pref
     }
 );
 
-app.MapGet("/friend/{name}.ics", async (IMemoryCache memory, string name) =>
+app.MapGet("/friend/{name}.ics", (IMemoryCache memory, string name) =>
 {
     app.Logger.LogInformation($"Getting Friend (ics) Calendar: {name.ToUpper()} (app.Logger)");
     return memory.Get<string>($"{name.ToUpper()}");
@@ -96,7 +96,7 @@ app.MapGet("/health", () =>
     }
 );
 
-app.MapGet("/schedules/generate/{key}", async (
+app.MapGet("/schedules/generate/{key}", (
     IScheduleService scheduler, 
     IConfiguration configuration,
     string key) =>

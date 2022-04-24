@@ -42,6 +42,7 @@ new PublisherEmailer(
         sendGridApiKey, 
         dryRunMode: true)
     .Run(
+        utcNow: DateTime.UtcNow,
         friendInfoDocumentId: clmAssignmentListDocumentId,
         schedules: schedules.ToList());
 

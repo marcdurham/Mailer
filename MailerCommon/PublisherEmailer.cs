@@ -51,15 +51,23 @@ public class PublisherEmailer
 
         ForceSendAll = forceSendAll;
 
+        if (scheduleOptions.TimeZoneOffsetHours == null)
+            _logger.LogInformation($"TimeZoneOffsetHours is null");
+
         _timeZoneOffsetHours = scheduleOptions.TimeZoneOffsetHours ?? 0.0;
+        _logger.LogInformation($"TimeZoneOffsetHours: {scheduleOptions.TimeZoneOffsetHours:0.0}");
     }
 
     public bool ForceSendAll { get; set; }
+    DateTime _localNow = DateTime.MinValue;
 
     public void Run(
+        DateTime utcNow,
         string? friendInfoDocumentId,
         List<ScheduleInputs> schedules)
     {
+         _localNow = utcNow.AddHours(_timeZoneOffsetHours);
+
         if (friendInfoDocumentId == null)
             throw new ArgumentNullException(nameof(friendInfoDocumentId));
 
@@ -71,7 +79,7 @@ public class PublisherEmailer
         _logger.LogInformation($"{friendMap.Count} Friends Loaded");
 
         _logger.LogInformation($"Sending {schedules.Count} schedules...");
-        DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+        DateTime thisMonday = GetMonday(_localNow);            
 
         foreach (ScheduleInputs schedule in schedules)
         {
@@ -86,6 +94,14 @@ public class PublisherEmailer
         _logger.LogInformation("Done");
     }
 
+    public static DateTime GetMonday(DateTime date)
+    {
+        if (date.DayOfWeek == DayOfWeek.Sunday)
+            return date.Date.AddDays(-6);
+
+        return date.Date.AddDays(-((int)date.Date.DayOfWeek - 1));
+    }
+
     void SendSchedulesFor(
         ScheduleInputs scheduleInputs,
         Dictionary<string, Friend> friendMap,
@@ -94,7 +110,10 @@ public class PublisherEmailer
         string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
 
         _logger.LogInformation($"Loading {scheduleInputs.MeetingName} Email Recipients...");
-        IList<IList<object>> emailRecipientRows = _sheets.Read(scheduleInputs.EmailRecipientsDocumentId, scheduleInputs.EmailRecipientsRange);
+        IList<IList<object>> emailRecipientRows = _sheets.Read(
+            scheduleInputs.EmailRecipientsDocumentId, 
+            scheduleInputs.EmailRecipientsRange);
+
         List<EmailRecipient> recipients = EmailRecipientLoader.ConvertToEmailRecipients(emailRecipientRows);
 
         foreach (EmailRecipient recipient in recipients)
@@ -105,7 +124,7 @@ public class PublisherEmailer
                 if (string.IsNullOrWhiteSpace(recipient.EmailAddress))
                     recipient.EmailAddress = friend.EmailAddress;
 
-                recipient.Check = $"{DateTime.Now}";
+                recipient.Check = $"{_localNow}";
                 recipient.CheckStatus = string.Equals(
                     recipient.EmailAddress,
                     friend.EmailAddress,
@@ -126,7 +145,7 @@ public class PublisherEmailer
                 publisher.EmailAddress,
                 publisher.Sent,
                 publisher.SentStatus,
-                $"{DateTime.Now}:",
+                $"{_localNow}:",
                 "Preparing to send email" };
         }
 
@@ -280,17 +299,17 @@ public class PublisherEmailer
             sent = DateTime.MinValue;
         }
 
-        if (!ForceSendAll && (sent.AddDays(7) >= DateTime.Today
-            && DateTime.Today.DayOfWeek == sendDayOfWeek
-            || sent.AddDays(8) >= DateTime.Today))
+        if (!ForceSendAll && (sent.AddDays(7) >= _localNow
+            && _localNow.DayOfWeek == sendDayOfWeek
+            || sent.AddDays(8) >= _localNow))
         {
-            recipient.Check = $"{DateTime.Now}";
+            recipient.Check = $"{_localNow}";
             recipient.CheckStatus = "Skipped: Sent too recently";
             return;
         }
 
         _logger.LogInformation($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
-        recipient.Check = $"{DateTime.Now}";
+        recipient.Check = $"{_localNow}";
         recipient.CheckStatus = "Sending...";
 
         EmailMessage message = new()
@@ -305,7 +324,6 @@ public class PublisherEmailer
 
         EmailSenderResult? result = _emailSender.Send(message);
 
-        DateTime now = DateTime.Now;
         if (recipient.SentStatus?.EndsWith("; please try again later.") ?? false)
         {
             recipient.Sent = null;
@@ -316,11 +334,11 @@ public class PublisherEmailer
             // If there was another type of error, not one that ends in
             // "please try again later", then don't try again and burden the
             // email services.
-            recipient.Sent = now.ToString();
+            recipient.Sent = _localNow.ToString();
             recipient.SentStatus = result.Status;
         }
 
-        recipient.Check = now.ToString();
+        recipient.Check = _localNow.ToString();
         recipient.CheckStatus = result.Status;
     }
 }

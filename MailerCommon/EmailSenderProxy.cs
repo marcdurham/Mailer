@@ -18,7 +18,11 @@ public class EmailSenderProxy : IEmailSender
         string emailPattern = @"^\S+@\S+$";
         if(!Regex.IsMatch(message.ToAddress, emailPattern))
         {
-            return new EmailSenderResult { Status = $"{DateTime.Now}: Invalid Email Address", EmailWasSent = false };
+            return new EmailSenderResult 
+            { 
+                Status = $"{DateTime.Now}: Invalid Email Address", 
+                EmailWasSent = false 
+            };
         }
         
         foreach (IEmailSender sender in _senders)
@@ -29,6 +33,10 @@ public class EmailSenderProxy : IEmailSender
             }
         }
 
-        return new EmailSenderResult { Status = $"{DateTime.Now}: No Sender Selected", EmailWasSent = false };
+        return new EmailSenderResult 
+        { 
+            Status = $"{DateTime.Now}: No Sender Selected", 
+            EmailWasSent = false 
+        };
     }
 }
