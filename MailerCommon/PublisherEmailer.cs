@@ -79,11 +79,10 @@ public class PublisherEmailer
         _logger.LogInformation($"{friendMap.Count} Friends Loaded");
 
         _logger.LogInformation($"Sending {schedules.Count} schedules...");
-        DateTime thisMonday = GetMonday(_localNow);            
 
         foreach (ScheduleInputs schedule in schedules)
         {
-            SendSchedulesFor(schedule, friendMap, thisMonday);
+            SendSchedulesFor(schedule, friendMap, _localNow);
         }
 
         foreach (var calendar in friendCalendars)
@@ -94,19 +93,22 @@ public class PublisherEmailer
         _logger.LogInformation("Done");
     }
 
-    public static DateTime GetMonday(DateTime date)
+    /// <summary>
+    /// Returns the first day of the given week, which starts on Monday
+    /// </summary>
+    /// <param name="now">Current date</param>
+    /// <returns></returns>
+    public static DateTime GetMonday(DateTime now)
     {
-        if (date.DayOfWeek == DayOfWeek.Sunday)
-            return date.Date.AddDays(-6);
-
-        return date.Date.AddDays(-((int)date.Date.DayOfWeek - 1));
+        return now.Date.AddDays(-(((int)now.Date.DayOfWeek + 6) % 7));
     }
 
     void SendSchedulesFor(
         ScheduleInputs scheduleInputs,
         Dictionary<string, Friend> friendMap,
-        DateTime thisMonday)
+        DateTime now)
     {
+        DateTime thisMonday = GetMonday(now);
         string htmlTemplate = File.ReadAllText(scheduleInputs.HtmlTemplatePath);
 
         _logger.LogInformation($"Loading {scheduleInputs.MeetingName} Email Recipients...");
@@ -170,7 +172,7 @@ public class PublisherEmailer
 
         _logger.LogInformation($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> upcomingMeetings = meetings
-            .Where(m => m.Date >= thisMonday && m.Date <= thisMonday.AddDays(35) && m.Name == scheduleInputs.MeetingName)
+            .Where(m => m.Date >= now.Date && m.Date <= thisMonday.AddDays(35) && m.Name == scheduleInputs.MeetingName)
             .OrderBy(m => m.Date)
             .ToList();
 
