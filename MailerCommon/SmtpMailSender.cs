@@ -58,7 +58,7 @@ public class SmtpEmailSender : IEmailSender
 
     }
 
-    private static void SendMessage(EmailMessage msg)
+    static void SendMessage(EmailMessage msg)
     {
         // I copied this from here: https://docs.microsoft.com/en-us/dotnet/api/system.net.mail.smtpclient.sendasync?view=net-6.0#System_Net_Mail_SmtpClient_SendAsync_System_String_System_String_System_String_System_String_System_Object_
         string status = "Preparing to send SMTP email";
@@ -77,14 +77,15 @@ public class SmtpEmailSender : IEmailSender
         };
 
         // Set the method that is called back when the send operation ends.
-        client.SendCompleted += new SendCompletedEventHandler(SendCompletedCallback);
+        //client.SendCompleted += new SendCompletedEventHandler(SendCompletedCallback);
+        client.Timeout = 90_000; // 3 minutes
 
         // The userState can be any object that allows your callback
         // method to identify this send operation.
         // For this example, the userToken is a string constant.
         // //string userState = "test message1";
         // //client.SendAsync(message, userState);
-        Thread.Sleep(200);
+       
         client.Send(message);
         Console.WriteLine($"Sending message To: {msg.ToAddress}, Subject: {msg.Subject}");
         ////string answer = Console.ReadLine();

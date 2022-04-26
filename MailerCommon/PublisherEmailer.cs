@@ -258,6 +258,7 @@ public class PublisherEmailer
         }
 
         SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
+        Thread.Sleep(10_000); // sleep for 10 seconds
     }
 
     private void CacheFriendAssignments(string friendKey, List<Assignment> friendAssignments)
@@ -310,7 +311,7 @@ public class PublisherEmailer
             return;
         }
 
-        _logger.LogInformation($"Sending email to {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
+        _logger.LogInformation($"Sending email to {recipient.Name}: {recipient.EmailAddress}: Subject: {subject}...");
         recipient.Check = $"{_localNow}";
         recipient.CheckStatus = "Sending...";
 
@@ -326,20 +327,10 @@ public class PublisherEmailer
 
         EmailSenderResult? result = _emailSender.Send(message);
 
-        if (recipient.SentStatus?.EndsWith("; please try again later.") ?? false)
-        {
-            recipient.Sent = null;
-            recipient.SentStatus = null;
-        }
-        else
-        {
-            // If there was another type of error, not one that ends in
-            // "please try again later", then don't try again and burden the
-            // email services.
-            recipient.Sent = _localNow.ToString();
-            recipient.SentStatus = result.Status;
-        }
+        _logger.LogInformation($"Email result: Status: {result.Status} Recipient: {recipient.Name}: {recipient.EmailAddress}: {recipient.Sent}...");
 
+        recipient.Sent = _localNow.ToString();
+        recipient.SentStatus = result.Status;
         recipient.Check = _localNow.ToString();
         recipient.CheckStatus = result.Status;
     }
