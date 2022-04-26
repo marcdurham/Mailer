@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Set timeout for SMTP send to 90 seconds.
 - Pause 10 seconds after each send.
 - Mark each recipient status as sent, don't let it try again.  Rely on logs.
+- Add meetingName parameter to /schedules/generate/{meetingName}/{key}
 
 ## 2022-04-25
 ### Fixed
