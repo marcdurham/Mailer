@@ -8,6 +8,7 @@ namespace MailerRestApi.Services
     public interface IScheduleService
     {
         void Run();
+        void Run(string meetingName);
     }
 
     public class ScheduleService : IScheduleService
@@ -23,14 +24,24 @@ namespace MailerRestApi.Services
             _logger = logger;
             _memoryCache = memoryCache;
         }
+
         public void Run()
+        {
+            RunSchedule("all");
+        }
+        public void Run(string meetingName)
+        {
+            RunSchedule(meetingName);
+        }
+
+        void RunSchedule(string meetingName)
         {
             var count = Interlocked.Increment(ref executionCount);
 
             _logger.LogInformation($"Generating schdules");
 
             string? friendInfoDocumentId = _configuration.GetValue<string>("FriendInfoDocumentId");
-            string? sendGridApiKey = Environment.GetEnvironmentVariable("SENDGRID_API_KEY", EnvironmentVariableTarget.Process);
+            string? sendGridApiKey = _configuration.GetValue<string>("SENDGRID_API_KEY");
             string googleApiSecretsJson = File.ReadAllText("./GoogleApi.secrets.json");
             ISheets sheets = new GoogleSheets(googleApiSecretsJson);
 
@@ -38,7 +49,11 @@ namespace MailerRestApi.Services
             var scheduleOptions = new ScheduleOptions();
 
             _configuration.GetSection("Schedules").Bind(scheduleOptions);
-            var schedules = scheduleOptions.Schedules;
+            ScheduleInputs[] schedules = scheduleOptions.Schedules
+                .Where(s => 
+                    string.Equals("all", meetingName, StringComparison.OrdinalIgnoreCase) 
+                    || string.Equals(s.MeetingName, meetingName, StringComparison.OrdinalIgnoreCase))
+                .ToArray();
 
             _logger.LogInformation($"Schedules Count: {schedules.Length}");
 
@@ -57,3 +72,4 @@ namespace MailerRestApi.Services
         }
     }
 }
+

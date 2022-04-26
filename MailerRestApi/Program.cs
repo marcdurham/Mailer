@@ -96,16 +96,17 @@ app.MapGet("/health", () =>
     }
 );
 
-app.MapGet("/schedules/generate/{key}", (
+app.MapGet("/schedules/generate/{meetingName}/{key}", (
     IScheduleService scheduler, 
     IConfiguration configuration,
+    string meetingName,
     string key) =>
 {
     string apiKey = configuration.GetValue<string>("ScheduleGeneratorApiKey");
     if (string.IsNullOrWhiteSpace(key) || string.IsNullOrWhiteSpace(apiKey))
         return Results.BadRequest("Bad key");
 
-    scheduler.Run();
+    scheduler.Run(meetingName);
     return Results.Ok();
 });
 
