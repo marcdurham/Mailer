@@ -6,13 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <UserSecretsId>1c657e84-bb7a-4766-b52e-3808f7137492</UserSecretsId>
-	<DockerfileRunEnvironmentFiles>.env</DockerfileRunEnvironmentFiles>
+	  <DockerfileRunEnvironmentFiles>.env</DockerfileRunEnvironmentFiles>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Content Remove="documents.json" />
-    <Content Remove="GoogleApi.secrets.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.20.0" />
@@ -41,25 +36,5 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-<!-- 
-  <ItemGroup>
-    <None Include="templates\*.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="templates\*.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup> -->
-
-      <Target Name="CopyFiles">
-        <ItemGroup>
-            <HtmlTemplateFIles Include=".\templates\**\*.*"/>
-        </ItemGroup>
-
-        <Copy
-            SourceFiles="@(HtmlTemplateFIles)"
-            DestinationFiles="$(OutputDir)\templates\%(RecursiveDir)%(Filename)%(Extension)"
-        />
-    </Target>
 
 </Project>
