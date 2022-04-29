@@ -80,6 +80,7 @@ public class PublisherEmailer
 
         _logger.LogInformation($"Sending {schedules.Count} schedules...");
 
+// TODO: Save emails to a file or something, json mabye, separate email from sched generation
         foreach (ScheduleInputs schedule in schedules)
         {
             SendSchedulesFor(schedule, friendMap, _localNow);

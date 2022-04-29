@@ -1,4 +1,4 @@
-version: '3'
+version: '3.3'
 services:
   smtp:
     container_name: mailer-smtp
@@ -11,6 +11,9 @@ services:
     build:
       context: .
       dockerfile: MailerRestApi/Dockerfile
+    volumes:
+      - "/data/Mailer/app/templates:/app/templates"
+      - "/data/Mailer/app/meetings:/app/wwwroot/meetings"
     links:
       - smtp
     ports:

@@ -34,36 +34,32 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="SendGrid.secrets.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="clm-template.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="clm-template.print.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="mfs-template.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="pw-template.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="pw-template.print.html">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="documents.json">
+    <None Include="SendGrid.secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="GoogleApi.secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+<!-- 
+  <ItemGroup>
+    <None Include="templates\*.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="templates\*.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup> -->
+
+      <Target Name="CopyFiles">
+        <ItemGroup>
+            <HtmlTemplateFIles Include=".\templates\**\*.*"/>
+        </ItemGroup>
+
+        <Copy
+            SourceFiles="@(HtmlTemplateFIles)"
+            DestinationFiles="$(OutputDir)\templates\%(RecursiveDir)%(Filename)%(Extension)"
+        />
+    </Target>
 
 </Project>
