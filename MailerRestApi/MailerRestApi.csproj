@@ -29,14 +29,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="SendGrid.secrets.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	<None Include="SendGrid.secrets.json">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</None>
     <None Update="templates\clm-template.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="templates\clm-template.print.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     </None>
     <None Include="GoogleApi.secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
