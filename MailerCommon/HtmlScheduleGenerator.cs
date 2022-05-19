@@ -48,7 +48,12 @@ public class HtmlScheduleGenerator
             string friendKey = string.Empty;
             int.TryParse(index, out int indexValue);
 
-            if (meetings[indexValue].Assignments.ContainsKey(key))
+            if(meetings.Count > indexValue)
+            {
+                return $"<td$1$2$3 data-friend-key='MISSING-MEETING-ROW'>Missing Mtg Row</td>";
+            }
+
+            if (meetings.Count > indexValue && meetings[indexValue].Assignments.ContainsKey(key))
             {
                 friendKey = meetings[indexValue].Assignments[key].Friend.Key;
 
