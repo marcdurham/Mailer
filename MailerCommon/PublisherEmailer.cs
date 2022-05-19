@@ -80,6 +80,7 @@ public class PublisherEmailer
 
         _logger.LogInformation($"Sending {schedules.Count} schedules...");
 
+// TODO: Save emails to a file or something, json mabye, separate email from sched generation
         foreach (ScheduleInputs schedule in schedules)
         {
             SendSchedulesFor(schedule, friendMap, _localNow);
@@ -101,6 +102,16 @@ public class PublisherEmailer
     public static DateTime GetMonday(DateTime now)
     {
         return now.Date.AddDays(-(((int)now.Date.DayOfWeek + 6) % 7));
+    }
+
+        /// <summary>
+    /// Returns the dayOfWeek for the given week, which starts on Monday
+    /// </summary>
+    /// <param name="now">Current date</param>
+    /// <returns></returns>
+    public static DateTime GetThisWeeks(DateTime now, DayOfWeek dayOfWeek)
+    {
+        return now.Date.AddDays(-(((int)now.Date.DayOfWeek + 6) % 7) + ((int)dayOfWeek) - 1);
     }
 
     void SendSchedulesFor(
