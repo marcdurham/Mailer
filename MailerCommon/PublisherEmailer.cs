@@ -80,10 +80,17 @@ public class PublisherEmailer
 
         _logger.LogInformation($"Sending {schedules.Count} schedules...");
 
-// TODO: Save emails to a file or something, json mabye, separate email from sched generation
+        // TODO: Save emails to a file or something, json mabye, separate email from sched generation
         foreach (ScheduleInputs schedule in schedules)
         {
-            SendSchedulesFor(schedule, friendMap, _localNow);
+            try 
+            { 
+                SendSchedulesFor(schedule, friendMap, _localNow);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error preparing schedule for meeting: {schedule.MeetingName}", ex);
+            }
         }
 
         foreach (var calendar in friendCalendars)
