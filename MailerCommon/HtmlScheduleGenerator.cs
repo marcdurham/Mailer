@@ -48,7 +48,7 @@ public class HtmlScheduleGenerator
             string friendKey = string.Empty;
             int.TryParse(index, out int indexValue);
 
-            if(meetings.Count > indexValue)
+            if(meetings.Count < indexValue)
             {
                 return $"<td$1$2$3 data-friend-key='MISSING-MEETING-ROW'>Missing Mtg Row</td>";
             }
