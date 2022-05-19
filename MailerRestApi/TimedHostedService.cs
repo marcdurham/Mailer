@@ -39,6 +39,8 @@ public class TimedHostedService : IHostedService, IDisposable
 
     private void DoWork(object? state)
     {
+        _logger.LogInformation("Running schedule service");
+
         _scheduleService.Run();
     }
 
