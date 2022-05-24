@@ -1,9 +1,7 @@
 ﻿using FluentAssertions;
+using MailerCommon.Configuration;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace MailerCommon.Tests
@@ -20,15 +18,20 @@ namespace MailerCommon.Tests
                 { "PETER PARKER", new Friend(){ } }
             };
 
+            ScheduleInputs scheduleInputs = new()
+            {
+                MeetingDayOfWeek = (DayOfWeek)4,
+                MeetingName = "MTG",
+                MeetingTitle = "Test Meeting",
+                MeetingStartTime = DateTime.Parse("19:30"),
+                WeekDateColumnIndex = 0,
+                MeetingDateColumnIndex = 0,
+            };
+
             List<Meeting> meetings = ScheduleLoader.GetSchedule(
                 values,
                 friendMap,
-                new int[] { 4 },
-                "MTG",
-                "Test Meeting",
-                TimeOnly.Parse("19:30"),
-                mondayColumnIndex: 0,
-                meetingDateColumnIndex: 0);
+                scheduleInputs);
 
             meetings.Should().BeEmpty();
         }
@@ -51,15 +54,20 @@ namespace MailerCommon.Tests
                 { "LOIS LANE", new Friend(){ Name = "Lois Lane" } }
             };
 
+            ScheduleInputs scheduleInputs = new()
+            {
+                MeetingDayOfWeek = (DayOfWeek)4,
+                MeetingName = "MTG",
+                MeetingTitle = "Test Meeting",
+                MeetingStartTime = DateTime.Parse("19:30"),
+                WeekDateColumnIndex = 0,
+                MeetingDateColumnIndex = 0,
+            };
+
             List<Meeting> meetings = ScheduleLoader.GetSchedule(
                 values,
                 friendMap,
-                new int[] { 4 },
-                "MTG",
-                "Test Meeting",
-                TimeOnly.Parse("19:30"),
-                mondayColumnIndex: 0,
-                meetingDateColumnIndex: 0);
+                scheduleInputs);
 
             //meetings[0].Assignments["Assignment 1"].Name.Should().Be("Peter Parker");
             meetings[0].Assignments["Assignment 1"].Start.Should().Be(TimeOnly.Parse("17:30"));
@@ -91,15 +99,20 @@ namespace MailerCommon.Tests
                 { "LOIS LANE", new Friend(){ Name = "Lois Lane" } }
             };
 
+            ScheduleInputs scheduleInputs = new()
+            {
+                MeetingDayOfWeek = (DayOfWeek)4,
+                MeetingName = "MTG",
+                MeetingTitle = "Test Meeting",
+                MeetingStartTime = DateTime.Parse("19:30"),
+                WeekDateColumnIndex = 0,
+                MeetingDateColumnIndex = 0,
+            };
+
             List<Meeting> meetings = ScheduleLoader.GetSchedule(
                 values,
                 friendMap,
-                new int[] { 4 },
-                "MTG",
-                "Test Meeting",
-                TimeOnly.Parse("19:30"),
-                mondayColumnIndex: 0,
-                meetingDateColumnIndex: 0);
+                scheduleInputs);
 
             meetings[0].Assignments["Section A Assignment 1"].Start.Should().Be(TimeOnly.Parse("11:11"));
             meetings[0].Assignments["Section A Assignment 2"].Start.Should().Be(TimeOnly.Parse("11:11"));

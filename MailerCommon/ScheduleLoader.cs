@@ -1,20 +1,25 @@
-﻿namespace MailerCommon
+﻿using MailerCommon.Configuration;
+
+namespace MailerCommon
 {
     public class ScheduleLoader
     {
         public static List<Meeting> GetSchedule(
             IList<IList<object>> values, 
             Dictionary<string, Friend> friendMap, 
-            int[] daysOfWeek, 
-            string name,
-            string title, 
-            TimeOnly? meetingStartTime,
-            int mondayColumnIndex = 0,
-            int meetingDateColumnIndex = 0)
+            ScheduleInputs scheduleInputs)
         {
             const int HeaderRowIndex = 0;
+            int[] daysOfWeek = new int[] { (int)scheduleInputs.MeetingDayOfWeek };
+            string name = scheduleInputs.MeetingName;
+            string title = scheduleInputs.MeetingTitle;
+            TimeOnly? meetingStartTime = scheduleInputs.MeetingStartTime.HasValue
+                ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime)
+                : null;
+            int mondayColumnIndex = 0;
+            int meetingDateColumnIndex = scheduleInputs.MeetingDateColumnIndex ?? 0;
 
-            if(values == null || values.Count == 0)
+            if (values == null || values.Count == 0)
                 return new List<Meeting>();
 
             string[] headers = new string[values[HeaderRowIndex].Count];
@@ -32,13 +37,14 @@
             for (int wk = 1; wk < values.Count; wk++)
             {
                 rows[wk] = values[wk][mondayColumnIndex]?.ToString() ?? string.Empty;
-                //var monday = DateTime.Parse(values[wk][mondayColumnIndex].ToString() ?? string.Empty);
-                var meetingDay = DateTime.Parse(values[wk][meetingDateColumnIndex].ToString() ?? string.Empty);
+                DateTime meetingDay = DateTime.Parse(values[wk][meetingDateColumnIndex].ToString() ?? string.Empty);
+
                 var meeting = new Meeting
                 {
                     Name = name,
                     Title = title,
                     Date = meetingDay.AddTicks(meetingStartTime.HasValue ? meetingStartTime.Value.Ticks : 0),
+                    HasMultipleMeetingsPerWeek = scheduleInputs.HasMultipleMeetingsPerWeek,
                 };
 
                 for (int a = 0; a < values[wk].Count && a < headers.Length; a++)
@@ -55,7 +61,6 @@
                     }
 
                     string assignementKey = headers[a];
-                    
 
                     Assignment assignment = MapAssignment(headers, values, assignmentNames, wk, meeting, assignee, assignementKey);
 
@@ -68,7 +73,7 @@
             return meetings;
         }
 
-        private static Assignment MapAssignment(
+        static Assignment MapAssignment(
             string[] headers,
             IList<IList<object>> values, 
             Dictionary<string, string> assignmentNames, 
