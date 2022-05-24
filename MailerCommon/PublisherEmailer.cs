@@ -179,18 +179,15 @@ public class PublisherEmailer
         List<Meeting> meetings = ScheduleLoader.GetSchedule(
             values,
             friendMap,
-            new int[] { (int)scheduleInputs.MeetingDayOfWeek },
-            scheduleInputs.MeetingName,
-            scheduleInputs.MeetingTitle,
-            scheduleInputs.MeetingStartTime.HasValue
-                ? TimeOnly.FromDateTime((DateTime)scheduleInputs.MeetingStartTime)
-                : null,
-            mondayColumnIndex: 0,
-            meetingDateColumnIndex: scheduleInputs.MeetingDateColumnIndex ?? 0);
+            scheduleInputs);
 
         _logger.LogInformation($"Generating HTML {scheduleInputs.MeetingName} schedules and sending {scheduleInputs.MeetingName} emails...");
         List<Meeting> upcomingMeetings = meetings
-            .Where(m => m.Date >= now.Date && m.Date <= thisMonday.AddDays(35) && m.Name == scheduleInputs.MeetingName)
+            .Where(m => ((scheduleInputs.HasMultipleMeetingsPerWeek ?? false)
+                    ? m.Date >= thisMonday 
+                    : m.Date >= now.Date)
+                && m.Date <= thisMonday.AddDays(35) 
+                && m.Name == scheduleInputs.MeetingName)
             .OrderBy(m => m.Date)
             .ToList();
 
@@ -276,7 +273,7 @@ public class PublisherEmailer
         }
 
         SendEmailFor(subject, htmlMessageText, recipient, sendDayOfWeek);
-        Thread.Sleep(10_000); // sleep for 10 seconds
+        Thread.Sleep(_scheduleOptions.PauseBetweenEmailsMs);
     }
 
     private void CacheFriendAssignments(string friendKey, List<Assignment> friendAssignments)

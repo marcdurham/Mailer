@@ -8,5 +8,6 @@
         public string? EmailFromName { get; set; }
         public string? EmailFromAddress { get; set; }
         public string? StaticScheduleRootFolder { get; set; }
+        public int PauseBetweenEmailsMs { get; set; }
     }
 }

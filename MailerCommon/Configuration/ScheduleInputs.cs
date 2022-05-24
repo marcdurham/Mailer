@@ -16,5 +16,15 @@
         public int? WeekDateColumnIndex { get; set; }
         public int? AssignmentStartColumnIndex { get; set; }
         public int? AssignmentEndColumnIndex { get; set; }
+        public bool? HasMultipleMeetingsPerWeek { get; set; }
+        public DayOfWeek? StartDayForWeekWithMultipleMeetings { get; set; } = DayOfWeek.Monday;
+
+    }
+
+    public class ScheduleMailingInputs
+    {
+        public string? EmailRecipientsDocumentId { get; set; }
+        public string? EmailRecipientsRange { get; set; }
+        public DayOfWeek SendDayOfWeek { get; set; }
     }
 }
