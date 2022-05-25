@@ -3,7 +3,16 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
-## [Unreleased]
+## 2022-05-24
+### Fixed
+- Added HasMultipleMeetingsPerWeek for schedules that have multiple meetings per week, 
+  even every day, that need to start on the same day every week, instead of always 
+  starting on today.
+
+### Changed
+- Add AssignmentApi project in a test attempt to turn this into a few small microservices.
+- Use ScheduleInput as a parameter for ScheduleLoader.GetSchedule() instead of many 
+  string parameters.
 
 ## 2022-04-26
 ### Changed
