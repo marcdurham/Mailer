@@ -5,7 +5,7 @@ namespace MailerCommon
     public class ScheduleLoader
     {
         public static List<Meeting> GetSchedule(
-            IList<IList<object>> values, 
+            IList<IList<object>> valuesIn, 
             Dictionary<string, Friend> friendMap, 
             ScheduleInputs scheduleInputs)
         {
@@ -18,6 +18,36 @@ namespace MailerCommon
                 : null;
             int mondayColumnIndex = 0;
             int meetingDateColumnIndex = scheduleInputs.MeetingDateColumnIndex ?? 0;
+
+            // Rotate Sheet
+            IList<IList<object>> values = valuesIn;
+            if(scheduleInputs.ColumnIsDay)
+            {
+                values = new List<IList<object>>();
+                int rowCount = valuesIn.Count;
+                int colCount = valuesIn[HeaderRowIndex].Count;
+                // Add columns as rows
+                for (int c = HeaderRowIndex; c < colCount; c++)
+                {
+                    values.Add(new List<object>());
+                }
+
+                // Add each column c to each row r               
+                for (int c = HeaderRowIndex; c < colCount; c++)
+                {
+                    for(int r = 0; r < rowCount; r++)
+                    {
+                        if (valuesIn[r].Count > c)
+                        {
+                            values[c].Add(valuesIn[r][c]);
+                        }
+                        else
+                        {
+                            values[c].Add(null);
+                        }
+                    }
+                }
+            }
 
             if (values == null || values.Count == 0)
                 return new List<Meeting>();

@@ -22,6 +22,9 @@
     <None Update="clm-template.print.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="documents - Copy.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="documents.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
