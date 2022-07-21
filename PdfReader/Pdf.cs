@@ -112,7 +112,27 @@ namespace PdfReader
 
                 foreach (Assignment assignment in assignments)
                 {
-                    builder.AppendLine($"WK: {assignment.WeekHeader} SEC: {assignment.Section} ST: {assignment.Start} MIN: {assignment.Minutes} AN: {assignment.AssignmentName} To: {assignment.AssigneeName}");
+                    builder.Append($"WK: {assignment.WeekHeader} SEC: {assignment.Section} ST: {assignment.Start} MIN: {assignment.Minutes} AN: {assignment.AssignmentName} Assignee: {assignment.AssigneeName}");
+                    if (!string.IsNullOrWhiteSpace(assignment.AssigneeSecondaryName))
+                    {
+                        builder.AppendLine($" Second: {assignment.AssigneeSecondaryName}");
+                    }
+                    else
+                    {
+                        builder.AppendLine();
+                    }
+                }
+
+                builder.AppendLine();
+                builder.AppendLine("GROUPED");
+                var groups = assignments.GroupBy(a => a.AssigneeName);
+                foreach(var group in groups)
+                {
+                    builder.AppendLine($"{group.Key}: {group.Count()}");
+                    foreach(var item in group)
+                    {
+                        builder.AppendLine($"    {item.WeekHeader} {item.AssignmentName}");
+                    }
                 }
             }
 
@@ -222,6 +242,16 @@ namespace PdfReader
                 else if(assignment.AssigneeName.StartsWith("學生/助手："))
                 {
                     assignment.AssigneeName = assignment.AssigneeName.Replace("學生/助手：", "");
+                }
+                else if (assignment.AssigneeName.StartsWith("學生："))
+                {
+                    assignment.AssigneeName = assignment.AssigneeName.Replace("學生：", "");
+                }
+
+                if(assignment.AssigneeName.Contains('/'))
+                {
+                    assignment.AssigneeSecondaryName = assignment.AssigneeName.Split("/", StringSplitOptions.TrimEntries)[1];
+                    assignment.AssigneeName = assignment.AssigneeName.Split("/", StringSplitOptions.TrimEntries)[0];
                 }
 
                 assignments.Add(assignment);
