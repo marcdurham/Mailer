@@ -10,8 +10,9 @@ Console.WriteLine("Mailer");
 
 if (args.Length > 0 && args[0].EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
 {
-    string result = new PdfReader.Pdf().Read(args[0]);
-    File.WriteAllText("./pdf.txt", result);
+    PdfReader.Schedule sch = new PdfReader.Pdf().Read(args[0]);
+    File.WriteAllText("./pdf.txt", sch.Logs);
+    new PdfReader.ScheduleCsv().Convert(sch, "./pdf.csv");
     return;
 }
 
