@@ -8,8 +8,9 @@ namespace PdfReader
 {
     public class Pdf
     {
-        public string Read(string filePath)
+        public Schedule Read(string filePath)
         {
+            Schedule schedule = new();
             var builder = new StringBuilder(10000);
             using (PdfDocument document = PdfDocument.Open(filePath))
             {
@@ -136,7 +137,8 @@ namespace PdfReader
                 }
             }
 
-            return builder.ToString();
+            schedule.Logs = builder.ToString();
+            return schedule;
         }
 
         bool IsWeekHeader(Line line)
