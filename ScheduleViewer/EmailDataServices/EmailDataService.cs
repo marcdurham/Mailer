@@ -61,21 +61,45 @@
             int dateColumIndex = 0;
             for(int i = 0; i < emailData.Saturdays.Count && i < emailData.Mondays.Count; i++)
             {
-                if(/*!string.IsNullOrWhiteSpace(emailData.Saturdays[i])
-                    &&*/ emailData.Mondays[i] == date)
+                string columnDate = string.IsNullOrWhiteSpace(emailData.Mondays[i]) 
+                    ? emailData.Saturdays[i]
+                    : emailData.Mondays[i];
+
+                if (columnDate == date)
                 {
                     dateColumIndex = i;
                     break;
                 }
             }
 
+            var rowNamesToShow = _configuration.GetSection("RowNameKeys").Get<List<string>>();
+            var rowTitles = _configuration.GetSection("RowNameTitles").Get<List<string>>();
+
             for (int n = 0; n < emailData.RowNames.Count && n < values.Count; n++)
             {
+                string rowName = emailData.RowNames[n];
+                if (!rowNamesToShow.Contains(rowName))
+                    continue;
+
+                string title = rowTitles[rowNamesToShow.IndexOf(rowName)] ?? "";
+                
+                if(title.StartsWith("$") && emailData.RowNames.Contains(title.Substring(1)))
+                {
+                    string titleKey = title.Substring(1);
+                    int titleIndex = emailData.RowNames.IndexOf(titleKey);
+                    //title = rowTitles[titleIndex] ?? rowName;
+                    title = $"{(values[titleIndex].Count > dateColumIndex ? values[titleIndex][dateColumIndex] : null)}";
+                }
+
+                string value = $"{(values[n].Count > dateColumIndex ? values[n][dateColumIndex] : null)}";
+                if (string.IsNullOrEmpty(value))
+                    continue;
+
                 emailData.Rows.Add(
                     new AssignmentRow
                     {
-                        Name = emailData.RowNames[n],
-                        Value = $"{(values[n].Count > dateColumIndex ? values[n][dateColumIndex] : null)}",
+                        Name = title,
+                        Value = value,
                     });
             }
 
