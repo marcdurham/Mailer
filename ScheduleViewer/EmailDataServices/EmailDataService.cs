@@ -1,4 +1,6 @@
-﻿namespace ScheduleViewer.EmailDataServices
+﻿using Microsoft.Extensions.Caching.Memory;
+
+namespace ScheduleViewer.EmailDataServices
 {
     public interface IEmailDataService
     {
@@ -8,26 +10,53 @@
     public class EmailDataService : IEmailDataService
     {
         private readonly ISpreadSheetService _sheetService;
+        private readonly IMemoryCache _memoryCache;
         private readonly IConfiguration _configuration;
         private readonly ILogger<EmailDataService> _logger;
 
         public EmailDataService(
             ISpreadSheetService sheetService, 
+            IMemoryCache memoryCache,
             IConfiguration configuration,
             ILogger<EmailDataService> logger)
         {
             _sheetService = sheetService;
+            _memoryCache = memoryCache;
             _configuration = configuration;
             _logger = logger;
         }
 
         public EmailData Get(string date)
         {
+            if (string.IsNullOrWhiteSpace(date) || date == "null")
+            {
+                DateTime thisMonday = DateTime.Today.AddDays(-((int)DateTime.Today.DayOfWeek - 1));
+                date = thisMonday.ToString("yyyy-MM-dd");
+            }
+
             string documentId = _configuration.GetValue<string>("EmailDataDocumentId");
             string range = _configuration.GetValue<string>("EmailDataRange");
-            IList<IList<object>>? values = _sheetService.Read(documentId, range);
 
-            EmailData emailData = new();
+            IList<IList<object>>? values = null!;
+            if (!_memoryCache.TryGetValue($"{documentId}/{range}", out IList<IList<object>> v))
+            {
+                _logger.LogInformation("Reading from Google Sheets...");
+                values = _sheetService.Read(documentId, range);
+                _memoryCache.Set($"{documentId}/{range}", values);
+            }
+            else
+            {
+                _logger.LogInformation("Reading from Memory Cache...");
+                values = v;
+            }
+
+            //IList<IList<object>>? values = _sheetService.Read(documentId, range);
+
+            EmailData emailData = new()
+            {
+                Date = date,
+            };
+
             for(int r = 0; r < values.Count; r++)
             {
                 IList<object>? row = values[r];
@@ -64,6 +93,20 @@
                 string columnDate = string.IsNullOrWhiteSpace(emailData.Mondays[i]) 
                     ? emailData.Saturdays[i]
                     : emailData.Mondays[i];
+
+                if (DateTime.TryParse(columnDate, out DateTime coldt))
+                {
+                    if (coldt.DayOfWeek == DayOfWeek.Monday)
+                    {
+                        emailData.Previous = coldt.AddDays(-2).ToString("yyyy-MM-dd");
+                        emailData.Next = coldt.AddDays(5).ToString("yyyy-MM-dd");
+                    }
+                    else
+                    {
+                        emailData.Previous = coldt.AddDays(-5).ToString("yyyy-MM-dd");
+                        emailData.Next = coldt.AddDays(2).ToString("yyyy-MM-dd");
+                    }
+                }
 
                 if (columnDate == date)
                 {
@@ -102,6 +145,8 @@
                         Value = value,
                     });
             }
+
+
 
             return emailData;
         }
