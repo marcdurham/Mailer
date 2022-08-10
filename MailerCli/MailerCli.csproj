@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\MailerCommon\MailerCommon.csproj" />
+    <ProjectReference Include="..\PdfReader\PdfReader.csproj" />
   </ItemGroup>
 	
   <ItemGroup>
@@ -20,6 +21,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="clm-template.print.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="documents - Copy.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="documents.json">

@@ -12,6 +12,11 @@
         public DayOfWeek SendDayOfWeek { get; set; }
         public DayOfWeek MeetingDayOfWeek { get; set; }
         public DateTime? MeetingStartTime { get; set; }
+        /// <summary>
+        /// When true setting this value basically rotates the sheet
+        /// so that the columns are rows and the rows are columns.
+        /// </summary>
+        public bool ColumnIsDay { get; set; } 
         public int? MeetingDateColumnIndex { get; set; }
         public int? WeekDateColumnIndex { get; set; }
         public int? AssignmentStartColumnIndex { get; set; }

@@ -8,6 +8,14 @@ using Newtonsoft.Json;
 
 Console.WriteLine("Mailer");
 
+if (args.Length > 0 && args[0].EndsWith(".pdf", StringComparison.OrdinalIgnoreCase))
+{
+    PdfReader.Schedule sch = new PdfReader.Pdf().Read(args[0]);
+    File.WriteAllText("./pdf.txt", sch.Logs, encoding: System.Text.Encoding.UTF8);
+    new PdfReader.ScheduleCsv().Convert(sch, "./pdf.csv");
+    return;
+}
+
 //string googleApiServiceAccountSecretsJsonPath = args[0];
 //string clmSendEmailsDocumentId = args[1];
 //string googleApiOAuthSecretsJsonPath  = args[0];
