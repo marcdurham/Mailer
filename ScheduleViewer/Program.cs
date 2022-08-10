@@ -1,8 +1,13 @@
+using ScheduleViewer.EmailDataServices;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddScoped<IEmailDataService, EmailDataService>();
+builder.Services.AddScoped<ISpreadSheetService, GoogleSheets>();
 
 var app = builder.Build();
 

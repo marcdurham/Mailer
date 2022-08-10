@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using ScheduleViewer.Models;
+using ScheduleViewer.EmailDataServices;
 
 namespace ScheduleViewer.Controllers
 {
@@ -7,21 +7,21 @@ namespace ScheduleViewer.Controllers
     [Route("[controller]")]
     public class EmailDataController : ControllerBase
     {
+        private readonly IEmailDataService _emailDataService;
         private readonly ILogger<EmailDataController> _logger;
 
-        public EmailDataController(ILogger<EmailDataController> logger)
+        public EmailDataController(
+            IEmailDataService emailDataService,
+            ILogger<EmailDataController> logger)
         {
+            _emailDataService = emailDataService;
             _logger = logger;
         }
 
         [HttpGet]
-        public IEnumerable<EmailData> Get()
+        public EmailData Get(string date)
         {
-            return Enumerable.Range(1, 5).Select(index => new EmailData
-            { 
-                Name = $"Number {index}"
-            })
-            .ToArray();
+            return _emailDataService.Get(date);
         }
     }
 }
