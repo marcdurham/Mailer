@@ -5,7 +5,7 @@ export class ShowDay extends Component {
 
   constructor(props) {
     super(props);
-      this.state = { emaildata: [], loading: true };
+    this.state = { emaildata: {}, loading: true };
   }
 
     componentDidMount() {
@@ -48,11 +48,11 @@ export class ShowDay extends Component {
 
     let next = this.state.loading
       ? "#"
-      : "show-day?date=" + this.state.emaildata.next + "&key=" + this.state.emaildata.key;
+      : "?date=" + this.state.emaildata.next + "&key=" + this.state.emaildata.key;
 
     let previous = this.state.loading
       ? "#"
-      : "show-day?date=" + this.state.emaildata.previous + "&key=" + this.state.emaildata.key;;
+      : "?date=" + this.state.emaildata.previous + "&key=" + this.state.emaildata.key;;
 
     let date = this.state.loading
       ? ""

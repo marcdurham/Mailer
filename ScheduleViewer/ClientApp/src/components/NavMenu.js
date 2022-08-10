@@ -11,8 +11,14 @@ export class NavMenu extends Component {
 
     this.toggleNavbar = this.toggleNavbar.bind(this);
     this.state = {
-      collapsed: true
+      collapsed: true,
+      siteinfo: {},
+      loading: true
     };
+  }
+
+  componentDidMount() {
+    this.populateSiteInfo();
   }
 
   toggleNavbar () {
@@ -22,10 +28,11 @@ export class NavMenu extends Component {
   }
 
   render() {
+    let siteName = this.state.loading ? "Loading..." : this.state.siteinfo.siteName;
     return (
       <header>
         <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
-          <NavbarBrand tag={Link} to="/">ScheduleViewer</NavbarBrand>
+          <NavbarBrand tag={Link} to="/">{siteName}</NavbarBrand>
           <NavbarToggler onClick={this.toggleNavbar} className="mr-2" />
           <Collapse className="d-sm-inline-flex flex-sm-row-reverse" isOpen={!this.state.collapsed} navbar>
             <ul className="navbar-nav flex-grow">
@@ -37,5 +44,22 @@ export class NavMenu extends Component {
         </Navbar>
       </header>
     );
+  }
+
+  async populateSiteInfo() {
+    const response = await fetch("siteinfo");
+    if (!response.ok) {
+      this.setState({
+        siteinfo: {
+          errorStatus: response.status,
+          errorMessage: response.statusText,
+          success: false
+        },
+        loading: false
+      });
+      return;
+    }
+    const data = await response.json();
+    this.setState({ siteinfo: data, loading: false });
   }
 }

@@ -34,10 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="GoogleApi.secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
