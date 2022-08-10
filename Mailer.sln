@@ -22,7 +22,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{9CD4B834
 		publish-restapi.sh = publish-restapi.sh
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfReader", "PdfReader\PdfReader.csproj", "{A370C6EC-B793-43F7-A1BC-BD69F9D31DB2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfReader", "PdfReader\PdfReader.csproj", "{A370C6EC-B793-43F7-A1BC-BD69F9D31DB2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleViewer", "ScheduleViewer\ScheduleViewer.csproj", "{99085FBC-8813-4871-8B7A-1CC7410B6767}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +52,10 @@ Global
 		{A370C6EC-B793-43F7-A1BC-BD69F9D31DB2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A370C6EC-B793-43F7-A1BC-BD69F9D31DB2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A370C6EC-B793-43F7-A1BC-BD69F9D31DB2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99085FBC-8813-4871-8B7A-1CC7410B6767}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99085FBC-8813-4871-8B7A-1CC7410B6767}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99085FBC-8813-4871-8B7A-1CC7410B6767}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99085FBC-8813-4871-8B7A-1CC7410B6767}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
