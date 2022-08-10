@@ -9,29 +9,34 @@ export class ShowDay extends Component {
   }
 
     componentDidMount() {
-        const queryParams = new URLSearchParams(window.location.search);
-        const date = queryParams.get("date");
-      this.populateDay(date);
+      const queryParams = new URLSearchParams(window.location.search);
+      const date = queryParams.get("date");
+      const key = queryParams.get("key");
+      this.populateDay(date, key);
   }
 
-    static renderDayTable(emaildata) {
-        return (
-          <table className='table table-striped' aria-labelledby="tabelLabel">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Value</th>
+  static renderDayTable(emaildata) {
+    if(!emaildata.success) {
+      return <p>{emaildata.errorMessage}</p>
+    }
+
+    return (          
+        <table className='table table-striped' aria-labelledby="tabelLabel">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {emaildata.rows.map(row =>
+              <tr key={row.name}>
+                <td>{row.name}</td>
+                <td>{row.value}</td>
               </tr>
-            </thead>
-            <tbody>
-              {emaildata.rows.map(row =>
-                <tr key={row.name}>
-                  <td>{row.name}</td>
-                  <td>{row.value}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+            )}
+          </tbody>
+        </table>
     );
   }
 
@@ -39,18 +44,19 @@ export class ShowDay extends Component {
 
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
-            : ShowDay.renderDayTable(this.state.emaildata);
+      : ShowDay.renderDayTable(this.state.emaildata);
 
     let next = this.state.loading
-        ? "#"
-        : "show-day?date=" + this.state.emaildata.next;
+      ? "#"
+      : "show-day?date=" + this.state.emaildata.next + "&key=" + this.state.emaildata.key;
+
     let previous = this.state.loading
-        ? "#"
-            : "show-day?date=" + this.state.emaildata.previous;
+      ? "#"
+      : "show-day?date=" + this.state.emaildata.previous + "&key=" + this.state.emaildata.key;;
 
     let date = this.state.loading
-            ? ""
-            : this.state.emaildata.date;
+      ? ""
+      : this.state.emaildata.date;
 
     return (
       <div>
@@ -74,8 +80,19 @@ export class ShowDay extends Component {
     );
   }
 
-  async populateDay(date) {
-      const response = await fetch(`emaildata?date=${date}`);
+  async populateDay(date, key) {
+    const response = await fetch(`emaildata?date=${date}&key=${key}`);
+    if (!response.ok) {
+      this.setState({
+        emaildata: {
+          errorStatus: response.status,
+          errorMessage: response.statusText,
+          success: false
+        },
+        loading: false
+      });
+      return;
+    }
     const data = await response.json();
     this.setState({ emaildata: data, loading: false });
   }

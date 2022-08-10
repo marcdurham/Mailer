@@ -9,6 +9,8 @@
         public List<AssignmentRow> Rows { get; set; } = new();
         public List<string> Mondays { get; set; } = new();
         public List<string> Saturdays { get; set; } = new();
+        public string Key { get; set; } = string.Empty;
+        public bool Success { get; set; }
     }
 }
 

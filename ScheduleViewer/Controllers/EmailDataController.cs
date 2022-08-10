@@ -19,9 +19,23 @@ namespace ScheduleViewer.Controllers
         }
 
         [HttpGet]
-        public EmailData Get(string date)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<EmailData> Get(string date, string key)
         {
-            return _emailDataService.Get(date);
+            try
+            {
+                return Ok(_emailDataService.Get(date, key));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized("Invalid key");
+            }
+            catch(Exception)
+            {
+                throw;
+            }
         }
     }
 }
