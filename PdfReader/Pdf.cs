@@ -14,7 +14,9 @@ namespace PdfReader
             var builder = new StringBuilder(10000);
             using (PdfDocument document = PdfDocument.Open(filePath))
             {
-                List<Assignment> assignments = new();
+                //List<Assignment> assignments = new();
+                Meeting meeting = new();
+                
                 for (var i = 0; i < document.NumberOfPages; i++)
                 {
                     // This starts at 1 rather than 0.
@@ -99,7 +101,7 @@ namespace PdfReader
                             builder.AppendLine(box.Text);
                         }
 
-                        assignments.AddRange(Process(lin, sectionHeader, weekHeader));
+                        meeting.Assignments.AddRange(Process(lin, sectionHeader, weekHeader));
 
                         //foreach(Assignment assignment in assignments)
                         //{
@@ -111,7 +113,7 @@ namespace PdfReader
                 }
                 builder.AppendLine("ALL ASSIGNMENTS:");
 
-                foreach (Assignment assignment in assignments)
+                foreach (Assignment assignment in meeting.Assignments)
                 {
                     builder.Append($"WK: {assignment.WeekHeader} SEC: {assignment.Section} ST: {assignment.Start} MIN: {assignment.Minutes} AN: {assignment.AssignmentName} Assignee: {assignment.AssigneeName}");
                     if (!string.IsNullOrWhiteSpace(assignment.AssigneeSecondaryName))
@@ -126,7 +128,7 @@ namespace PdfReader
 
                 builder.AppendLine();
                 builder.AppendLine("GROUPED");
-                var groups = assignments.GroupBy(a => a.AssigneeName);
+                var groups = meeting.Assignments.GroupBy(a => a.AssigneeName);
                 foreach(var group in groups)
                 {
                     builder.AppendLine($"{group.Key}: {group.Count()}");
@@ -135,6 +137,8 @@ namespace PdfReader
                         builder.AppendLine($"    {item.WeekHeader} {item.AssignmentName}");
                     }
                 }
+
+                schedule.Meetings.Add(meeting);
             }
 
             schedule.Logs = builder.ToString();
