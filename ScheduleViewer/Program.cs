@@ -2,6 +2,8 @@ using ScheduleViewer.EmailDataServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration.AddJsonFile("config/configuration.json",optional: false);
+
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();

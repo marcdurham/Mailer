@@ -372,3 +372,4 @@ documents.*.json
 
 /commit.txt
 /app/
+/ScheduleViewer/configuration.json

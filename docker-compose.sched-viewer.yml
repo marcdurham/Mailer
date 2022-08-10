@@ -1,0 +1,22 @@
+version: '3'
+services:
+  restapi:
+    container_name: sched-viewer
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: MailerRestApi/Dockerfile
+    volumes:
+      - "/data/ScheduleViewer/config:/config"
+    ports:
+      - "127.0.0.1:5027:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      #- TimerIntervalSeconds=$TimerIntervalSeconds
+      #- ServiceSecretsJson=$ServiceSecretsJson
+      #- APPLICATIONINSIGHTS_INSTRUMENTATIONKEY=$APPLICATIONINSIGHTS_INSTRUMENTATIONKEY
+      #- APPLICATIONINSIGHTS_CONNECTION_STRING=$APPLICATIONINSIGHTS_CONNECTION_STRING
+      - SiteName=$SiteName
+      - EmailDataDocumentId=$EmailDataDocumentId
+      - EmailDataRange=$EmailDataRange
+
