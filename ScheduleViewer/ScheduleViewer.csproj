@@ -32,13 +32,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="GoogleApi.secrets.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="GoogleApi.secrets.json">
+    <Content Update="GoogleApi.secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
+    </Content>
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
