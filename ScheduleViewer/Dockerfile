@@ -17,7 +17,7 @@ RUN apt-get install -y libpng-dev libjpeg-dev curl libxi6 build-essential libgl1
 RUN curl -sL https://deb.nodesource.com/setup_lts.x | bash -
 RUN apt-get install -y nodejs
 WORKDIR /src
-COPY ["ScheduleViewer/ScheduleViewer.csproj", "ScheduleViewer/"]
+COPY ["ScheduleViewer.csproj", "ScheduleViewer/"]
 RUN dotnet restore "ScheduleViewer/ScheduleViewer.csproj"
 COPY . .
 WORKDIR "/src/ScheduleViewer"
