@@ -1,11 +1,11 @@
 version: '3'
 services:
-  restapi:
+  sched-viewer:
     container_name: sched-viewer
     restart: unless-stopped
     build:
       context: .
-      dockerfile: MailerRestApi/Dockerfile
+      dockerfile: ScheduleViewer/Dockerfile
     volumes:
       - "/data/ScheduleViewer/config:/config"
     ports:
