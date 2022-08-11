@@ -3,12 +3,11 @@ using ScheduleViewer.EmailDataServices;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Configuration.AddJsonFile("configuration.json", optional: false);
 
 builder.Services.AddControllers();
 builder.Services.AddMemoryCache();
-
+builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddScoped<IEmailDataService, EmailDataService>();
 builder.Services.AddScoped<ISpreadSheetService, GoogleSheets>();
 
