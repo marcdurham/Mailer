@@ -373,3 +373,4 @@ documents.*.json
 /commit.txt
 /app/
 /ScheduleViewer/configuration.json
+/ScheduleViewer.Api/configuration.json
