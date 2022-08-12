@@ -54,11 +54,11 @@ export class ShowDay extends Component {
 
     let next = this.state.loading
       ? "#"
-      : "?date=" + this.state.emaildata.next + "&key=" + this.state.emaildata.key;
+      : "day/" + this.state.emaildata.next + "/" + this.state.emaildata.key;
 
     let previous = this.state.loading
       ? "#"
-      : "?date=" + this.state.emaildata.previous + "&key=" + this.state.emaildata.key;;
+      : "day/" + this.state.emaildata.previous + "/" + this.state.emaildata.key;;
 
     let date = this.state.loading
       ? ""
