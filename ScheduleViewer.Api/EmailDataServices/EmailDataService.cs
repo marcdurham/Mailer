@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
+using System.Text.Json;
 
 namespace ScheduleViewer.EmailDataServices;
 
@@ -33,12 +34,28 @@ public class EmailDataService : IEmailDataService
             Key = key,
         };
 
-        List<string> authorizedKeys = _configuration
-            .GetSection("AuthorizedKeys")
-            .Get<List<string>>()
-            .Where(item => !string.IsNullOrWhiteSpace(item))
-            .Select(item => item.ToUpperInvariant())
-            .ToList();
+        if (!_memoryCache.TryGetValue(key, out ScheduleConfiguration? configuration))
+        {
+            _logger.LogInformation("Loading schedule configuration file...");
+            string configurationJson = File.ReadAllText("config/configuration.json");
+            configuration = JsonSerializer
+                .Deserialize<ScheduleConfiguration>(configurationJson);
+            _memoryCache.Set(key, configuration, DateTimeOffset.Parse("00:00:10"));
+        }
+
+        //List<string> authorizedKeys = _configuration
+        //    .GetSection("AuthorizedKeys")
+        //    .Get<List<string>>()
+        //    .Where(item => !string.IsNullOrWhiteSpace(item))
+        //    .Select(item => item.ToUpperInvariant())
+        //    .ToList()
+        List<string> authorizedKeys = configuration!
+           .AuthorizedKeys
+           .Where(item => !string.IsNullOrWhiteSpace(item))
+           .Select(item => item.ToUpperInvariant())
+           .ToList();
+
+        _logger.LogInformation($"{authorizedKeys.Count} authorized keys found.");
 
         if (string.IsNullOrWhiteSpace(key) 
             || key == "null" 
@@ -48,6 +65,8 @@ public class EmailDataService : IEmailDataService
             _logger.LogError($"Invalid key {key}");
             throw new UnauthorizedAccessException();
         }
+
+        _logger.LogInformation($"Authorized with key {key}"); ;
 
         if (string.IsNullOrWhiteSpace(date) || date == "null")
         {
@@ -60,16 +79,18 @@ public class EmailDataService : IEmailDataService
         string documentId = _configuration.GetValue<string>("EmailDataDocumentId");
         string range = _configuration.GetValue<string>("EmailDataRange");
 
+        _logger.LogInformation($"Schedule document id is {documentId} and range is {range}");
+
         IList<IList<object>>? values = null!;
         if (!_memoryCache.TryGetValue($"{documentId}/{range}", out IList<IList<object>> v))
         {
-            _logger.LogInformation("Reading from Google Sheets...");
+            _logger.LogInformation("Reading schedule from Google Sheets...");
             values = _sheetService.Read(documentId, range);
             _memoryCache.Set($"{documentId}/{range}", values);
         }
         else
         {
-            _logger.LogInformation("Reading from Memory Cache...");
+            _logger.LogInformation("Reading schedule from memory cache...");
             values = v;
         }
 
