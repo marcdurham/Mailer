@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: ScheduleViewer.Api/Dockerfile
     volumes:
-      - "/data/ScheduleViewer/config:/config"
+      - "/data/ScheduleViewer/config:/app/config"
     ports:
       - "127.0.0.1:5610:80"
     environment:
