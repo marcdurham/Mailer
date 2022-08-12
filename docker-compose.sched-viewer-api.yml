@@ -1,0 +1,22 @@
+version: '3'
+services:
+  sched-viewer-api:
+    container_name: sched-viewer-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ScheduleViewer.Api/Dockerfile
+    volumes:
+      - "/data/ScheduleViewer/config:/app/config"
+    ports:
+      - "127.0.0.1:5610:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      #- TimerIntervalSeconds=$TimerIntervalSeconds
+      #- ServiceSecretsJson=$ServiceSecretsJson
+      #- APPLICATIONINSIGHTS_INSTRUMENTATIONKEY=$APPLICATIONINSIGHTS_INSTRUMENTATIONKEY
+      - APPLICATIONINSIGHTS_CONNECTION_STRING=$APPLICATIONINSIGHTS_CONNECTION_STRING_SCHED_VIEWER_API
+      - SiteName=$SiteName
+      - EmailDataDocumentId=$EmailDataDocumentId
+      - EmailDataRange=$EmailDataRange
+

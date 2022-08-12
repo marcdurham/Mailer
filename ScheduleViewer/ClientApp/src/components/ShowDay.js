@@ -81,7 +81,7 @@ export class ShowDay extends Component {
   }
 
   async populateDay(date, key) {
-    const response = await fetch(`emaildata?date=${date}&key=${key}`);
+    const response = await fetch(`api/emaildata?date=${date}&key=${key}`);
     if (!response.ok) {
       this.setState({
         emaildata: {

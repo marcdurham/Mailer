@@ -30,8 +30,6 @@ RUN dotnet publish "ScheduleViewer.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-RUN mkdir /app/config
+COPY --from=node-builder /node/build ./ScheduleViewer/wwwroot
 COPY configuration.json /app/config
 COPY GoogleApi.secrets.json .
-#ENTRYPOINT ["dotnet", "ScheduleViewer.dll"]
-ENTRYPOINT ["ScheduleViewer.exe"]

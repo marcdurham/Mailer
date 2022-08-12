@@ -47,7 +47,7 @@ export class NavMenu extends Component {
   }
 
   async populateSiteInfo() {
-    const response = await fetch("siteinfo");
+    const response = await fetch("api/siteinfo");
     if (!response.ok) {
       this.setState({
         siteinfo: {
