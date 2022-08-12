@@ -17,7 +17,7 @@ const AppRoutes = [
     element: <FetchData />
   },
   {
-    path: '/show-day',
+    path: '/day/:date/:key',
     element: <ShowDay />
   }
 ];
