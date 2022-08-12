@@ -34,7 +34,7 @@ namespace ScheduleViewer.Controllers
             }
             catch(Exception)
             {
-                throw;
+                throw; 
             }
         }
     }

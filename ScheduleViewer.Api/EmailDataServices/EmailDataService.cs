@@ -37,10 +37,20 @@ public class EmailDataService : IEmailDataService
         if (!_memoryCache.TryGetValue(key, out ScheduleConfiguration? configuration))
         {
             _logger.LogInformation("Loading schedule configuration file...");
-            string configurationJson = File.ReadAllText("config/configuration.json");
-            configuration = JsonSerializer
-                .Deserialize<ScheduleConfiguration>(configurationJson);
-            _memoryCache.Set(key, configuration, DateTimeOffset.Parse("00:00:10"));
+            try
+            {            
+                string configurationJson = File.ReadAllText("config/configuration.json");
+                configuration = JsonSerializer
+                    .Deserialize<ScheduleConfiguration>(configurationJson);
+            }
+            catch (System.Exception)
+            {
+                emailData.Success = false;
+                emailData.ErrorMessage = "Error loading configuration.json";
+                return emailData;
+            }
+            
+            _memoryCache.Set(key, configuration, TimeSpan.FromSeconds(10));
         }
 
         //List<string> authorizedKeys = _configuration
@@ -151,8 +161,10 @@ public class EmailDataService : IEmailDataService
             }
         }
 
-        var rowNamesToShow = _configuration.GetSection("RowNameKeys").Get<List<string>>();
-        var rowTitles = _configuration.GetSection("RowNameTitles").Get<List<string>>();
+        var rowNamesToShow = configuration.RowNameKeys;
+        //_configuration.GetSection("RowNameKeys").Get<List<string>>();
+        var rowTitles = configuration.RowNameTitles;
+        // _configuration.GetSection("RowNameTitles").Get<List<string>>();
 
         for (int n = 0; n < emailData.RowNames.Count && n < values.Count; n++)
         {

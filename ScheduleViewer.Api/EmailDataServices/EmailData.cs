@@ -11,6 +11,7 @@
         public List<string> Saturdays { get; set; } = new();
         public string Key { get; set; } = string.Empty;
         public bool Success { get; set; }
+        public string ErrorMessage { get; set; } = string.Empty;
     }
 }
 

@@ -1,0 +1,1 @@
+docker-compose -f docker-compose.sched-viewer-api-staging.yml logs --timestamps --follow --tail="999" sched-viewer-api-staging
