@@ -29,6 +29,7 @@ export class NameForm extends Component {
   render() {
     return (
       <div class="container-sm">
+      <h3>传到报告 Service Report</h3>
         <div class="row">
           <form onSubmit={this.handleSubmit}>
             <div class="col-sm-4 mb-3 mt-3">

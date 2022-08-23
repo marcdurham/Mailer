@@ -6,10 +6,12 @@ export class Home extends Component {
   render() {
     return (
       <div>
-        <h1>信息板 Information Board</h1>
+        <h3>华盛顿湖普通话 Lake Washington Mandarin Chinese</h3>
+        <h4>信息板 Information Board</h4>
+        
         <p>A centralized place to find stuff...</p>
         <div class="alert alert-warning">
-          <strong>Attention!</strong> Meeting in-person this week!
+          <strong>注意力！ Attention!</strong> Meeting in-person this week!
         </div>
         <h5>聚会 Meetings</h5>
         <a href="https://schedules.lkwa.org/?date=2022-08-13&key=B3CF86C4-3F6C-4CDD-9D03-0F9323C95B39">
@@ -41,7 +43,8 @@ export class Home extends Component {
           <li><strong>Territory</strong>. Talk to <a href="">Caleb Chang</a> or <a href="">Marc Durham</a> about territories</li>
           
         </ul>
-        <p>This is a secure site</p>
+
+        <iframe width="800px" height="300px" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSh_i7CqTbYwjEKh-D242Js8kPNxep9LN3jfdpKS3OC3znSLqrX_oMYB3egBIgTDFjtiSKTM0W_z3XR/pubhtml?gid=0&amp;single=true&amp;widget=true&amp;headers=false"></iframe>
       </div>
     );
   }

@@ -28,7 +28,7 @@ export class NavMenu extends Component {
   }
 
   render() {
-    let siteName = this.state.loading ? "Lake Washington Mandarin Chinese": this.state.siteinfo.siteName;
+    let siteName = this.state.loading ? "lkwa.org": this.state.siteinfo.siteName;
     return (
       <header>
         <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
@@ -43,8 +43,11 @@ export class NavMenu extends Component {
                 <NavLink tag={Link} className="text-dark" to="/show-day">日程 Schedules</NavLink>
               </NavItem>
               <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/name-form">Ministry Report</NavLink>
+                <NavLink tag={Link} className="text-dark" to="/ministry-report">传到 Ministry</NavLink>
               </NavItem>
+              <NavItem>
+
+                </NavItem>
             </ul>
           </Collapse>
         </Navbar>
