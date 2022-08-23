@@ -19,9 +19,16 @@
     <PackageReference Include="Google.Apis.Auth" Version="1.57.0" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.57.0.2746" />
     <PackageReference Include="Google.Apis.Sheets.v4" Version="1.57.0.2727" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
+	  <PackageReference Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="6.0.8" />
+	  <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="6.0.8" />
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.8" />
+	  <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.8" />
+	  <PackageReference Include="Microsoft.AspNetCore.Mvc.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.SpaProxy" Version="6.0.7" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.8" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.8" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.8" />
   </ItemGroup>
 
   <ItemGroup>
