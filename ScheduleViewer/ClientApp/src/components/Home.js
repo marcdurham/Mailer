@@ -14,17 +14,17 @@ export class Home extends Component {
           <strong>注意力！ Attention!</strong> Meeting in-person this week!
         </div>
         <h5>聚会 Meetings</h5>
-        <a href="https://schedules.lkwa.org/?date=2022-08-13&key=B3CF86C4-3F6C-4CDD-9D03-0F9323C95B39">
+        <a href="#">
           <button class="btn btn-primary m-2">日程 Schedules</button>
           </a>
         <button class="btn btn-primary m-2">Zoom</button>
         <h5>传到 Ministry</h5>
         <button class="btn btn-primary m-2">传到日程 Schedules</button>
         
-        <a href="https://docs.google.com/spreadsheets/d/1YXJImiLakzEGl27D01WQlqTP4yJ-2F3VolTWHv0WzAw/edit#gid=0">
+        <a href="#">
           <button class="btn btn-primary m-2" >手拉车：报名 Carts</button>
         </a>
-        <a href="https://drive.google.com/drive/folders/1HlAWAXRuIiOSecRleejfoHxQkwNMVXM_?usp=sharing">
+        <a href="#">
           <button class="btn btn-primary m-2" >Google Drive Folder</button>
         </a>
         <a href="/ministry-report">
