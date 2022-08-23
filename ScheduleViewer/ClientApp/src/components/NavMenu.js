@@ -28,7 +28,8 @@ export class NavMenu extends Component {
   }
 
   render() {
-    let siteName = this.state.loading ? "lkwa.org": this.state.siteinfo.siteName;
+    //let siteName = this.state.loading ? "lkwa.org": this.state.siteinfo.siteName;
+    let siteName = "lkwa.org";
     return (
       <header>
         <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
