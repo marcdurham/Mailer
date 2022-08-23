@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+﻿import React, { Component } from 'react';
 import { Collapse, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import './NavMenu.css';
@@ -28,7 +28,7 @@ export class NavMenu extends Component {
   }
 
   render() {
-    let siteName = this.state.loading ? "Loading..." : this.state.siteinfo.siteName;
+    let siteName = this.state.loading ? "Lake Washington Mandarin Chinese": this.state.siteinfo.siteName;
     return (
       <header>
         <Navbar className="navbar-expand-sm navbar-toggleable-sm ng-white border-bottom box-shadow mb-3" container light>
@@ -38,6 +38,12 @@ export class NavMenu extends Component {
             <ul className="navbar-nav flex-grow">
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/">Home</NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/show-day">日程 Schedules</NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/name-form">Ministry Report</NavLink>
               </NavItem>
             </ul>
           </Collapse>
