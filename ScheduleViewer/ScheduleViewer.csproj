@@ -39,6 +39,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="Pages\Shared\_LoginPartial.cshtml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="GoogleApi.secrets.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
