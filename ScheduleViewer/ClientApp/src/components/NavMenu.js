@@ -52,8 +52,16 @@ export class NavMenu extends Component {
               </NavItem>
               <NavItem>
                 <NavLink tag={Link} className="text-dark" to="/authentication/profile">
-                  P</NavLink>
+                  <i class="fa-solid fa-user fa-lg"></i>
+                </NavLink>
               </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/Identity/Account/Logout">
+                  X
+                </NavLink>
+              </NavItem>
+              <LoginMenu>
+              </LoginMenu>
             </ul>
           </Collapse>
         </Navbar>
