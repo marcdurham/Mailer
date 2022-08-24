@@ -32,7 +32,8 @@ builder.Services.AddRazorPages();
 // Add services to the container.
 
 builder.Services.AddControllersWithViews();
-
+builder.Services.AddMemoryCache();
+builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddScoped<IEmailDataService, EmailDataService>();
 builder.Services.AddScoped<ISpreadSheetService, GoogleSheets>();
 
@@ -47,6 +48,8 @@ if (!app.Environment.IsDevelopment())
 else
 {
     app.UseMigrationsEndPoint();
+    //app.UseSwagger();
+    //app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
