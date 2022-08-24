@@ -1,4 +1,4 @@
-export const ApplicationName = 'LkWaOrgSample';
+export const ApplicationName = 'ScheduleViewer';
 
 export const QueryParameterNames = {
   ReturnUrl: 'returnUrl',
