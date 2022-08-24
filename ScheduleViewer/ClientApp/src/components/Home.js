@@ -17,7 +17,7 @@ export class Home extends Component {
         <a href="#">
           <button class="btn btn-primary m-2">日程 Schedules</button>
           </a>
-        <button class="btn btn-primary m-2">Zoom</button>
+        <button class="btn btn-primary m-2"><i class="fa-solid fa-video"></i> Zoom</button>
         <h5>传到 Ministry</h5>
         <button class="btn btn-primary m-2">传到日程 Schedules</button>
         
@@ -30,7 +30,7 @@ export class Home extends Component {
         <a href="/ministry-report">
           <button class="btn btn-primary m-2" >传到报告 Ministry Report</button>
           </a>
-        <button class="btn btn-primary m-2">Zoom</button>
+        <button class="btn btn-primary m-2"><i class="fa-solid fa-video"></i> Zoom</button>
         
         <a href="https://iron.territorytools.org">
           <button class="btn btn-primary m-2">区域 Territory</button>
