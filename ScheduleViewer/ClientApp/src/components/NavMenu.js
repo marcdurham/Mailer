@@ -48,7 +48,11 @@ export class NavMenu extends Component {
                 <NavLink tag={Link} className="text-dark" to="/ministry-report">传到 Ministry</NavLink>
               </NavItem>
               <NavItem>
-                <NavLink tag={Link} className="text-dark" to="/fetch-data">Fetch Data</NavLink>
+                <NavLink tag={Link} className="text-dark" to="/fetch-data">FD</NavLink>
+              </NavItem>
+              <NavItem>
+                <NavLink tag={Link} className="text-dark" to="/authentication/profile">
+                  P</NavLink>
               </NavItem>
             </ul>
           </Collapse>

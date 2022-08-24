@@ -8,6 +8,12 @@ import { Home } from "./components/Home";
 const AppRoutes = [
   {
     index: true,
+    requireAuth: true,
+    element: <Home />
+  },
+  {
+    path: '/undefined',
+    requireAuth: true,
     element: <Home />
   },
   {
@@ -20,6 +26,7 @@ const AppRoutes = [
   },
   {
     path: '/ministry-report',
+    requireAuth: true,
     element: <NameForm />
   },
   {
